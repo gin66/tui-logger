@@ -6,9 +6,9 @@ use std::iter;
 ///
 /// Usage example:
 ///```
-/// extern crate tui_logger_widget;
+/// extern crate tui_logger;
 ///
-/// use tui_logger_widget::CircularBuffer;
+/// use tui_logger::CircularBuffer;
 ///
 /// let mut cb : CircularBuffer<u64> = CircularBuffer::new(5);
 /// cb.push(1);

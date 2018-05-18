@@ -5,10 +5,10 @@ use std::fmt::Debug;
 /// Dispatcher is used to dispatch any termion event to a dynamically built chain of handlers.
 /// The dispatch is a one-shot event. After an event is processed, the dispatch chain is empty.
 /// ```
-/// extern crate tui_logger_widget;
+/// extern crate tui_logger;
 /// extern crate termion;
 ///
-/// use tui_logger_widget::Dispatcher;
+/// use tui_logger::Dispatcher;
 /// use termion::event::{Event,Key};
 ///
 /// let mut dispatcher = Dispatcher::new();

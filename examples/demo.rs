@@ -1,6 +1,6 @@
 extern crate termion;
 extern crate tui;
-extern crate tui_logger_widget;
+extern crate tui_logger;
 #[macro_use]
 extern crate log;
 
@@ -19,10 +19,10 @@ use tui::layout::{Direction, Group, Rect, Size};
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, Widget};
 use tui::Terminal;
-use tui_logger_widget::*;
+use tui_logger::*;
 
 fn main() {
-    tui_logger_widget::init_logger(LevelFilter::Trace).unwrap();
+    init_logger(LevelFilter::Trace).unwrap();
     info!(target:"DEMO", "Start demo");
 
     let mut terminal = Terminal::new(MouseBackend::new().unwrap()).unwrap();
