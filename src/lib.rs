@@ -6,7 +6,7 @@
 //!
 //! ## Documentation
 //! 
-//! [Documentation](https://docs.rs/tui-logger/0.1.3/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.1.4/tui_logger/)
 //! 
 //! ## Features
 //! 
@@ -1063,16 +1063,16 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
         let entries_s = {
             let mut tui_lock = TUI_LOGGER.inner.lock();
             let first_timestamp = {
-                if let Some(first_entry) = tui_lock.events.iter().next() {
-                    Some(first_entry.timestamp)
+                if let Some(entry) = tui_lock.events.iter().next() {
+                    Some(entry.timestamp.timestamp_millis())
                 }
                 else {
                     None
                 }
             };
             let last_timestamp = {
-                if let Some(first_entry) = tui_lock.events.rev_iter().next() {
-                    Some(first_entry.timestamp)
+                if let Some(entry) = tui_lock.events.rev_iter().next() {
+                    Some(entry.timestamp.timestamp_millis())
                 }
                 else {
                     None
@@ -1080,9 +1080,9 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
             };
             if let Some(first) = first_timestamp {
                 if let Some(last) = last_timestamp {
-                    let dt = (last-first).num_seconds();
+                    let dt = last-first;
                     if dt > 0 {
-                        tui_lock.events.len() as f64 / (dt as f64)
+                        tui_lock.events.len() as f64 / (dt as f64) * 1000.0
                     }
                     else {
                         0.0
