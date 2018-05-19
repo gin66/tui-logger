@@ -97,6 +97,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::mem;
 use std::rc::Rc;
+use std::io;
 
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
@@ -327,15 +328,15 @@ pub fn move_events() {
 }
 
 /// Define filename for logging.
-pub fn set_log_file(fname: String) {
+pub fn set_log_file(fname: &str) -> io::Result<()> {
     OpenOptions::new()
         .create(true)
         .append(true)
-        .open(&fname)
+        .open(fname)
         .map(|file| {
             TUI_LOGGER.inner.lock().dump = Some(file);
+            ()
         })
-        .unwrap_or(error!("Cannot open log file {}",fname));
 }
 
 /// Set default levelfilter for unknown targets of the logger
