@@ -33,10 +33,10 @@ impl<E> Dispatcher<E>
         trace!("Add listener to this dispatcher.");
         self.map.push(Box::new(f));
     }
-    /// Dispatches an event to the queue. The queue is empty afterwards.
+    /// Dispatches an event to the queue.
     /// The event is sent one after the other to the event handlers in the queue.
-    /// If an event handler returns true, then the following event handlers will not be processed anymore
-    /// and the return value of dispatch() is true.
+    /// If an event handler returns true, then the following event handlers will not be processed anymore,
+    /// the queue will be emptied and the return value of dispatch() is true.
     /// If no event handler has returned true, or the event queue is empty, then the function returns false.
     pub fn dispatch(&mut self, ev: &E) -> bool {
         let mut processed = false;
@@ -45,16 +45,22 @@ impl<E> Dispatcher<E>
             self.map.len(),
             ev
         );
-        while self.map.len() > 0 {
-            let d = self.map.remove(0);
-            if d(ev) {
+        for f in &self.map {
+            if f(ev) {
                 processed = true;
                 break;
             }
         }
-        self.map.clear();
+        if processed {
+            self.map.clear();
+        }
         trace!("Event dispatching result for {:?} is {}", ev, processed);
         processed
+    }
+    /// Clear the dispatcher queue
+    pub fn clear(&mut self) {
+        trace!("Dispatcher clear called.");
+        self.map.clear();
     }
 }
 
