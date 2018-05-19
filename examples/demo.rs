@@ -70,6 +70,7 @@ fn main() {
             terminal.resize(size).unwrap();
             term_size = size;
         }
+        dispatcher.borrow_mut().clear();
         draw(&mut terminal, &term_size, dispatcher.clone(), &state);
     }
     terminal.show_cursor().unwrap();
