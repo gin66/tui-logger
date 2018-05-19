@@ -2,6 +2,11 @@
 name = "tui-logger"
 version = "0.1.0"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
+license = "MIT"
+description = "Logger with smart widget for the `tui` crate"
+homepage = "https://github.com/gin66/tui_logger"
+repository = "https://github.com/gin66/tui_logger"
+keywords = ["tui", "log", "logger", "widget", "dispatcher"]
 
 [dependencies]
 log = "0.4"
