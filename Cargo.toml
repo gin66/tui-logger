@@ -1,10 +1,10 @@
 [package]
 name = "tui-logger"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
 license = "MIT"
 description = "Logger with smart widget for the `tui` crate"
-documentation = "https://docs.rs/tui-logger/0.1.4/tui_logger/"
+documentation = "https://docs.rs/tui-logger/0.1.5/tui_logger/"
 repository = "https://github.com/gin66/tui-logger"
 keywords = ["tui", "log", "logger", "widget", "dispatcher"]
 
