@@ -6,7 +6,7 @@
 //!
 //! ## Documentation
 //! 
-//! [Documentation](https://docs.rs/tui-logger/0.1.5/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.1.6/tui_logger/)
 //! 
 //! ## Features
 //! 
