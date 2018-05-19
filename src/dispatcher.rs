@@ -129,5 +129,8 @@ mod tests {
         let processed = dispatcher.dispatch(&Event::Key(Key::Up));
         assert_eq!(processed, false);
         assert_eq!(*v.borrow(), 5);
+        let processed = dispatcher.dispatch(&Event::Key(Key::Down));
+        assert_eq!(processed, true);
+        assert_eq!(*v.borrow(), 9);
     }
 }
