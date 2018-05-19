@@ -250,7 +250,7 @@ impl TuiLogger {
                 target: "TuiLogger".to_string(),
                 file: "?".to_string(),
                 line: 0,
-                msg: format!("There have been {} events lost", total-elements),
+                msg: format!("There have been {} events lost, {} recorded out of {}", total-elements, elements, total),
             };
             reversed.push(new_log_entry);
         }
