@@ -34,7 +34,7 @@ impl<E> Dispatcher<E>
         self.map.push(Box::new(f));
     }
     /// Dispatches an event to the queue.
-    /// The event is sent one after the other to the event handlers in the queue.
+    /// The event is sent to the event handlers in the queue in FIFO order.
     /// If an event handler returns true, then the following event handlers will not be processed anymore,
     /// the queue will be emptied and the return value of dispatch() is true.
     /// If no event handler has returned true, or the event queue is empty, then the function returns false.
