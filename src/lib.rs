@@ -6,7 +6,7 @@
 //!
 //! ## Documentation
 //! 
-//! [!(https://docs.rs/tui-logger/0.1.2/tui_logger/)]
+//! [Documentation](https://docs.rs/tui-logger/0.1.2/tui_logger/)
 //! 
 //! ## Features
 //! 
@@ -26,7 +26,11 @@
 //! Smart widget consists of two widgets. Left is the target selector widget and
 //! on the right side the logging messages view scrolling up.
 //!
-//! The target selector widget controls:
+//! The target selector widget looks like this:
+//! 
+//!    ![alt text](https://github.doc/gin66/tui-logger/doc/example.png)
+//! 
+//! It controls:
 //! 
 //! - Capturing of log messages by the logger
 //! - Selection of levels for display in the logging message view
