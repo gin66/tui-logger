@@ -2,11 +2,11 @@
 //!
 //! ## Demo of the widget
 //! 
-//! [![alt](https://asciinema.org/a/VwxTJsYCFIjDPifo8VVUFdEmO.png)](https://asciinema.org/a/VwxTJsYCFIjDPifo8VVUFdEmO)
+//! [![alt](https://asciinema.org/a/6Jxk6i3lK6IDGyWGyLZkS5Rdl.png)](https://asciinema.org/a/6Jxk6i3lK6IDGyWGyLZkS5Rdl)
 //!
 //! ## Documentation
 //! 
-//! [Documentation](https://docs.rs/tui-logger/0.1.6/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.1.7/tui_logger/)
 //! 
 //! ## Features
 //! 
@@ -78,6 +78,7 @@
 //! ```
 //! 
 //! For use of the widget please check examples/demo.rs
+//! 
 extern crate chrono;
 extern crate termion;
 extern crate tui;
