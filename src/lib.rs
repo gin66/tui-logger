@@ -144,15 +144,15 @@ impl TuiLogger {
         }
         if has_wrapped {
             // Too many events received, so some have been lost
-            let log_entry = ExtLogRecord {
-                timestamp: chrono::Local::now(),
+            let new_log_entry = ExtLogRecord {
+                timestamp: reversed[reversed.len()-1].timestamp,
                 level: Level::Warn,
                 target: "TuiLogger".to_string(),
                 file: "?".to_string(),
                 line: 0,
                 msg: format!("There have been lost some logging events"),
             };
-            reversed.push(log_entry);
+            reversed.push(new_log_entry);
         }
         let default_level = tli.default;
         while let Some(log_entry) = reversed.pop() {
