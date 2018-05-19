@@ -261,9 +261,10 @@ impl TuiLogger {
             if let Some(ref mut file) = tli.dump {
                 if let Err(_e) = writeln!(
                     file,
-                    "{}:{}:{}:{}:{}",
+                    "{}:{}:{}:{}:{}:{}",
                     &log_entry.timestamp.format("[%Y:%m:%d %H:%M:%S]"),
                     log_entry.level,
+                    log_entry.target,
                     &log_entry.file,
                     log_entry.line,
                     &log_entry.msg
