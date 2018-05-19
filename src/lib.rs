@@ -956,10 +956,9 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
 /// into a nice combo, where the TuiLoggerTargetWidget can be shown/hidden.
 /// 
 /// In the title the number of logging messages/s in the whole buffer is shown.
-pub struct TuiLoggerSmartWidget<'b> {
+pub struct TuiLoggerSmartWidget {
     title_log: String,
     title_target: String,
-    block: Option<Block<'b>>,
     style: Option<Style>,
     border_style: Style,
     highlight_style: Option<Style>,
@@ -974,13 +973,12 @@ pub struct TuiLoggerSmartWidget<'b> {
     state: Rc<RefCell<TuiWidgetInnerState>>,
     event_dispatcher: Option<Rc<RefCell<Dispatcher<Event>>>>,
 }
-impl<'b> Default for TuiLoggerSmartWidget<'b> {
-    fn default() -> TuiLoggerSmartWidget<'b> {
+impl Default for TuiLoggerSmartWidget {
+    fn default() -> TuiLoggerSmartWidget {
         TUI_LOGGER.move_events();
         TuiLoggerSmartWidget {
             title_log: "Tui Log".to_owned(),
             title_target: "Tui Target Selector".to_owned(),
-            block: None,
             style: None,
             border_style: Style::default(),
             highlight_style: None,
@@ -997,70 +995,66 @@ impl<'b> Default for TuiLoggerSmartWidget<'b> {
         }
     }
 }
-impl<'b> TuiLoggerSmartWidget<'b> {
-    pub fn block(&'b mut self, block: Block<'b>) -> &mut TuiLoggerSmartWidget<'b> {
-        self.block = Some(block);
-        self
-    }
-    pub fn highlight_style(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+impl TuiLoggerSmartWidget {
+    pub fn highlight_style(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.highlight_style = Some(style);
         self
     }
-    pub fn border_style(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn border_style(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.border_style = style;
         self
     }
-    pub fn style(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style = Some(style);
         self
     }
-    pub fn style_error(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_error(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_error = Some(style);
         self
     }
-    pub fn style_warn(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_warn(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_warn = Some(style);
         self
     }
-    pub fn style_info(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_info(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_info = Some(style);
         self
     }
-    pub fn style_trace(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_trace(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_trace = Some(style);
         self
     }
-    pub fn style_debug(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_debug(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_debug = Some(style);
         self
     }
-    pub fn style_off(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_off(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_off = Some(style);
         self
     }
-    pub fn style_hide(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_hide(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_hide = Some(style);
         self
     }
-    pub fn style_show(&'b mut self, style: Style) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn style_show(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
         self.style_show = Some(style);
         self
     }
-    pub fn state(&'b mut self, state: &TuiWidgetState) -> &mut TuiLoggerSmartWidget<'b> {
+    pub fn state(&mut self, state: &TuiWidgetState) -> &mut TuiLoggerSmartWidget {
         self.state = state.inner.clone();
         self
     }
 }
-impl<'b> EventListener<Event> for TuiLoggerSmartWidget<'b> {
+impl EventListener<Event> for TuiLoggerSmartWidget {
     fn dispatcher(
         &mut self,
         dispatcher: Rc<RefCell<Dispatcher<Event>>>,
-    ) -> &mut TuiLoggerSmartWidget<'b> {
+    ) -> &mut TuiLoggerSmartWidget {
         self.event_dispatcher = Some(dispatcher.clone());
         self
     }
 }
-impl<'b> Widget for TuiLoggerSmartWidget<'b> {
+impl Widget for TuiLoggerSmartWidget {
     /// Nothing to draw for combo widget
     fn draw(&mut self, _area: &Rect, _buf: &mut Buffer) {
     }
