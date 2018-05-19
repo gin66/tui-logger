@@ -1,3 +1,85 @@
+// Copyright 2015 The Rust Project Developers. See the COPYRIGHT
+// file at the top-level directory of this distribution and at
+// http://rust-lang.org/COPYRIGHT.
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
+
+//! # Logger with smart widget for the `tui` crate.
+//!
+//! ## Demo of the widget:
+//! 
+//! [![alt](https://asciinema.org/a/VwxTJsYCFIjDPifo8VVUFdEmO.png)](https://asciinema.org/a/VwxTJsYCFIjDPifo8VVUFdEmO)
+//!
+//! ## Features:
+//! 
+//! - [X] Logger implementation for the `log` crate
+//! - [X] Logger enable/disable detection uses fast, collision free hash table
+//! - [ ] Collision free hash table algorithm to be done. Currently use a big table
+//! - [X] Hot logger code only copies enabled log messages with timestamp into a circular buffer
+//! - [X] Widgets/move_message() retrieve captured log messages from hot circular buffer
+//! - [X] Lost message detection of overwritten logs messages in circular buffer
+//! - [X] Log filtering performed on log-target
+//! - [X] Simple Widgets to view the logs and select Debuglevel of target
+//! - [X] Smart Widget with dynamic event dispatcher for `termion` events (see demo code)
+//! - [X] Logging of enabled logs to file
+//!  
+//! ## Smart Widget
+//! 
+//! Smart widget consists of two widgets. Left is the target selector widget and
+//! on the right side the logging messages view scrolling up.
+//!
+//! The target selector widget controls:
+//! 
+//! - Capturing of log messages by the logger
+//! - Selection of levels for display in the logging message view
+//!  
+//! The target selector widget consists of two columns:
+//! 
+//! - Code EWIDT: E stands for Error, W for Warn, Info, Debug and Trace.
+//!   + Inverted characters (EWIDT) are enabled log levels in the view
+//!   + Normal characters shows enabled capturing of a log level
+//!   + If any of EWIDT are not shown, then the repective log level is not captured
+//! - Target of the log events e.g. `warn!(target: "demo", "Log message");`
+//!  
+//! ## Smart Widget Key Commands
+//! 
+//! |  KEY   | ACTION 
+//! |:------:|-----------------------------------------------------------|
+//! | `h`    | Toggles target selector widget
+//! | `UP`   | Select previous target in target selector widget
+//! | `DOWN` | Select next target in target selector widget
+//! | `LEFT` | Reduce SHOWN (!) log messages by one level
+//! | `RIGHT`| Increase SHOWN (!) log messages by one level
+//! | `-`    | Reduce CAPTURED (!) log messages by one level
+//! | `+`    | Increase CAPTURED (!) log messages by one level
+//! | `SPACE`| Toggles hiding of targets, which have logfilter set to off
+//!  
+//! ## Basic usage to initialize logger-system:
+//! ```
+//! extern crate log;
+//! extern crate tui_logger;
+//!
+//! use log::LevelFilter; 
+//! use tui_logger::*;
+//! 
+//! fn main() {
+//!     // Early initialization of the logger
+//! 
+//!     // Set max_log_level to Trace
+//!     init_logger(LevelFilter::Trace).unwrap();
+//! 
+//!     // Set default level for unknown targets to Trace
+//!     set_default_level(LevelFilter::Trace);
+//! 
+//!     // code....
+//! }
+//! ```
+//! 
+//! For use of the widget please check examples/demo.rs
 extern crate chrono;
 extern crate termion;
 extern crate tui;
@@ -55,19 +137,27 @@ fn advance_levelfilter(levelfilter: &LevelFilter) -> (LevelFilter, LevelFilter) 
     }
 }
 
+/// LevelConfig stores the relation target->LevelFilter in a hash table.
+/// 
+/// The table supports copying from the logger system LevelConfig to
+/// a widget's LevelConfig. In order to detect changes, the generation
+/// of the hash table is compared with any previous copied table.
+/// On every change the generation is incremented.
 pub struct LevelConfig {
     config: HashMap<String, LevelFilter>,
     generation: u64,
     origin_generation: u64
 }
 impl LevelConfig {
+    /// Create an empty LevelConfig.
     pub fn new() -> LevelConfig {
         LevelConfig {
             config: HashMap::new(),
-            generation: 1,
+            generation: 0,
             origin_generation: 0
         }
     }
+    /// Set for a given target the LevelFilter in the table and update the generation.
     pub fn set(&mut self, target: &str, level: LevelFilter) {
         if let Some(lev) = self.config.get_mut(target) {
             if *lev != level {
@@ -79,15 +169,23 @@ impl LevelConfig {
         self.config.insert(target.to_string(), level);
         self.generation += 1;
     }
+    /// Retrieve an iter for all the targets stored in the hash table.
     pub fn keys(&self) -> Keys<String, LevelFilter> {
         self.config.keys()
     }
+    /// Get the levelfilter for a given target.
     pub fn get(&self, target: &str) -> Option<&LevelFilter> {
         self.config.get(target)
     }
+    /// Retrieve an iterator through all entries of the table.
     pub fn iter(&self) -> Iter<String, LevelFilter> {
         self.config.iter()
     }
+    /// Merge an origin LevelConfig into this one.
+    /// 
+    /// The origin table defines the maximum levelfilter.
+    /// If this table has a higher levelfilter, then it will be reduced.
+    /// Unknown targets will be copied to this table.
     fn merge(&mut self, origin: &LevelConfig) {
         if self.origin_generation != origin.generation {
             for (target, origin_levelfilter) in origin.iter() {
@@ -102,6 +200,9 @@ impl LevelConfig {
         }
     }
 }
+
+
+/// These are the sub-structs for the static TUI_LOGGER struct.
 struct HotSelect {
     hashtable: Vec<(Option<u64>, LevelFilter)>,
     default: LevelFilter,
@@ -200,6 +301,8 @@ lazy_static! {
         }
     };
 }
+
+/// Init the logger and record with `log` crate.
 pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     for _ in 0..1027 {
         TUI_LOGGER
@@ -211,21 +314,32 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     log::set_max_level(max_level);
     log::set_logger(&*TUI_LOGGER)
 }
+
+/// Move events from hot circular buffer to the main one.
+/// If defined, log records will be written to file.
 pub fn move_events() {
     TUI_LOGGER.move_events();
 }
+
+/// Define filename for logging.
 pub fn set_log_file(fname: String) {
-    let file = OpenOptions::new()
+    OpenOptions::new()
         .create(true)
         .append(true)
-        .open(fname)
-        .unwrap();
-    TUI_LOGGER.inner.lock().dump = Some(file);
+        .open(&fname)
+        .map(|file| {
+            TUI_LOGGER.inner.lock().dump = Some(file);
+        })
+        .unwrap_or(error!("Cannot open log file {}",fname));
 }
+
+/// Set default levelfilter for unknown targets of the logger
 pub fn set_default_level(levelfilter: LevelFilter) {
     TUI_LOGGER.hot_select.lock().default = levelfilter;
     TUI_LOGGER.inner.lock().default = levelfilter;
 }
+
+/// Set levelfilter for a specific target in the logger
 pub fn set_level_for_target(target: &str, levelfilter: LevelFilter) {
     let h = fxhash::hash64(&target);
     TUI_LOGGER.inner.lock().targets.set(target, levelfilter);
@@ -282,16 +396,28 @@ impl TuiWidgetInnerState {
         }
     }
 }
+
+/// This struct contains the shared state of a TuiLoggerWidget and a TuiLoggerTargetWidget.
 pub struct TuiWidgetState {
     inner: Rc<RefCell<TuiWidgetInnerState>>,
 }
 impl TuiWidgetState {
+    /// Create a new TuiWidgetState
     pub fn new() -> TuiWidgetState {
         TuiWidgetState {
             inner: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
         }
     }
+    pub fn set_level_for_target(&self, target: &str, levelfilter: LevelFilter) -> &TuiWidgetState {
+        self.inner.borrow_mut().config.set(target,levelfilter);
+        self
+    }
 }
+
+/// This is the definition for the TuiLoggerTargetWidget,
+/// which allows configuration of the logger system and selection of log messages.
+/// It implements the EventListener trait, because it can enter event handlers to the dispatcher
+/// for the key commands.
 pub struct TuiLoggerTargetWidget<'b> {
     block: Option<Block<'b>>,
     /// Base style of the widget
@@ -617,6 +743,8 @@ impl<'b> EventListener<Event> for TuiLoggerTargetWidget<'b> {
     }
 }
 
+/// The TuiLoggerWidget shows the logging messages in an endless scrolling view.
+/// It is controlled by a TuiWidgetState for selected events.
 pub struct TuiLoggerWidget<'b> {
     block: Option<Block<'b>>,
     /// Base style of the widget
@@ -818,6 +946,10 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
     }
 }
 
+/// The Smart Widget combines the TuiLoggerWidget and the TuiLoggerTargetWidget
+/// into a nice combo, where the TuiLoggerTargetWidget can be shown/hidden.
+/// 
+/// In the title the number of logging messages/s in the whole buffer is shown.
 pub struct TuiLoggerSmartWidget<'b> {
     title_log: String,
     title_target: String,
@@ -995,6 +1127,7 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
                 .block(
                     Block::default()
                         .title(&self.title_log)
+                        .title_style(self.style.unwrap_or(Style::default()))
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1034,6 +1167,7 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
                         .block(
                             Block::default()
                                 .title(&self.title_target)
+                                .title_style(self.style.unwrap_or(Style::default()))
                                 .border_style(self.border_style)
                                 .borders(Borders::ALL)
                         )
@@ -1049,6 +1183,7 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
                         .block(
                             Block::default()
                                 .title(&format!("{}  [log={:.1}/s]",self.title_log,entries_s))
+                                .title_style(self.style.unwrap_or(Style::default()))
                                 .border_style(self.border_style)
                                 .borders(Borders::ALL),
                         )
@@ -1062,12 +1197,5 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
                         .render(t, &chunks[1]);
                 });
         }
-    }
-}
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test() {
-        assert_eq!(1 + 1, 2);
     }
 }
