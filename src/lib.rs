@@ -930,6 +930,43 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
         where
             Self: Sized,
             B: Backend, {
+        let entries_s = {
+            let mut tui_lock = TUI_LOGGER.inner.lock();
+            let first_timestamp = {
+                if let Some(first_entry) = tui_lock.events.iter().next() {
+                    Some(first_entry.timestamp)
+                }
+                else {
+                    None
+                }
+            };
+            let last_timestamp = {
+                if let Some(first_entry) = tui_lock.events.rev_iter().next() {
+                    Some(first_entry.timestamp)
+                }
+                else {
+                    None
+                }
+            };
+            if let Some(first) = first_timestamp {
+                if let Some(last) = last_timestamp {
+                    let dt = (last-first).num_seconds();
+                    if dt > 0 {
+                        tui_lock.events.len() as f64 / (dt as f64)
+                    }
+                    else {
+                        0.0
+                    }
+                }
+                else {
+                    0.0
+                }
+            }
+            else {
+                0.0
+            }
+        };
+
         let hide_target = self.state.borrow().hide_target;
         if let Some(ref dispatcher) = self.event_dispatcher {
             let state = self.state.clone();
@@ -1011,7 +1048,7 @@ impl<'b> Widget for TuiLoggerSmartWidget<'b> {
                     TuiLoggerWidget::default()
                         .block(
                             Block::default()
-                                .title(&self.title_log)
+                                .title(&format!("{}  [log={:.1}/s]",self.title_log,entries_s))
                                 .border_style(self.border_style)
                                 .borders(Borders::ALL),
                         )
