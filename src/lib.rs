@@ -1,10 +1,14 @@
 //! # Logger with smart widget for the `tui` crate.
 //!
-//! ## Demo of the widget:
+//! ## Demo of the widget
 //! 
 //! [![alt](https://asciinema.org/a/VwxTJsYCFIjDPifo8VVUFdEmO.png)](https://asciinema.org/a/VwxTJsYCFIjDPifo8VVUFdEmO)
 //!
-//! ## Features:
+//! ## Documentation
+//! 
+//! [!(https://docs.rs/tui-logger/0.1.2/tui_logger/)]
+//! 
+//! ## Features
 //! 
 //! - [X] Logger implementation for the `log` crate
 //! - [X] Logger enable/disable detection uses fast, collision free hash table
