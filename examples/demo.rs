@@ -107,11 +107,12 @@ fn draw(
             TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title("Independent Tui Logger View with colors")
-                        .border_style(Style::default().fg(Color::Black))
+                        .title("Independent Tui Logger View")
+                        .title_style(Style::default().fg(Color::White).bg(Color::Black))
+                        .border_style(Style::default().fg(Color::White).bg(Color::Black))
                         .borders(Borders::ALL),
                 )
-                .style(Style::default().fg(Color::White).bg(Color::Blue))
+                .style(Style::default().fg(Color::White).bg(Color::Black))
                 .render(t, &chunks[1]);
         });
 
