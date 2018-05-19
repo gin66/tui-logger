@@ -23,6 +23,7 @@ use tui_logger::*;
 
 fn main() {
     init_logger(LevelFilter::Trace).unwrap();
+    set_default_level(LevelFilter::Trace);
     info!(target:"DEMO", "Start demo");
 
     let mut terminal = Terminal::new(MouseBackend::new().unwrap()).unwrap();
@@ -47,7 +48,7 @@ fn main() {
             error!(target:"error", "an error");
             warn!(target:"warn", "a warning");
             trace!(target:"trace", "a trace");
-            debug!(target:"debug", "a trace");
+            debug!(target:"debug", "a debug");
             info!(target:"info", "an info");
             tx.send(termion::event::Event::Unsupported(vec![])).unwrap();
         }

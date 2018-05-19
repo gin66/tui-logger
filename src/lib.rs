@@ -211,6 +211,9 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     log::set_max_level(max_level);
     log::set_logger(&*TUI_LOGGER)
 }
+pub fn move_events() {
+    TUI_LOGGER.move_events();
+}
 pub fn set_log_file(fname: String) {
     let file = OpenOptions::new()
         .create(true)
@@ -730,8 +733,9 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         self.background(&list_area, buf, self.style.bg);
 
         let state = self.state.borrow();
-        let list_height = list_area.height as usize;
-        let mut lines = vec![];
+        let la_height = list_area.height as usize;
+        let mut lines: Vec<(Option<Style>,u16,String)> = vec![];
+        let indent = 9;
         {
             let mut tui_lock = TUI_LOGGER.inner.lock();
             for l in tui_lock.events.rev_iter() {
@@ -751,6 +755,8 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                     log::Level::Trace => (self.style_trace, "TRACE", true),
                 };
                 output.push_str(txt);
+                output.push(':');
+                output.push_str(&l.target);
                 if with_loc {
                     output.push(':');
                     output.push_str(&l.file);
@@ -758,13 +764,13 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                     output.push_str(&format!("{}", l.line));
                 }
                 output.push(':');
-                let mut x_iter = l.msg.lines();
-                output.push_str(x_iter.next().unwrap());
-                for sublines in x_iter.rev() {
-                    lines.push((col_style, sublines.to_string()));
+                let mut sublines: Vec<&str> = l.msg.lines().rev().collect();
+                output.push_str(sublines.pop().unwrap());
+                for subline in sublines {
+                    lines.push((col_style, indent, subline.to_string()));
                 }
-                lines.push((col_style, output));
-                if lines.len() == list_height {
+                lines.push((col_style, 0, output));
+                if lines.len() == la_height {
                     break;
                 }
             }
@@ -772,39 +778,42 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         let la_left = list_area.left();
         let la_top = list_area.top();
         let la_width = list_area.width as usize;
-        let mut i = 0;
-        loop {
-            if let Some((sty, l)) = lines.pop() {
-                let cp = l.len() as isize;
-                let nr_lines = ((cp - 7) / ((la_width - 7) as isize)) as usize + 1;
-                let mut left;
-                let mut l_from: usize;
-                let mut l_to: usize;
-                for j in (0..nr_lines).rev() {
-                    if j == 0 {
-                        left = 0;
-                        l_from = 0;
-                        l_to = l.len().min(la_width);
-                    } else {
-                        left = 7;
-                        l_from = la_width + (j - 1) * (la_width - 7);
-                        l_to = (la_width + j * (la_width - 7)).min(l.len());
-                    }
-                    buf.set_stringn(
-                        la_left + left,
-                        la_top + i as u16,
-                        &l[l_from..l_to],
-                        l_to - l_from,
-                        &sty.unwrap_or(self.style),
-                    );
-                    i = i + 1;
-                    if i == list_height {
-                        return;
-                    }
+
+        // lines is a vector with bottom line at index 0
+        // wrapped_lines will be a vector with top line first
+        let mut wrapped_lines = vec![];
+        while let Some((style,left,line)) = lines.pop() {
+            if line.len() > la_width {
+                wrapped_lines.push((style,left,line[..la_width].to_owned()));
+                let mut remain = &line[la_width..];
+                let rem_width = la_width - indent as usize;
+                while remain.len() > rem_width {
+                    wrapped_lines.push((style,indent,remain[..rem_width].to_owned()));
+                    remain = &remain[rem_width..];
                 }
-            } else {
-                return;
+                wrapped_lines.push((style,indent,remain.to_owned()));
             }
+            else {
+                wrapped_lines.push((style,left,line));
+            }
+        }
+
+        let offset = if wrapped_lines.len() < la_height {
+                0
+            }
+            else {
+                wrapped_lines.len() - la_height as usize
+            };
+        let mut i = 0;
+        for (sty, left, l) in &wrapped_lines[offset..] {
+            buf.set_stringn(
+                la_left + left,
+                la_top + i as u16,
+                l,
+                l.len(),
+                &sty.unwrap_or(self.style),
+            );
+            i = i + 1;
         }
     }
 }
