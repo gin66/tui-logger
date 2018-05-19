@@ -234,14 +234,15 @@ impl TuiLogger {
             mem::replace(&mut hl.events, new_circular)
         };
         let mut tli = self.inner.lock();
-        tli.total_events += received_events.total_elements();
-        let has_wrapped = received_events.has_wrapped();
+        let total = received_events.total_elements();
+        let elements = received_events.len();
+        tli.total_events += total;
         let mut consumed = received_events.take();
         let mut reversed = Vec::with_capacity(consumed.len() + 1);
         while let Some(log_entry) = consumed.pop() {
             reversed.push(log_entry);
         }
-        if has_wrapped {
+        if total > elements {
             // Too many events received, so some have been lost
             let new_log_entry = ExtLogRecord {
                 timestamp: reversed[reversed.len()-1].timestamp,
@@ -249,7 +250,7 @@ impl TuiLogger {
                 target: "TuiLogger".to_string(),
                 file: "?".to_string(),
                 line: 0,
-                msg: format!("There have been lost some logging events"),
+                msg: format!("There have been {} events lost", total-elements),
             };
             reversed.push(new_log_entry);
         }
@@ -312,6 +313,11 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     }
     log::set_max_level(max_level);
     log::set_logger(&*TUI_LOGGER)
+}
+
+/// Set the depth of the hot buffer in order to avoid message loss
+pub fn set_hot_buffer_depth(depth: usize) {
+    TUI_LOGGER.inner.lock().hot_depth = depth;
 }
 
 /// Move events from hot circular buffer to the main one.
