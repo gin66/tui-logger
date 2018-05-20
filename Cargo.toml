@@ -9,6 +9,9 @@ repository = "https://github.com/gin66/tui-logger"
 readme = "README.md"
 keywords = ["tui", "log", "logger", "widget", "dispatcher"]
 
+[badges]
+travis-ci = { repository = "gin66/tui-logger" }
+
 [dependencies]
 log = "0.4"
 chrono = "0.4" 
