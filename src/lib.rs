@@ -6,7 +6,7 @@
 //!
 //! ## Documentation
 //! 
-//! [Documentation](https://docs.rs/tui-logger/0.1.7/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.1.8/tui_logger/)
 //! 
 //! ## Features
 //! 
@@ -40,8 +40,8 @@
 //! - Code EWIDT: E stands for Error, W for Warn, Info, Debug and Trace.
 //!   + Inverted characters (EWIDT) are enabled log levels in the view
 //!   + Normal characters show enabled capturing of a log level per target
-//!   + If any of EWIDT are not shown, then the repective log level is not captured
-//! - Target of the log events can be defined in the lo3 e.g. `warn!(target: "demo", "Log message");`
+//!   + If any of EWIDT are not shown, then the respective log level is not captured
+//! - Target of the log events can be defined in the log e.g. `warn!(target: "demo", "Log message");`
 //!  
 //! ## Smart Widget Key Commands
 //! 

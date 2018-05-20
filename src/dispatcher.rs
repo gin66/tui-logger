@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::fmt::Debug;
 
-/// Dispatcher is used to dispatch any termion event to a dynamically built chain of handlers.
-/// The dispatch is a one-shot event. After an event is processed, the dispatch chain is empty.
+/// Dispatcher is used to dispatch any event to a dynamically built chain of handlers.
+/// The dispatch is a one-shot event. After an event is successfully processed, the dispatch chain is emptied.
 /// ```
 /// extern crate tui_logger;
 /// extern crate termion;

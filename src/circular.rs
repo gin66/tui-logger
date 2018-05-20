@@ -1,7 +1,7 @@
 use std;
 use std::iter;
 /// CircularBuffer is used to store the last elements of an endless sequence.
-/// Oldest elements will be overwrittten. The implementation focus on
+/// Oldest elements will be overwritten. The implementation focus on
 /// speed. So memory allocations are avoided.
 ///
 /// Usage example:
