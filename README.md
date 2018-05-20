@@ -1,4 +1,6 @@
-# Logger with smart widget for the `tui` crate.
+# Logger with smart widget for the `tui` crate
+
+[![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
 
 ## Demo of the widget
 
@@ -6,7 +8,7 @@
 
 ## Documentation
 
-[Documentation](https://docs.rs/tui-logger/0.1.8/tui_logger/)
+[Documentation](https://docs.rs/tui-logger/0.1.9/tui_logger/)
 
 ## Features
 
@@ -20,7 +22,7 @@
 - [X] Simple Widgets to view the logs and select Debuglevel of target
 - [X] Smart Widget with dynamic event dispatcher for `termion` events (see demo code)
 - [X] Logging of enabled logs to file
- 
+
 ## Smart Widget
 
 Smart widget consists of two widgets. Left is the target selector widget and
