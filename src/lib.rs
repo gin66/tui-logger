@@ -22,6 +22,7 @@
 //! - [X] Simple Widgets to view the logs and select Debuglevel of target
 //! - [X] Smart Widget with dynamic event dispatcher for `termion` events (see demo code)
 //! - [X] Logging of enabled logs to file
+//! - [ ] Avoid duplicating of target, module and filename in every log record
 //! 
 //! ## Smart Widget
 //! 
@@ -319,7 +320,8 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     log::set_logger(&*TUI_LOGGER)
 }
 
-/// Set the depth of the hot buffer in order to avoid message loss
+/// Set the depth of the hot buffer in order to avoid message loss.
+/// This is effective only after a call to move_events()
 pub fn set_hot_buffer_depth(depth: usize) {
     TUI_LOGGER.inner.lock().hot_depth = depth;
 }
@@ -680,18 +682,22 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                 }
                 else {
                     if let Some(sel) = selected {
+                        // sel must be < self.target.len() from above test
                         if sel >= offset+list_height {
+                            // selected is below visible list range => make it the bottom
                             sel - list_height + 1
                         }
-                        else if sel <= offset {
-                            sel
-                        }
                         else {
-                            offset
+                            if sel.min(offset)+list_height-1 >= self.targets.len() {
+                                self.targets.len() - list_height
+                            }
+                            else {
+                                sel.min(offset)
+                            }
                         }
                     }
                     else {
-                         0
+                        0
                     }
                 };
             state.offset = offset;
