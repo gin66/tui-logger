@@ -8,7 +8,7 @@
 //!
 //! ## Documentation
 //! 
-//! [Documentation](https://docs.rs/tui-logger/0.1.10/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.1.11/tui_logger/)
 //! 
 //! ## Features
 //! 
@@ -737,7 +737,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     la_top + i as u16,
                     t,
                     la_width,
-                    if Some(i) == selected {
+                    if Some(i+offset) == selected {
                         &self.highlight_style
                     } else {
                         &self.style
