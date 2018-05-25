@@ -8,7 +8,7 @@
 //!
 //! ## Documentation
 //! 
-//! [Documentation](https://docs.rs/tui-logger/0.1.12/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.1.13/tui_logger/)
 //! 
 //! ## Features
 //! 
