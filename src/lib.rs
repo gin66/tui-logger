@@ -734,16 +734,16 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     };
                     cell.symbol = sym.to_string();
                 }
-                buf.set_stringn(la_left + 5, la_top + i as u16, &":", la_width, &self.style);
+                buf.set_stringn(la_left + 5, la_top + i as u16, &":", la_width, self.style);
                 buf.set_stringn(
                     la_left + 6,
                     la_top + i as u16,
                     t,
                     la_width,
                     if Some(i + offset) == selected {
-                        &self.highlight_style
+                        self.highlight_style
                     } else {
-                        &self.style
+                        self.style
                     },
                 );
             }
@@ -958,7 +958,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 la_top + i as u16,
                 l,
                 l.len(),
-                &sty.unwrap_or(self.style),
+                sty.unwrap_or(self.style),
             );
             i = i + 1;
         }

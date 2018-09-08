@@ -15,7 +15,7 @@ travis-ci = { repository = "gin66/tui-logger" }
 [dependencies]
 log = "0.4"
 chrono = "0.4" 
-tui = "0.3.0-beta.0"
+tui = "0.3.0-beta.1"
 termion = "1.5"
 lazy_static = "1.0"
 fxhash = "0.2"
