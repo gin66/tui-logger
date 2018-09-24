@@ -11,11 +11,12 @@ use std::sync::mpsc;
 use std::{thread, time};
 
 use log::LevelFilter;
-use termion::event;
-use termion::event::Key;
-use termion::input::TermRead;
+use termion::event::{self, Key};
+use termion::input::{TermRead, MouseTerminal};
+use termion::raw::IntoRawMode;
+use termion::screen::AlternateScreen;
 
-use tui::backend::MouseBackend;
+use tui::backend::{Backend, TermionBackend};
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, Tabs, Widget};
@@ -34,7 +35,11 @@ fn main() {
     set_default_level(LevelFilter::Trace);
     info!(target:"DEMO", "Start demo");
 
-    let mut terminal = Terminal::new(MouseBackend::new().unwrap()).unwrap();
+    let stdout = io::stdout().into_raw_mode().unwrap();
+    let stdout = MouseTerminal::from(stdout);
+    let stdout = AlternateScreen::from(stdout);
+    let backend = TermionBackend::new(stdout);
+    let mut terminal = Terminal::new(backend).unwrap();
     let stdin = io::stdin();
     terminal.clear().unwrap();
     terminal.hide_cursor().unwrap();
@@ -90,13 +95,13 @@ fn main() {
     terminal.clear().unwrap();
 }
 
-fn draw(t: &mut Terminal<MouseBackend>, size: Rect, app: &mut App) {
+fn draw<B: Backend>(t: &mut Terminal<B>, size: Rect, app: &mut App) {
     t.draw(|mut f| {
         draw_frame(&mut f, size, app);
     }).unwrap();
 }
 
-fn draw_frame(t: &mut Frame<MouseBackend>, size: Rect, app: &mut App) {
+fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     let tabs = vec!["V1", "V2", "V3", "V4"];
     let sel = *app.selected_tab.borrow();
     let sel_tab = if sel + 1 < tabs.len() { sel + 1 } else { 0 };
