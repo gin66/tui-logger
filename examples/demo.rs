@@ -11,21 +11,23 @@ use std::sync::mpsc;
 use std::{thread, time};
 
 use log::LevelFilter;
-use termion::event;
-use termion::event::Key;
-use termion::input::TermRead;
+use termion::event::{self, Key};
+use termion::input::{TermRead, MouseTerminal};
+use termion::raw::IntoRawMode;
+use termion::screen::AlternateScreen;
 
-use tui::backend::MouseBackend;
-use tui::layout::{Direction, Group, Rect, Size};
-use tui::style::{Color, Style, Modifier};
+use tui::backend::{Backend, TermionBackend};
+use tui::layout::{Constraint, Direction, Layout, Rect};
+use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, Tabs, Widget};
+use tui::Frame;
 use tui::Terminal;
 use tui_logger::*;
 
 struct App {
     states: Vec<TuiWidgetState>,
     dispatcher: Rc<RefCell<Dispatcher<event::Event>>>,
-    selected_tab: Rc<RefCell<usize>>
+    selected_tab: Rc<RefCell<usize>>,
 }
 
 fn main() {
@@ -33,7 +35,11 @@ fn main() {
     set_default_level(LevelFilter::Trace);
     info!(target:"DEMO", "Start demo");
 
-    let mut terminal = Terminal::new(MouseBackend::new().unwrap()).unwrap();
+    let stdout = io::stdout().into_raw_mode().unwrap();
+    let stdout = MouseTerminal::from(stdout);
+    let stdout = AlternateScreen::from(stdout);
+    let backend = TermionBackend::new(stdout);
+    let mut terminal = Terminal::new(backend).unwrap();
     let stdin = io::stdin();
     terminal.clear().unwrap();
     terminal.hide_cursor().unwrap();
@@ -62,11 +68,12 @@ fn main() {
     });
 
     let mut term_size = terminal.size().unwrap();
-    let mut app = App { states: vec![], 
-                    dispatcher: Rc::new(RefCell::new(Dispatcher::<event::Event>::new())),
-                    selected_tab: Rc::new(RefCell::new(0))
-                };
-    draw(&mut terminal, &term_size, &mut app);
+    let mut app = App {
+        states: vec![],
+        dispatcher: Rc::new(RefCell::new(Dispatcher::<event::Event>::new())),
+        selected_tab: Rc::new(RefCell::new(0)),
+    };
+    draw(&mut terminal, term_size, &mut app);
 
     // Here is the main loop
     for evt in rx {
@@ -82,76 +89,76 @@ fn main() {
             term_size = size;
         }
         app.dispatcher.borrow_mut().clear();
-        draw(&mut terminal, &term_size, &mut app);
+        draw(&mut terminal, term_size, &mut app);
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();
 }
 
-fn draw(
-    t: &mut Terminal<MouseBackend>,
-    size: &Rect,
-    app: &mut App,
-) {
-    let tabs = vec!["V1","V2","V3","V4"];
+fn draw<B: Backend>(t: &mut Terminal<B>, size: Rect, app: &mut App) {
+    t.draw(|mut f| {
+        draw_frame(&mut f, size, app);
+    }).unwrap();
+}
+
+fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
+    let tabs = vec!["V1", "V2", "V3", "V4"];
     let sel = *app.selected_tab.borrow();
-    let sel_tab = if sel+1 < tabs.len() { sel+1 } else { 0 };
-    let sel_stab = if sel > 0 { sel-1 } else { tabs.len()-1 };
+    let sel_tab = if sel + 1 < tabs.len() { sel + 1 } else { 0 };
+    let sel_stab = if sel > 0 { sel - 1 } else { tabs.len() - 1 };
     let v_sel = app.selected_tab.clone();
 
     // Switch between tabs via Tab and Shift-Tab
-    // At least on my computer the 27/91/90 equals a Shift-Tab 
-    app.dispatcher.borrow_mut().add_listener(
-        move |evt| {
-            if &event::Event::Unsupported(vec![27,91,90]) == evt {
-                *v_sel.borrow_mut() = sel_stab;
-                true 
-            }
-            else if &event::Event::Key(Key::Char('\t')) == evt {
-                *v_sel.borrow_mut() = sel_tab;
-                true 
-            }
-            else {
-                false
-            }
-        });
+    // At least on my computer the 27/91/90 equals a Shift-Tab
+    app.dispatcher.borrow_mut().add_listener(move |evt| {
+        if &event::Event::Unsupported(vec![27, 91, 90]) == evt {
+            *v_sel.borrow_mut() = sel_stab;
+            true
+        } else if &event::Event::Key(Key::Char('\t')) == evt {
+            *v_sel.borrow_mut() = sel_tab;
+            true
+        } else {
+            false
+        }
+    });
     if app.states.len() <= sel {
         app.states.push(TuiWidgetState::new());
     }
-   
-    Block::default().borders(Borders::ALL).render(t, size);
-    Group::default()
-        .direction(Direction::Vertical)
-        .sizes(&[Size::Fixed(3), Size::Percent(50), Size::Percent(50)])
-        .render(t, size, |t, chunks| {
-            Tabs::default()
-                .block(Block::default()
-                        .borders(Borders::ALL))
-                .titles(&tabs)
-                .highlight_style(Style::default().modifier(Modifier::Invert))
-                .select(sel)
-                .render(t, &chunks[0]);
-            TuiLoggerSmartWidget::default()
-                .border_style(Style::default().fg(Color::Black))
-                .style_error(Style::default().fg(Color::Red))
-                .style_debug(Style::default().fg(Color::Green))
-                .style_warn(Style::default().fg(Color::Yellow))
-                .style_trace(Style::default().fg(Color::Magenta))
-                .style_info(Style::default().fg(Color::Cyan))
-                .state(&mut app.states[sel])
-                .dispatcher(app.dispatcher.clone())
-                .render(t, &chunks[1]);
-            TuiLoggerWidget::default()
-                .block(
-                    Block::default()
-                        .title("Independent Tui Logger View")
-                        .title_style(Style::default().fg(Color::White).bg(Color::Black))
-                        .border_style(Style::default().fg(Color::White).bg(Color::Black))
-                        .borders(Borders::ALL),
-                )
-                .style(Style::default().fg(Color::White).bg(Color::Black))
-                .render(t, &chunks[2]);
-        });
 
-    t.draw().unwrap();
+    Block::default().borders(Borders::ALL).render(t, size);
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(vec![
+            Constraint::Length(3),
+            Constraint::Percentage(50),
+            Constraint::Percentage(50),
+        ])
+        .split(size);
+
+    Tabs::default()
+        .block(Block::default().borders(Borders::ALL))
+        .titles(&tabs)
+        .highlight_style(Style::default().modifier(Modifier::Invert))
+        .select(sel)
+        .render(t, chunks[0]);
+    TuiLoggerSmartWidget::default()
+        .border_style(Style::default().fg(Color::Black))
+        .style_error(Style::default().fg(Color::Red))
+        .style_debug(Style::default().fg(Color::Green))
+        .style_warn(Style::default().fg(Color::Yellow))
+        .style_trace(Style::default().fg(Color::Magenta))
+        .style_info(Style::default().fg(Color::Cyan))
+        .state(&mut app.states[sel])
+        .dispatcher(app.dispatcher.clone())
+        .render(t, chunks[1]);
+    TuiLoggerWidget::default()
+        .block(
+            Block::default()
+                .title("Independent Tui Logger View")
+                .title_style(Style::default().fg(Color::White).bg(Color::Black))
+                .border_style(Style::default().fg(Color::White).bg(Color::Black))
+                .borders(Borders::ALL),
+        )
+        .style(Style::default().fg(Color::White).bg(Color::Black))
+        .render(t, chunks[2]);
 }
