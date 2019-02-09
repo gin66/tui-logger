@@ -1,7 +1,8 @@
 [package]
 name = "tui-logger"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
+edition = "2018"
 license = "MIT"
 description = "Logger with smart widget for the `tui` crate"
 documentation = "https://docs.rs/tui-logger/0.2.0/tui_logger/"
@@ -15,7 +16,7 @@ travis-ci = { repository = "gin66/tui-logger" }
 [dependencies]
 log = "0.4"
 chrono = "0.4"
-tui = "0.3.0"
+tui = "0.4.0"
 termion = "1.5"
 lazy_static = "1.0"
 fxhash = "0.2"

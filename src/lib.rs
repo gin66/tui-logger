@@ -72,20 +72,18 @@
 //!  
 //! ## Basic usage to initialize logger-system:
 //! ```
-//! extern crate log;
-//! extern crate tui_logger;
-//!
-//! use log::LevelFilter;
-//! use tui_logger::*;
+//! #[macro_use]
+//! use log;
+//! use tui_logger;
 //!
 //! fn main() {
 //!     // Early initialization of the logger
 //!
 //!     // Set max_log_level to Trace
-//!     init_logger(LevelFilter::Trace).unwrap();
+//!     tui_logger::init_logger(log::LevelFilter::Trace).unwrap();
 //!
 //!     // Set default level for unknown targets to Trace
-//!     set_default_level(LevelFilter::Trace);
+//!     tui_logger::set_default_level(log::LevelFilter::Trace);
 //!
 //!     // code....
 //! }
@@ -93,15 +91,11 @@
 //!
 //! For use of the widget please check examples/demo.rs
 //!
-extern crate chrono;
-extern crate termion;
-extern crate tui;
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate lazy_static;
-extern crate fxhash;
-extern crate parking_lot;
+use fxhash;
 
 use std::cell::RefCell;
 use std::collections::hash_map::Iter;
@@ -128,8 +122,8 @@ use tui::Frame;
 mod circular;
 mod dispatcher;
 
-pub use circular::CircularBuffer;
-pub use dispatcher::{Dispatcher, EventListener};
+pub use crate::circular::CircularBuffer;
+pub use crate::dispatcher::{Dispatcher, EventListener};
 
 struct ExtLogRecord {
     timestamp: DateTime<Local>,
@@ -651,7 +645,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        self.background(&list_area, buf, self.style.bg);
+        self.background(list_area.clone(), buf, self.style.bg);
 
         let la_left = list_area.left();
         let la_top = list_area.top();
@@ -879,7 +873,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        self.background(&list_area, buf, self.style.bg);
+        self.background(list_area.clone(), buf, self.style.bg);
 
         let state = self.state.borrow();
         let la_height = list_area.height as usize;
