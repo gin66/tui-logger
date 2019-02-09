@@ -2,13 +2,9 @@
 
 [![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
 
-## Demo of the widget
-
-[![alt](https://asciinema.org/a/6Jxk6i3lK6IDGyWGyLZkS5Rdl.png)](https://asciinema.org/a/6Jxk6i3lK6IDGyWGyLZkS5Rdl)
-
 ## Documentation
 
-[Documentation](https://docs.rs/tui-logger/0.2.0/tui_logger/)
+[Documentation](https://docs.rs/tui-logger/0.3.1/tui_logger/)
 
 ## Features
 
@@ -72,20 +68,19 @@ This could even be used for mouse events, but this is not yet implemented.
  
 ## Basic usage to initialize logger-system:
 ```
+#[macro_use]
 extern crate log;
-extern crate tui_logger;
 
-use log::LevelFilter; 
 use tui_logger::*;
 
 fn main() {
     // Early initialization of the logger
 
     // Set max_log_level to Trace
-    init_logger(LevelFilter::Trace).unwrap();
+    init_logger(log::LevelFilter::Trace).unwrap();
 
     // Set default level for unknown targets to Trace
-    set_default_level(LevelFilter::Trace);
+    set_default_level(log::LevelFilter::Trace);
 
     // code....
 }
