@@ -144,7 +144,7 @@ impl<T> CircularBuffer<T> {
 mod tests {
     #[test]
     fn circular_buffer() {
-        use CircularBuffer;
+        use crate::CircularBuffer;
 
         let mut cb: CircularBuffer<u64> = CircularBuffer::new(5);
 
@@ -278,7 +278,7 @@ mod tests {
     }
     #[test]
     fn circular_buffer_rev() {
-        use CircularBuffer;
+        use crate::CircularBuffer;
 
         let mut cb: CircularBuffer<u64> = CircularBuffer::new(5);
 
@@ -412,7 +412,7 @@ mod tests {
     }
     #[test]
     fn total_elements() {
-        use CircularBuffer;
+        use crate::CircularBuffer;
 
         let mut cb: CircularBuffer<u64> = CircularBuffer::new(5);
 
@@ -424,7 +424,7 @@ mod tests {
     }
     #[test]
     fn has_wrapped() {
-        use CircularBuffer;
+        use crate::CircularBuffer;
 
         let mut cb: CircularBuffer<u64> = CircularBuffer::new(5);
 
@@ -436,7 +436,7 @@ mod tests {
     }
     #[test]
     fn take() {
-        use CircularBuffer;
+        use crate::CircularBuffer;
 
         let mut cb: CircularBuffer<u64> = CircularBuffer::new(5);
         for i in 1..5 {

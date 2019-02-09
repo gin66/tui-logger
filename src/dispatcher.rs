@@ -75,7 +75,7 @@ mod tests {
     use std::cell::RefCell;
     use std::rc::Rc;
     use termion::event::{Event, Key};
-    use Dispatcher;
+    use crate::Dispatcher;
 
     fn make_queue(dispatcher: &mut Dispatcher<Event>, v: Rc<RefCell<u64>>) {
         let vx = v.clone();
@@ -111,7 +111,7 @@ mod tests {
     fn test_dispatch() {
         let v = Rc::new(RefCell::new(0));
 
-        let mut dispatcher = Dispatcher::<Event>::new();
+        let mut dispatcher = crate::Dispatcher::<Event>::new();
         make_queue(&mut dispatcher, v.clone());
         assert_eq!(*v.borrow(), 0);
         let processed = dispatcher.dispatch(&Event::Key(Key::Left));

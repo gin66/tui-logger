@@ -73,8 +73,8 @@
 //! ## Basic usage to initialize logger-system:
 //! ```
 //! #[macro_use]
-//! use log;
-//! use tui_logger;
+//! extern crate log;
+//! //use tui_logger;
 //!
 //! fn main() {
 //!     // Early initialization of the logger
