@@ -1,6 +1,6 @@
 use std::cell::RefCell;
-use std::rc::Rc;
 use std::fmt::Debug;
+use std::rc::Rc;
 
 /// Dispatcher is used to dispatch any event to a dynamically built chain of handlers.
 /// The dispatch is a one-shot event. After an event is successfully processed, the dispatch chain is emptied.
@@ -16,11 +16,12 @@ use std::fmt::Debug;
 /// dispatcher.dispatch(&Event::Key(Key::Up));
 /// ```
 pub struct Dispatcher<E: Debug> {
-    map: Vec<Box<Fn(&E) -> bool>>,
+    map: Vec<Box<dyn Fn(&E) -> bool>>,
 }
 #[allow(dead_code)]
 impl<E> Dispatcher<E>
-    where E: Debug,
+where
+    E: Debug,
 {
     /// Create a new dispatcher
     pub fn new() -> Dispatcher<E> {
@@ -72,10 +73,10 @@ pub trait EventListener<E: Debug> {
 
 #[cfg(test)]
 mod tests {
+    use crate::Dispatcher;
     use std::cell::RefCell;
     use std::rc::Rc;
     use termion::event::{Event, Key};
-    use crate::Dispatcher;
 
     fn make_queue(dispatcher: &mut Dispatcher<Event>, v: Rc<RefCell<u64>>) {
         let vx = v.clone();
