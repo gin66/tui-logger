@@ -135,7 +135,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     Tabs::default()
         .block(Block::default().borders(Borders::ALL))
         .titles(&tabs)
-        .highlight_style(Style::default().modifier(Modifier::Invert))
+        .highlight_style(Style::default().modifier(Modifier::REVERSED))
         .select(sel)
         .render(t, chunks[0]);
     TuiLoggerSmartWidget::default()
