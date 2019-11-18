@@ -1,6 +1,6 @@
 [package]
 name = "tui-logger"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
 edition = "2018"
 license = "MIT"
