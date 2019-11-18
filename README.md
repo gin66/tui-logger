@@ -91,4 +91,5 @@ For use of the widget please check examples/demo.rs
 ## THANKS TO
 
 * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
-* [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 
+* [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 and v0.6.0
+* [Adam Sypniewski](https://github.com/ajsyp) for providing the patches to tui-rs v0.6.2
