@@ -16,7 +16,7 @@ use std::fmt::Debug;
 /// dispatcher.dispatch(&Event::Key(Key::Up));
 /// ```
 pub struct Dispatcher<E: Debug> {
-    map: Vec<Box<Fn(&E) -> bool>>,
+    map: Vec<Box<dyn Fn(&E) -> bool>>,
 }
 #[allow(dead_code)]
 impl<E> Dispatcher<E>
