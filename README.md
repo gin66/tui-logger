@@ -4,7 +4,7 @@
 
 ## Documentation
 
-[Documentation](https://docs.rs/tui-logger/0.3.1/tui_logger/)
+[Documentation](https://docs.rs/tui-logger/0.4.2/tui_logger/)
 
 ## Features
 
@@ -93,3 +93,4 @@ For use of the widget please check examples/demo.rs
 * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
 * [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 and v0.6.0
 * [Adam Sypniewski](https://github.com/ajsyp) for providing the patches to tui-rs v0.6.2
+* [James aka jklong](https://github.com/jklong) for providing the patch to tui-rs v0.7
