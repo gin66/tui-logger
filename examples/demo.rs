@@ -16,7 +16,7 @@ use termion::screen::AlternateScreen;
 use tui::backend::{Backend, TermionBackend};
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, Tabs, Widget, Gauge};
+use tui::widgets::{Block, Borders, Gauge, Tabs, Widget};
 use tui::Frame;
 use tui::Terminal;
 use tui_logger::*;
@@ -137,10 +137,10 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
 
     Block::default().borders(Borders::ALL).render(t, size);
     let mut constraints = vec![
-            Constraint::Length(3),
-            Constraint::Percentage(50),
-            Constraint::Min(3),
-        ];
+        Constraint::Length(3),
+        Constraint::Percentage(50),
+        Constraint::Min(3),
+    ];
     if app.opt_info_cnt.is_some() {
         constraints.push(Constraint::Length(3));
     }
@@ -178,7 +178,12 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     if let Some(percent) = app.opt_info_cnt {
         Gauge::default()
             .block(Block::default().borders(Borders::ALL).title("Progress"))
-            .style(Style::default().fg(Color::Black).bg(Color::White).modifier(Modifier::ITALIC))
+            .style(
+                Style::default()
+                    .fg(Color::Black)
+                    .bg(Color::White)
+                    .modifier(Modifier::ITALIC),
+            )
             .percent(percent)
             .render(t, chunks[3]);
     }
