@@ -9,14 +9,14 @@ use std::{thread, time};
 
 use log::LevelFilter;
 use termion::event::{self, Key};
-use termion::input::{TermRead, MouseTerminal};
+use termion::input::{MouseTerminal, TermRead};
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 
 use tui::backend::{Backend, TermionBackend};
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, Tabs, Widget};
+use tui::widgets::{Block, Borders, Tabs, Widget, Gauge};
 use tui::Frame;
 use tui::Terminal;
 use tui_logger::*;
@@ -25,9 +25,32 @@ struct App {
     states: Vec<TuiWidgetState>,
     dispatcher: Rc<RefCell<Dispatcher<event::Event>>>,
     selected_tab: Rc<RefCell<usize>>,
+    opt_info_cnt: Option<u16>,
 }
 
-fn main() {
+#[derive(Debug)]
+enum AppEvent {
+    Termion(termion::event::Event),
+    LoopCnt(Option<u16>),
+}
+
+fn demo_application(tx: mpsc::Sender<AppEvent>) {
+    let one_second = time::Duration::from_millis(1_000);
+    let mut lp_cnt = (1..=100).into_iter();
+    loop {
+        trace!(target:"DEMO", "Sleep one second");
+        thread::sleep(one_second);
+        trace!(target:"DEMO", "Issue log entry for each level");
+        error!(target:"error", "an error");
+        warn!(target:"warn", "a warning");
+        trace!(target:"trace", "a trace");
+        debug!(target:"debug", "a debug");
+        info!(target:"info", "an info");
+        tx.send(AppEvent::LoopCnt(lp_cnt.next())).unwrap();
+    }
+}
+
+fn main() -> std::result::Result<(), std::io::Error> {
     init_logger(LevelFilter::Trace).unwrap();
     set_default_level(LevelFilter::Trace);
     info!(target:"DEMO", "Start demo");
@@ -41,61 +64,50 @@ fn main() {
     terminal.clear().unwrap();
     terminal.hide_cursor().unwrap();
 
+    // Use an mpsc::channel to combine stdin events with app events
     let (tx, rx) = mpsc::channel();
     let tx_event = tx.clone();
     thread::spawn(move || {
         for c in stdin.events() {
             trace!(target:"DEMO", "Stdin event received {:?}", c);
-            tx_event.send(c.unwrap()).unwrap();
+            tx_event.send(AppEvent::Termion(c.unwrap())).unwrap();
         }
     });
     thread::spawn(move || {
-        let one_second = time::Duration::from_millis(1_000);
-        loop {
-            trace!(target:"DEMO", "Sleep one second");
-            thread::sleep(one_second);
-            trace!(target:"DEMO", "Issue log entry for each level");
-            error!(target:"error", "an error");
-            warn!(target:"warn", "a warning");
-            trace!(target:"trace", "a trace");
-            debug!(target:"debug", "a debug");
-            info!(target:"info", "an info");
-            tx.send(termion::event::Event::Unsupported(vec![])).unwrap();
-        }
+        demo_application(tx);
     });
 
-    let mut term_size = terminal.size().unwrap();
     let mut app = App {
         states: vec![],
         dispatcher: Rc::new(RefCell::new(Dispatcher::<event::Event>::new())),
         selected_tab: Rc::new(RefCell::new(0)),
+        opt_info_cnt: None,
     };
-    draw(&mut terminal, term_size, &mut app);
 
     // Here is the main loop
     for evt in rx {
         trace!(target: "New event", "{:?}",evt);
-        if !app.dispatcher.borrow_mut().dispatch(&evt) {
-            if evt == termion::event::Event::Key(event::Key::Char('q')) {
-                break;
+        match evt {
+            AppEvent::Termion(evt) => {
+                if !app.dispatcher.borrow_mut().dispatch(&evt) {
+                    if evt == termion::event::Event::Key(event::Key::Char('q')) {
+                        break;
+                    }
+                }
+            }
+            AppEvent::LoopCnt(opt_cnt) => {
+                app.opt_info_cnt = opt_cnt;
             }
         }
-        let size = terminal.size().unwrap();
-        if term_size != size {
-            terminal.resize(size).unwrap();
-            term_size = size;
-        }
-        app.dispatcher.borrow_mut().clear();
-        draw(&mut terminal, term_size, &mut app);
+        terminal.draw(|mut f| {
+            let size = f.size();
+            draw_frame(&mut f, size, &mut app);
+        })?;
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();
-}
 
-fn draw<B: Backend>(t: &mut Terminal<B>, size: Rect, app: &mut App) {
-    t.draw(|mut f| {
-        draw_frame(&mut f, size, app);
-    }).unwrap();
+    Ok(())
 }
 
 fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
@@ -107,6 +119,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
 
     // Switch between tabs via Tab and Shift-Tab
     // At least on my computer the 27/91/90 equals a Shift-Tab
+    app.dispatcher.borrow_mut().clear();
     app.dispatcher.borrow_mut().add_listener(move |evt| {
         if &event::Event::Unsupported(vec![27, 91, 90]) == evt {
             *v_sel.borrow_mut() = sel_stab;
@@ -123,13 +136,17 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     }
 
     Block::default().borders(Borders::ALL).render(t, size);
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![
+    let mut constraints = vec![
             Constraint::Length(3),
             Constraint::Percentage(50),
-            Constraint::Percentage(50),
-        ])
+            Constraint::Min(3),
+        ];
+    if app.opt_info_cnt.is_some() {
+        constraints.push(Constraint::Length(3));
+    }
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints)
         .split(size);
 
     Tabs::default()
@@ -158,4 +175,11 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         )
         .style(Style::default().fg(Color::White).bg(Color::Black))
         .render(t, chunks[2]);
+    if let Some(percent) = app.opt_info_cnt {
+        Gauge::default()
+            .block(Block::default().borders(Borders::ALL).title("Progress"))
+            .style(Style::default().fg(Color::Black).bg(Color::White).modifier(Modifier::ITALIC))
+            .percent(percent)
+            .render(t, chunks[3]);
+    }
 }
