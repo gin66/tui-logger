@@ -434,7 +434,7 @@ pub struct TuiLoggerTargetWidget<'b> {
     style_off: Option<Style>,
     highlight_style: Style,
     state: Rc<RefCell<TuiWidgetInnerState>>,
-    targets: Rc<RefCell<Vec<String>>>,
+    targets: Vec<String>,
     event_dispatcher: Option<Rc<RefCell<Dispatcher<Event>>>>,
 }
 impl<'b> Default for TuiLoggerTargetWidget<'b> {
@@ -448,7 +448,7 @@ impl<'b> Default for TuiLoggerTargetWidget<'b> {
             style_show: Style::default().modifier(Modifier::REVERSED),
             highlight_style: Style::default().modifier(Modifier::REVERSED),
             state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
-            targets: Rc::new(RefCell::new(vec![])),
+            targets: vec![], 
             event_dispatcher: None,
         }
     }
@@ -528,7 +528,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         }
         self
     }
-    fn add_to_dispatcher(&self) {
+    fn add_to_dispatcher(&mut self) {
         if let Some(ref dispatcher) = self.event_dispatcher {
             let state = self.state.clone();
             if state.borrow().hide_off {
@@ -550,7 +550,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     }
                 });
             }
-            if self.targets.borrow().len() > 0 {
+            if self.targets.len() > 0 {
                 let state = self.state.clone();
                 if self.state.borrow().selected.is_none() {
                     dispatcher.borrow_mut().add_listener(move |evt| {
@@ -563,7 +563,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     });
                 } else {
                     let selected = self.state.borrow().selected.unwrap();
-                    let max_selected = self.targets.borrow().len();
+                    let max_selected = self.targets.len();
                     if selected > 0 {
                         let state = state.clone();
                         dispatcher.borrow_mut().add_listener(move |evt| {
@@ -589,7 +589,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                 }
                 if self.state.borrow().selected.is_some() {
                     let selected = self.state.borrow().selected.unwrap();
-                    let t = self.targets.borrow()[selected].clone();
+                    let t = self.targets[selected].clone();
                     let (more, less) = if let Some(levelfilter) = self.state.borrow().config.get(&t)
                     {
                         advance_levelfilter(levelfilter)
@@ -608,7 +608,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                             false
                         }
                     });
-                    let t = self.targets.borrow()[selected].clone();
+                    let t = self.targets[selected].clone();
                     let (more, less) =
                         if let Some(levelfilter) = TUI_LOGGER.inner.lock().targets.get(&t) {
                             advance_levelfilter(levelfilter)
@@ -632,7 +632,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
     }
 }
 impl<'b> Widget for TuiLoggerTargetWidget<'b> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
         let list_area = match self.block {
             Some(ref b) => {
                 b.render(area, buf);
@@ -659,25 +659,25 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             {
                 let ref mut targets = &mut state.config;
                 targets.merge(hot_targets);
-                self.targets.borrow_mut().clear();
+                self.targets.clear();
                 for (t, levelfilter) in targets.iter() {
                     if hide_off {
                         if levelfilter == &LevelFilter::Off {
                             continue;
                         }
                     }
-                    self.targets.borrow_mut().push(t.clone());
+                    self.targets.push(t.clone());
                 }
-                self.targets.borrow_mut().sort();
+                self.targets.sort();
             }
             if let Some(sel) = selected {
-                if sel >= self.targets.borrow().len() {
+                if sel >= self.targets.len() {
                     state.selected = None;
                     selected = None;
                 }
             }
-            let list_height = (list_area.height as usize).min(self.targets.borrow().len());
-            let offset = if list_height > self.targets.borrow().len() {
+            let list_height = (list_area.height as usize).min(self.targets.len());
+            let offset = if list_height > self.targets.len() {
                 0
             } else {
                 if let Some(sel) = selected {
@@ -686,8 +686,8 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                         // selected is below visible list range => make it the bottom
                         sel - list_height + 1
                     } else {
-                        if sel.min(offset) + list_height - 1 >= self.targets.borrow().len() {
-                            self.targets.borrow().len() - list_height
+                        if sel.min(offset) + list_height - 1 >= self.targets.len() {
+                            self.targets.len() - list_height
                         } else {
                             sel.min(offset)
                         }
@@ -700,7 +700,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
 
             let ref targets = &state.config;
             for i in 0..list_height {
-                let t = &self.targets.borrow()[i + offset];
+                let t = &self.targets[i + offset];
                 let hot_level_filter = hot_targets.get(&t).unwrap();
                 let level_filter = targets.get(&t).unwrap();
                 for (j, sym, lev) in vec![
