@@ -112,12 +112,10 @@ use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
 use termion::event::*;
-use tui::backend::Backend;
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Modifier, Style};
 use tui::widgets::{Block, Borders, Widget};
-use tui::Frame;
 
 mod circular;
 mod dispatcher;
@@ -450,81 +448,81 @@ impl<'b> Default for TuiLoggerTargetWidget<'b> {
             style_show: Style::default().modifier(Modifier::REVERSED),
             highlight_style: Style::default().modifier(Modifier::REVERSED),
             state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
-            targets: vec![],
+            targets: vec![], 
             event_dispatcher: None,
         }
     }
 }
 impl<'b> TuiLoggerTargetWidget<'b> {
-    pub fn block(&'b mut self, block: Block<'b>) -> &mut TuiLoggerTargetWidget<'b> {
+    pub fn block(mut self, block: Block<'b>) -> TuiLoggerTargetWidget<'b> {
         self.block = Some(block);
         self
     }
-    fn opt_style(&'b mut self, style: Option<Style>) -> &mut TuiLoggerTargetWidget<'b> {
+    fn opt_style(mut self, style: Option<Style>) -> TuiLoggerTargetWidget<'b> {
         if let Some(s) = style {
             self.style = s;
         }
         self
     }
-    fn opt_style_off(&'b mut self, style: Option<Style>) -> &mut TuiLoggerTargetWidget<'b> {
+    fn opt_style_off(mut self, style: Option<Style>) -> TuiLoggerTargetWidget<'b> {
         if style.is_some() {
             self.style_off = style;
         }
         self
     }
-    fn opt_style_hide(&'b mut self, style: Option<Style>) -> &mut TuiLoggerTargetWidget<'b> {
+    fn opt_style_hide(mut self, style: Option<Style>) -> TuiLoggerTargetWidget<'b> {
         if let Some(s) = style {
             self.style_hide = s;
         }
         self
     }
-    fn opt_style_show(&'b mut self, style: Option<Style>) -> &mut TuiLoggerTargetWidget<'b> {
+    fn opt_style_show(mut self, style: Option<Style>) -> TuiLoggerTargetWidget<'b> {
         if let Some(s) = style {
             self.style_show = s;
         }
         self
     }
-    fn opt_highlight_style(&'b mut self, style: Option<Style>) -> &mut TuiLoggerTargetWidget<'b> {
+    fn opt_highlight_style(mut self, style: Option<Style>) -> TuiLoggerTargetWidget<'b> {
         if let Some(s) = style {
             self.highlight_style = s;
         }
         self
     }
-    pub fn style(&'b mut self, style: Style) -> &mut TuiLoggerTargetWidget<'b> {
+    pub fn style(mut self, style: Style) -> TuiLoggerTargetWidget<'b> {
         self.style = style;
         self
     }
-    pub fn style_off(&'b mut self, style: Style) -> &mut TuiLoggerTargetWidget<'b> {
+    pub fn style_off(mut self, style: Style) -> TuiLoggerTargetWidget<'b> {
         self.style_off = Some(style);
         self
     }
-    pub fn style_hide(&'b mut self, style: Style) -> &mut TuiLoggerTargetWidget<'b> {
+    pub fn style_hide(mut self, style: Style) -> TuiLoggerTargetWidget<'b> {
         self.style_hide = style;
         self
     }
-    pub fn style_show(&'b mut self, style: Style) -> &mut TuiLoggerTargetWidget<'b> {
+    pub fn style_show(mut self, style: Style) -> TuiLoggerTargetWidget<'b> {
         self.style_show = style;
         self
     }
-    pub fn highlight_style(&'b mut self, style: Style) -> &mut TuiLoggerTargetWidget<'b> {
+    pub fn highlight_style(mut self, style: Style) -> TuiLoggerTargetWidget<'b> {
         self.highlight_style = style;
         self
     }
     fn inner_state(
-        &'b mut self,
+        mut self,
         state: Rc<RefCell<TuiWidgetInnerState>>,
-    ) -> &mut TuiLoggerTargetWidget<'b> {
+    ) -> TuiLoggerTargetWidget<'b> {
         self.state = state.clone();
         self
     }
-    pub fn state(&'b mut self, state: &TuiWidgetState) -> &mut TuiLoggerTargetWidget<'b> {
+    pub fn state(mut self, state: &TuiWidgetState) -> TuiLoggerTargetWidget<'b> {
         self.state = state.inner.clone();
         self
     }
     fn opt_dispatcher(
-        &mut self,
+        mut self,
         dispatcher: Option<Rc<RefCell<Dispatcher<Event>>>>,
-    ) -> &mut TuiLoggerTargetWidget<'b> {
+    ) -> TuiLoggerTargetWidget<'b> {
         if let Some(d) = dispatcher {
             self.event_dispatcher = Some(d.clone());
         }
@@ -634,10 +632,10 @@ impl<'b> TuiLoggerTargetWidget<'b> {
     }
 }
 impl<'b> Widget for TuiLoggerTargetWidget<'b> {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
         let list_area = match self.block {
-            Some(ref mut b) => {
-                b.draw(area, buf);
+            Some(ref b) => {
+                b.render(area, buf);
                 b.inner(area)
             }
             None => area,
@@ -645,7 +643,8 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        self.background(list_area.clone(), buf, self.style.bg);
+        //self.background(list_area.clone(), buf, self.style.bg);
+        buf.set_background(list_area.clone(), self.style.bg);
 
         let la_left = list_area.left();
         let la_top = list_area.top();
@@ -747,9 +746,9 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
 }
 impl<'b> EventListener<Event> for TuiLoggerTargetWidget<'b> {
     fn dispatcher(
-        &mut self,
+        mut self,
         dispatcher: Rc<RefCell<Dispatcher<Event>>>,
-    ) -> &mut TuiLoggerTargetWidget<'b> {
+    ) -> TuiLoggerTargetWidget<'b> {
         self.event_dispatcher = Some(dispatcher.clone());
         self
     }
@@ -785,74 +784,74 @@ impl<'b> Default for TuiLoggerWidget<'b> {
     }
 }
 impl<'b> TuiLoggerWidget<'b> {
-    pub fn block(&'b mut self, block: Block<'b>) -> &mut TuiLoggerWidget<'b> {
+    pub fn block(mut self, block: Block<'b>) -> TuiLoggerWidget<'b> {
         self.block = Some(block);
         self
     }
-    fn opt_style(&'b mut self, style: Option<Style>) -> &mut TuiLoggerWidget<'b> {
+    fn opt_style(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
         if let Some(s) = style {
             self.style = s;
         }
         self
     }
-    fn opt_style_error(&'b mut self, style: Option<Style>) -> &mut TuiLoggerWidget<'b> {
+    fn opt_style_error(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
         if style.is_some() {
             self.style_error = style;
         }
         self
     }
-    fn opt_style_warn(&'b mut self, style: Option<Style>) -> &mut TuiLoggerWidget<'b> {
+    fn opt_style_warn(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
         if style.is_some() {
             self.style_warn = style;
         }
         self
     }
-    fn opt_style_info(&'b mut self, style: Option<Style>) -> &mut TuiLoggerWidget<'b> {
+    fn opt_style_info(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
         if style.is_some() {
             self.style_info = style;
         }
         self
     }
-    fn opt_style_trace(&'b mut self, style: Option<Style>) -> &mut TuiLoggerWidget<'b> {
+    fn opt_style_trace(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
         if style.is_some() {
             self.style_trace = style;
         }
         self
     }
-    fn opt_style_debug(&'b mut self, style: Option<Style>) -> &mut TuiLoggerWidget<'b> {
+    fn opt_style_debug(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
         if style.is_some() {
             self.style_debug = style;
         }
         self
     }
-    pub fn style(&'b mut self, style: Style) -> &mut TuiLoggerWidget<'b> {
+    pub fn style(mut self, style: Style) -> TuiLoggerWidget<'b> {
         self.style = style;
         self
     }
-    pub fn style_error(&'b mut self, style: Style) -> &mut TuiLoggerWidget<'b> {
+    pub fn style_error(mut self, style: Style) -> TuiLoggerWidget<'b> {
         self.style_error = Some(style);
         self
     }
-    pub fn style_warn(&'b mut self, style: Style) -> &mut TuiLoggerWidget<'b> {
+    pub fn style_warn(mut self, style: Style) -> TuiLoggerWidget<'b> {
         self.style_warn = Some(style);
         self
     }
-    pub fn style_info(&'b mut self, style: Style) -> &mut TuiLoggerWidget<'b> {
+    pub fn style_info(mut self, style: Style) -> TuiLoggerWidget<'b> {
         self.style_info = Some(style);
         self
     }
-    pub fn style_trace(&'b mut self, style: Style) -> &mut TuiLoggerWidget<'b> {
+    pub fn style_trace(mut self, style: Style) -> TuiLoggerWidget<'b> {
         self.style_trace = Some(style);
         self
     }
-    pub fn style_debug(&'b mut self, style: Style) -> &mut TuiLoggerWidget<'b> {
+    pub fn style_debug(mut self, style: Style) -> TuiLoggerWidget<'b> {
         self.style_debug = Some(style);
         self
     }
     fn inner_state(
-        &'b mut self,
+        mut self,
         state: Rc<RefCell<TuiWidgetInnerState>>,
-    ) -> &mut TuiLoggerWidget<'b> {
+    ) -> TuiLoggerWidget<'b> {
         self.state = state.clone();
         self
     }
@@ -862,10 +861,10 @@ impl<'b> TuiLoggerWidget<'b> {
     }
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
-    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let list_area = match self.block {
-            Some(ref mut b) => {
-                b.draw(area, buf);
+            Some(ref b) => {
+                b.render(area, buf);
                 b.inner(area)
             }
             None => area,
@@ -873,7 +872,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        self.background(list_area.clone(), buf, self.style.bg);
+        buf.set_background(list_area.clone(), self.style.bg);
 
         let state = self.state.borrow();
         let la_height = list_area.height as usize;
@@ -1003,72 +1002,67 @@ impl Default for TuiLoggerSmartWidget {
     }
 }
 impl TuiLoggerSmartWidget {
-    pub fn highlight_style(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn highlight_style(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.highlight_style = Some(style);
         self
     }
-    pub fn border_style(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn border_style(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.border_style = style;
         self
     }
-    pub fn style(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style(mut self, style: Style) ->  TuiLoggerSmartWidget {
         self.style = Some(style);
         self
     }
-    pub fn style_error(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_error(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_error = Some(style);
         self
     }
-    pub fn style_warn(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_warn(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_warn = Some(style);
         self
     }
-    pub fn style_info(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_info(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_info = Some(style);
         self
     }
-    pub fn style_trace(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_trace(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_trace = Some(style);
         self
     }
-    pub fn style_debug(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_debug(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_debug = Some(style);
         self
     }
-    pub fn style_off(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_off(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_off = Some(style);
         self
     }
-    pub fn style_hide(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_hide(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_hide = Some(style);
         self
     }
-    pub fn style_show(&mut self, style: Style) -> &mut TuiLoggerSmartWidget {
+    pub fn style_show(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style_show = Some(style);
         self
     }
-    pub fn state(&mut self, state: &TuiWidgetState) -> &mut TuiLoggerSmartWidget {
+    pub fn state(mut self, state: &TuiWidgetState) -> TuiLoggerSmartWidget {
         self.state = state.inner.clone();
         self
     }
 }
 impl EventListener<Event> for TuiLoggerSmartWidget {
     fn dispatcher(
-        &mut self,
+        mut self,
         dispatcher: Rc<RefCell<Dispatcher<Event>>>,
-    ) -> &mut TuiLoggerSmartWidget {
+    ) -> TuiLoggerSmartWidget {
         self.event_dispatcher = Some(dispatcher.clone());
         self
     }
 }
 impl Widget for TuiLoggerSmartWidget {
     /// Nothing to draw for combo widget
-    fn draw(&mut self, _area: Rect, _buf: &mut Buffer) {}
-    fn render<B>(&mut self, t: &mut Frame<B>, area: Rect)
-    where
-        Self: Sized,
-        B: Backend,
-    {
+    fn render(mut self, area: Rect, buf: &mut Buffer) { 
         let entries_s = {
             let mut tui_lock = TUI_LOGGER.inner.lock();
             let first_timestamp = {
@@ -1125,7 +1119,7 @@ impl Widget for TuiLoggerSmartWidget {
             }
         }
         if hide_target {
-            TuiLoggerWidget::default()
+           let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
                         .title(&self.title_log)
@@ -1139,8 +1133,8 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_info(self.style_info)
                 .opt_style_debug(self.style_debug)
                 .opt_style_trace(self.style_trace)
-                .inner_state(self.state.clone())
-                .render(t, area);
+                .inner_state(self.state.clone());
+            tui_lw.render(area, buf);
         } else {
             let mut width: usize = 0;
             {
@@ -1167,7 +1161,7 @@ impl Widget for TuiLoggerSmartWidget {
                     Constraint::Min(10),
                 ])
                 .split(area);
-            TuiLoggerTargetWidget::default()
+            let tui_ltw = TuiLoggerTargetWidget::default()
                 .block(
                     Block::default()
                         .title(&self.title_target)
@@ -1181,12 +1175,13 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_hide(self.style_hide)
                 .opt_style_show(self.style_show)
                 .inner_state(self.state.clone())
-                .opt_dispatcher(self.event_dispatcher.take())
-                .render(t, chunks[0]);
-            TuiLoggerWidget::default()
+                .opt_dispatcher(self.event_dispatcher.take());
+             tui_ltw.render(chunks[0], buf);
+             let title = format!("{}  [log={:.1}/s]", self.title_log, entries_s);
+            let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title(&format!("{}  [log={:.1}/s]", self.title_log, entries_s))
+                        .title(&title)
                         .title_style(self.style.unwrap_or(Style::default()))
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
@@ -1197,8 +1192,8 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_info(self.style_info)
                 .opt_style_debug(self.style_debug)
                 .opt_style_trace(self.style_trace)
-                .inner_state(self.state.clone())
-                .render(t, chunks[1]);
+                .inner_state(self.state.clone());
+             tui_lw.render(chunks[1], buf);
         }
     }
 }

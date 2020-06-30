@@ -16,7 +16,7 @@ use termion::screen::AlternateScreen;
 use tui::backend::{Backend, TermionBackend};
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, Gauge, Tabs, Widget};
+use tui::widgets::{Block, Borders, Gauge, Tabs};
 use tui::Frame;
 use tui::Terminal;
 use tui_logger::*;
@@ -135,7 +135,9 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         app.states.push(TuiWidgetState::new());
     }
 
-    Block::default().borders(Borders::ALL).render(t, size);
+    let block = Block::default().borders(Borders::ALL);
+    t.render_widget(block, size);
+
     let mut constraints = vec![
         Constraint::Length(3),
         Constraint::Percentage(50),
@@ -149,13 +151,14 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .constraints(constraints)
         .split(size);
 
-    Tabs::default()
+    let tabs = Tabs::default()
         .block(Block::default().borders(Borders::ALL))
         .titles(&tabs)
         .highlight_style(Style::default().modifier(Modifier::REVERSED))
-        .select(sel)
-        .render(t, chunks[0]);
-    TuiLoggerSmartWidget::default()
+        .select(sel);
+    t.render_widget(tabs, chunks[0]);
+
+    let tui_sm = TuiLoggerSmartWidget::default()
         .border_style(Style::default().fg(Color::Black))
         .style_error(Style::default().fg(Color::Red))
         .style_debug(Style::default().fg(Color::Green))
@@ -163,9 +166,9 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .style_trace(Style::default().fg(Color::Magenta))
         .style_info(Style::default().fg(Color::Cyan))
         .state(&mut app.states[sel])
-        .dispatcher(app.dispatcher.clone())
-        .render(t, chunks[1]);
-    TuiLoggerWidget::default()
+        .dispatcher(app.dispatcher.clone());
+    t.render_widget(tui_sm, chunks[1]);
+    let tui_w :TuiLoggerWidget = TuiLoggerWidget::default()
         .block(
             Block::default()
                 .title("Independent Tui Logger View")
@@ -173,10 +176,10 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
                 .border_style(Style::default().fg(Color::White).bg(Color::Black))
                 .borders(Borders::ALL),
         )
-        .style(Style::default().fg(Color::White).bg(Color::Black))
-        .render(t, chunks[2]);
+        .style(Style::default().fg(Color::White).bg(Color::Black));
+    t.render_widget(tui_w , chunks[2]);
     if let Some(percent) = app.opt_info_cnt {
-        Gauge::default()
+        let guage = Gauge::default()
             .block(Block::default().borders(Borders::ALL).title("Progress"))
             .style(
                 Style::default()
@@ -184,7 +187,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
                     .bg(Color::White)
                     .modifier(Modifier::ITALIC),
             )
-            .percent(percent)
-            .render(t, chunks[3]);
+            .percent(percent);
+        t.render_widget(guage, chunks[3]);
     }
 }

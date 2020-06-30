@@ -68,7 +68,7 @@ where
 /// The EventListener Trait is only a standard way to implement a tui widget, which can listen to events.
 pub trait EventListener<E: Debug> {
     /// Hand over a Dispatcher to the widget.
-    fn dispatcher(&mut self, dispatcher: Rc<RefCell<Dispatcher<E>>>) -> &mut Self;
+    fn dispatcher(self, dispatcher: Rc<RefCell<Dispatcher<E>>>) -> Self;
 }
 
 #[cfg(test)]
