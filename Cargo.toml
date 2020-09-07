@@ -13,11 +13,17 @@ keywords = ["tui", "log", "logger", "widget", "dispatcher"]
 [badges]
 travis-ci = { repository = "gin66/tui-logger" }
 
+[features]
+default = ["tui-termion"]
+tui-termion = ["tui/termion", "termion"]
+tui-crossterm = ["tui/crossterm", "crossterm"]
+
 [dependencies]
 log = "0.4"
 chrono = "0.4"
-tui = "0.10"
-termion = "1.5"
+tui = { version = "0.10", default-features = false }
+crossterm = { version = "0.17", optional = true }
+termion = { version = "1.5", optional = true }
 lazy_static = "1.0"
 fxhash = "0.2"
 parking_lot = "0.10"
