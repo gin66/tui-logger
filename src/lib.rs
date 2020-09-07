@@ -445,8 +445,8 @@ impl<'b> Default for TuiLoggerTargetWidget<'b> {
             style: Default::default(),
             style_off: None,
             style_hide: Style::default(),
-            style_show: Style::default().modifier(Modifier::REVERSED),
-            highlight_style: Style::default().modifier(Modifier::REVERSED),
+            style_show: Style::default().add_modifier(Modifier::REVERSED),
+            highlight_style: Style::default().add_modifier(Modifier::REVERSED),
             state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
             targets: vec![],
             event_dispatcher: None,
@@ -630,18 +630,18 @@ impl<'b> TuiLoggerTargetWidget<'b> {
 }
 impl<'b> Widget for TuiLoggerTargetWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
-        let list_area = match self.block {
-            Some(ref b) => {
+        buf.set_style(area, self.style);
+        let list_area = match self.block.take() {
+            Some(b) => {
+                let inner_area = b.inner(area);
                 b.render(area, buf);
-                b.inner(area)
+                inner_area
             }
             None => area,
         };
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        //self.background(list_area.clone(), buf, self.style.bg);
-        buf.set_background(list_area.clone(), self.style.bg);
 
         let la_left = list_area.left();
         let la_top = list_area.top();
@@ -708,7 +708,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     (4, "T", Level::Trace),
                 ] {
                     let mut cell = buf.get_mut(la_left + j, la_top + i as u16);
-                    cell.style = if *hot_level_filter >= lev {
+                    let cell_style = if *hot_level_filter >= lev {
                         if *level_filter >= lev {
                             self.style_show
                         } else {
@@ -722,6 +722,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                             continue;
                         }
                     };
+                    cell.set_style(cell_style);
                     cell.symbol = sym.to_string();
                 }
                 buf.set_stringn(la_left + 5, la_top + i as u16, &":", la_width, self.style);
@@ -855,18 +856,19 @@ impl<'b> TuiLoggerWidget<'b> {
     }
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        let list_area = match self.block {
-            Some(ref b) => {
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
+        buf.set_style(area, self.style);
+        let list_area = match self.block.take() {
+            Some(b) => {
+                let inner_area = b.inner(area);
                 b.render(area, buf);
-                b.inner(area)
+                inner_area
             }
             None => area,
         };
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        buf.set_background(list_area.clone(), self.style.bg);
 
         let state = self.state.borrow();
         let la_height = list_area.height as usize;
@@ -1113,8 +1115,7 @@ impl Widget for TuiLoggerSmartWidget {
             let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title(&self.title_log)
-                        .title_style(self.style.unwrap_or(Style::default()))
+                        .title(self.title_log.as_ref())
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1155,8 +1156,7 @@ impl Widget for TuiLoggerSmartWidget {
             let tui_ltw = TuiLoggerTargetWidget::default()
                 .block(
                     Block::default()
-                        .title(&self.title_target)
-                        .title_style(self.style.unwrap_or(Style::default()))
+                        .title(self.title_target.as_ref())
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1172,8 +1172,7 @@ impl Widget for TuiLoggerSmartWidget {
             let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title(&title)
-                        .title_style(self.style.unwrap_or(Style::default()))
+                        .title(title.as_ref())
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )

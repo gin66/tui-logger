@@ -111,7 +111,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
 }
 
 fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
-    let tabs = vec!["V1", "V2", "V3", "V4"];
+    let tabs: Vec<tui::text::Spans> = vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()];
     let sel = *app.selected_tab.borrow();
     let sel_tab = if sel + 1 < tabs.len() { sel + 1 } else { 0 };
     let sel_stab = if sel > 0 { sel - 1 } else { tabs.len() - 1 };
@@ -136,6 +136,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     }
 
     let block = Block::default().borders(Borders::ALL);
+    let inner_area = block.inner(size);
     t.render_widget(block, size);
 
     let mut constraints = vec![
@@ -149,17 +150,15 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(constraints)
-        .split(size);
+        .split(inner_area);
 
-    let tabs = Tabs::default()
+    let tabs = Tabs::new(tabs)
         .block(Block::default().borders(Borders::ALL))
-        .titles(&tabs)
-        .highlight_style(Style::default().modifier(Modifier::REVERSED))
+        .highlight_style(Style::default().add_modifier(Modifier::REVERSED))
         .select(sel);
     t.render_widget(tabs, chunks[0]);
 
     let tui_sm = TuiLoggerSmartWidget::default()
-        .border_style(Style::default().fg(Color::Black))
         .style_error(Style::default().fg(Color::Red))
         .style_debug(Style::default().fg(Color::Green))
         .style_warn(Style::default().fg(Color::Yellow))
@@ -172,7 +171,6 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .block(
             Block::default()
                 .title("Independent Tui Logger View")
-                .title_style(Style::default().fg(Color::White).bg(Color::Black))
                 .border_style(Style::default().fg(Color::White).bg(Color::Black))
                 .borders(Borders::ALL),
         )
@@ -181,11 +179,11 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     if let Some(percent) = app.opt_info_cnt {
         let guage = Gauge::default()
             .block(Block::default().borders(Borders::ALL).title("Progress"))
-            .style(
+            .gauge_style(
                 Style::default()
                     .fg(Color::Black)
                     .bg(Color::White)
-                    .modifier(Modifier::ITALIC),
+                    .add_modifier(Modifier::ITALIC),
             )
             .percent(percent);
         t.render_widget(guage, chunks[3]);
