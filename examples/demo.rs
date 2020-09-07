@@ -168,7 +168,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .state(&mut app.states[sel])
         .dispatcher(app.dispatcher.clone());
     t.render_widget(tui_sm, chunks[1]);
-    let tui_w :TuiLoggerWidget = TuiLoggerWidget::default()
+    let tui_w: TuiLoggerWidget = TuiLoggerWidget::default()
         .block(
             Block::default()
                 .title("Independent Tui Logger View")
@@ -177,7 +177,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
                 .borders(Borders::ALL),
         )
         .style(Style::default().fg(Color::White).bg(Color::Black));
-    t.render_widget(tui_w , chunks[2]);
+    t.render_widget(tui_w, chunks[2]);
     if let Some(percent) = app.opt_info_cnt {
         let guage = Gauge::default()
             .block(Block::default().borders(Borders::ALL).title("Progress"))
