@@ -22,6 +22,7 @@
 //! - [X] Smart Widget with dynamic event dispatcher for `termion` events (see demo code)
 //! - [X] Logging of enabled logs to file
 //! - [X] Event dispatcher for termion key events for smart/simple widget control
+//! - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 //! - [ ] Allow configuration of target dependent loglevel specifically for file logging
 //! - [ ] Avoid duplicating of target, module and filename in every log record
 //! - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
@@ -91,6 +92,10 @@
 //!
 //! For use of the widget please check examples/demo.rs
 //!
+//! ## `slog` support
+//!
+//! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
+//! it receives to the `tui-logger` widget
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -119,9 +124,11 @@ use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
 mod dispatcher;
+mod slog;
 
 pub use crate::circular::CircularBuffer;
 pub use crate::dispatcher::{Dispatcher, EventListener};
+pub use crate::slog::TuiSlogDrain;
 
 struct ExtLogRecord {
     timestamp: DateTime<Local>,
@@ -320,6 +327,10 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     log::set_logger(&*TUI_LOGGER)
 }
 
+pub fn slog_drain() -> TuiSlogDrain {
+    TuiSlogDrain
+}
+
 /// Set the depth of the hot buffer in order to avoid message loss.
 /// This is effective only after a call to move_events()
 pub fn set_hot_buffer_depth(depth: usize) {
@@ -448,7 +459,7 @@ impl<'b> Default for TuiLoggerTargetWidget<'b> {
             style_show: Style::default().modifier(Modifier::REVERSED),
             highlight_style: Style::default().modifier(Modifier::REVERSED),
             state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
-            targets: vec![], 
+            targets: vec![],
             event_dispatcher: None,
         }
     }
@@ -508,10 +519,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         self.highlight_style = style;
         self
     }
-    fn inner_state(
-        mut self,
-        state: Rc<RefCell<TuiWidgetInnerState>>,
-    ) -> TuiLoggerTargetWidget<'b> {
+    fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerTargetWidget<'b> {
         self.state = state.clone();
         self
     }
@@ -848,10 +856,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self.style_debug = Some(style);
         self
     }
-    fn inner_state(
-        mut self,
-        state: Rc<RefCell<TuiWidgetInnerState>>,
-    ) -> TuiLoggerWidget<'b> {
+    fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerWidget<'b> {
         self.state = state.clone();
         self
     }
@@ -1010,7 +1015,7 @@ impl TuiLoggerSmartWidget {
         self.border_style = style;
         self
     }
-    pub fn style(mut self, style: Style) ->  TuiLoggerSmartWidget {
+    pub fn style(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style = Some(style);
         self
     }
@@ -1052,17 +1057,14 @@ impl TuiLoggerSmartWidget {
     }
 }
 impl EventListener<Event> for TuiLoggerSmartWidget {
-    fn dispatcher(
-        mut self,
-        dispatcher: Rc<RefCell<Dispatcher<Event>>>,
-    ) -> TuiLoggerSmartWidget {
+    fn dispatcher(mut self, dispatcher: Rc<RefCell<Dispatcher<Event>>>) -> TuiLoggerSmartWidget {
         self.event_dispatcher = Some(dispatcher.clone());
         self
     }
 }
 impl Widget for TuiLoggerSmartWidget {
     /// Nothing to draw for combo widget
-    fn render(mut self, area: Rect, buf: &mut Buffer) { 
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
         let entries_s = {
             let mut tui_lock = TUI_LOGGER.inner.lock();
             let first_timestamp = {
@@ -1119,7 +1121,7 @@ impl Widget for TuiLoggerSmartWidget {
             }
         }
         if hide_target {
-           let tui_lw = TuiLoggerWidget::default()
+            let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
                         .title(&self.title_log)
@@ -1176,8 +1178,8 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_show(self.style_show)
                 .inner_state(self.state.clone())
                 .opt_dispatcher(self.event_dispatcher.take());
-             tui_ltw.render(chunks[0], buf);
-             let title = format!("{}  [log={:.1}/s]", self.title_log, entries_s);
+            tui_ltw.render(chunks[0], buf);
+            let title = format!("{}  [log={:.1}/s]", self.title_log, entries_s);
             let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
@@ -1193,7 +1195,7 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_debug(self.style_debug)
                 .opt_style_trace(self.style_trace)
                 .inner_state(self.state.clone());
-             tui_lw.render(chunks[1], buf);
+            tui_lw.render(chunks[1], buf);
         }
     }
 }
