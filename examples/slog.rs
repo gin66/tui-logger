@@ -19,6 +19,7 @@ use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, Gauge, Tabs};
 use tui::Frame;
 use tui::Terminal;
+use tui::text::Spans;
 use tui_logger::*;
 
 struct App {
@@ -115,6 +116,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
 
 fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     let tabs = vec!["V1", "V2", "V3", "V4"];
+    let tabs = tabs.into_iter().map(|t| Spans::from(t)).collect::<Vec<_>>();
     let sel = *app.selected_tab.borrow();
     let sel_tab = if sel + 1 < tabs.len() { sel + 1 } else { 0 };
     let sel_stab = if sel > 0 { sel - 1 } else { tabs.len() - 1 };
@@ -154,10 +156,9 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .constraints(constraints)
         .split(size);
 
-    let tabs = Tabs::default()
+    let tabs = Tabs::new(tabs)
         .block(Block::default().borders(Borders::ALL))
-        .titles(&tabs)
-        .highlight_style(Style::default().modifier(Modifier::REVERSED))
+        .highlight_style(Style::default().add_modifier(Modifier::REVERSED))
         .select(sel);
     t.render_widget(tabs, chunks[0]);
 
@@ -175,7 +176,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .block(
             Block::default()
                 .title("Independent Tui Logger View")
-                .title_style(Style::default().fg(Color::White).bg(Color::Black))
+                //.title_style(Style::default().fg(Color::White).bg(Color::Black))
                 .border_style(Style::default().fg(Color::White).bg(Color::Black))
                 .borders(Borders::ALL),
         )
@@ -188,7 +189,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
                 Style::default()
                     .fg(Color::Black)
                     .bg(Color::White)
-                    .modifier(Modifier::ITALIC),
+                    .add_modifier(Modifier::ITALIC),
             )
             .percent(percent);
         t.render_widget(guage, chunks[3]);
