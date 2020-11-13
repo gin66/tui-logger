@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
 [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg)](https://deps.rs/repo/github/gin66/tui-logger)
-![Run tests](https://github.com/gin66/tui-logger/workflows/Run%20tests/badge.svg)
 ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg)
 
 ## Documentation
