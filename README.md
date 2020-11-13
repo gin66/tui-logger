@@ -108,3 +108,6 @@ tui-logger = { version = "0.4", default-features = false, features = ["tui-cross
 * [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 and v0.6.0
 * [Adam Sypniewski](https://github.com/ajsyp) for providing the patches to tui-rs v0.6.2
 * [James aka jklong](https://github.com/jklong) for providing the patch to tui-rs v0.7
+* [icy-ux](https://github.com/icy-ux) for adding slog support and example
+* [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
+
