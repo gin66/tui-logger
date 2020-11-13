@@ -1,6 +1,6 @@
 [package]
 name = "tui-logger"
-version = "0.4.7"
+version = "0.4.8"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
 edition = "2018"
 license = "MIT"
@@ -21,10 +21,10 @@ tui-crossterm = ["tui/crossterm", "crossterm"]
 [dependencies]
 log = "0.4"
 chrono = "0.4"
-tui = { version = "0.10", default-features = false }
-crossterm = { version = "0.17", optional = true }
+tui = { version = "0.12", default-features = false }
+crossterm = { version = "0.18", optional = true }
 termion = { version = "1.5", optional = true }
 lazy_static = "1.0"
 fxhash = "0.2"
-parking_lot = "0.10"
+parking_lot = "0"
 slog = "2.5"
