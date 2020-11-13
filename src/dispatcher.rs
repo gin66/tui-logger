@@ -76,12 +76,33 @@ mod tests {
     use crate::Dispatcher;
     use std::cell::RefCell;
     use std::rc::Rc;
+
+    #[cfg(feature = "tui-crossterm")]
+    use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+    #[cfg(feature = "tui-termion")]
     use termion::event::{Event, Key};
 
     fn make_queue(dispatcher: &mut Dispatcher<Event>, v: Rc<RefCell<u64>>) {
+        macro_rules! match_key {
+            ($ev:expr, $name:ident) => {{
+                let ev = $ev;
+                #[cfg(feature = "tui-crossterm")]
+                let m = matches!(
+                    ev,
+                    &Event::Key(KeyEvent {
+                        code: KeyCode::$name,
+                        modifiers: _,
+                    })
+                );
+                #[cfg(feature = "tui-termion")]
+                let m = ev == &Event::Key(Key::$name);
+                m
+            }};
+        }
+
         let vx = v.clone();
         dispatcher.add_listener(move |ev| {
-            if ev == &Event::Key(Key::Left) {
+            if match_key!(ev, Left) {
                 *vx.borrow_mut() += 1;
                 true
             } else {
@@ -90,7 +111,7 @@ mod tests {
         });
         let vx = v.clone();
         dispatcher.add_listener(move |ev| {
-            if ev == &Event::Key(Key::Left) {
+            if match_key!(ev, Left) {
                 *vx.borrow_mut() += 2;
                 true
             } else {
@@ -99,7 +120,7 @@ mod tests {
         });
         let vx = v.clone();
         dispatcher.add_listener(move |ev| {
-            if ev == &Event::Key(Key::Down) {
+            if match_key!(ev, Down) {
                 *vx.borrow_mut() += 4;
                 true
             } else {
@@ -110,27 +131,40 @@ mod tests {
 
     #[test]
     fn test_dispatch() {
+        macro_rules! gen_key {
+            ($name:ident) => {{
+                #[cfg(feature = "tui-crossterm")]
+                let ev = Event::Key(KeyEvent {
+                    code: KeyCode::$name,
+                    modifiers: KeyModifiers::NONE,
+                });
+                #[cfg(feature = "tui-termion")]
+                let ev = Event::Key(Key::$name);
+                ev
+            }};
+        }
+
         let v = Rc::new(RefCell::new(0));
 
         let mut dispatcher = crate::Dispatcher::<Event>::new();
         make_queue(&mut dispatcher, v.clone());
         assert_eq!(*v.borrow(), 0);
-        let processed = dispatcher.dispatch(&Event::Key(Key::Left));
+        let processed = dispatcher.dispatch(&gen_key!(Left));
         assert_eq!(processed, true);
         assert_eq!(*v.borrow(), 1);
 
         make_queue(&mut dispatcher, v.clone());
         assert_eq!(*v.borrow(), 1);
-        let processed = dispatcher.dispatch(&Event::Key(Key::Down));
+        let processed = dispatcher.dispatch(&gen_key!(Down));
         assert_eq!(processed, true);
         assert_eq!(*v.borrow(), 5);
 
         make_queue(&mut dispatcher, v.clone());
         assert_eq!(*v.borrow(), 5);
-        let processed = dispatcher.dispatch(&Event::Key(Key::Up));
+        let processed = dispatcher.dispatch(&gen_key!(Up));
         assert_eq!(processed, false);
         assert_eq!(*v.borrow(), 5);
-        let processed = dispatcher.dispatch(&Event::Key(Key::Down));
+        let processed = dispatcher.dispatch(&gen_key!(Down));
         assert_eq!(processed, true);
         assert_eq!(*v.borrow(), 9);
     }

@@ -22,6 +22,7 @@
 - [ ] Allow configuration of target dependent loglevel specifically for file logging
 - [ ] Avoid duplicating of target, module and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
+- [X] Support both `termion` and `crossterm` backends of `tui`
 
 ## Smart Widget
 
@@ -88,6 +89,16 @@ fn main() {
 ```
 
 For use of the widget please check examples/demo.rs
+
+## Using the `crossterm` backend
+
+Use these in `Cargo.toml`:
+
+```toml
+[dependencies]
+tui = { version = "0.10", default-features = false, features = ["crossterm"]}
+tui-logger = { version = "0.4", default-features = false, features = ["tui-crossterm"] }
+```
 
 ## THANKS TO
 

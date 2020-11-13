@@ -111,7 +111,6 @@ use std::rc::Rc;
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
-use termion::event::*;
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Modifier, Style};
@@ -119,6 +118,15 @@ use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
 mod dispatcher;
+
+#[cfg(feature = "tui-crossterm")]
+#[path = "event/crossterm_impl.rs"]
+mod event;
+#[cfg(feature = "tui-termion")]
+#[path = "event/termion_impl.rs"]
+mod event;
+
+use crate::event::Event;
 
 pub use crate::circular::CircularBuffer;
 pub use crate::dispatcher::{Dispatcher, EventListener};
@@ -445,10 +453,10 @@ impl<'b> Default for TuiLoggerTargetWidget<'b> {
             style: Default::default(),
             style_off: None,
             style_hide: Style::default(),
-            style_show: Style::default().modifier(Modifier::REVERSED),
-            highlight_style: Style::default().modifier(Modifier::REVERSED),
+            style_show: Style::default().add_modifier(Modifier::REVERSED),
+            highlight_style: Style::default().add_modifier(Modifier::REVERSED),
             state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
-            targets: vec![], 
+            targets: vec![],
             event_dispatcher: None,
         }
     }
@@ -508,10 +516,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         self.highlight_style = style;
         self
     }
-    fn inner_state(
-        mut self,
-        state: Rc<RefCell<TuiWidgetInnerState>>,
-    ) -> TuiLoggerTargetWidget<'b> {
+    fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerTargetWidget<'b> {
         self.state = state.clone();
         self
     }
@@ -533,7 +538,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
             let state = self.state.clone();
             if state.borrow().hide_off {
                 dispatcher.borrow_mut().add_listener(move |evt| {
-                    if &Event::Key(Key::Char(' ')) == evt {
+                    if event::is_space_key(evt) {
                         state.borrow_mut().hide_off = false;
                         true
                     } else {
@@ -542,7 +547,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                 });
             } else {
                 dispatcher.borrow_mut().add_listener(move |evt| {
-                    if &Event::Key(Key::Char(' ')) == evt {
+                    if event::is_space_key(evt) {
                         state.borrow_mut().hide_off = true;
                         true
                     } else {
@@ -554,7 +559,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                 let state = self.state.clone();
                 if self.state.borrow().selected.is_none() {
                     dispatcher.borrow_mut().add_listener(move |evt| {
-                        if &Event::Key(Key::Down) == evt || &Event::Key(Key::Up) == evt {
+                        if event::is_down_key(evt) || event::is_up_key(evt) {
                             state.borrow_mut().selected = Some(0);
                             true
                         } else {
@@ -567,7 +572,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     if selected > 0 {
                         let state = state.clone();
                         dispatcher.borrow_mut().add_listener(move |evt| {
-                            if &Event::Key(Key::Up) == evt {
+                            if event::is_up_key(evt) {
                                 state.borrow_mut().selected = Some(selected - 1);
                                 true
                             } else {
@@ -578,7 +583,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     if selected + 1 < max_selected {
                         let state = self.state.clone();
                         dispatcher.borrow_mut().add_listener(move |evt| {
-                            if &Event::Key(Key::Down) == evt {
+                            if event::is_down_key(evt) {
                                 state.borrow_mut().selected = Some(selected + 1);
                                 true
                             } else {
@@ -598,10 +603,10 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     };
                     let state = self.state.clone();
                     dispatcher.borrow_mut().add_listener(move |evt| {
-                        if &Event::Key(Key::Left) == evt {
+                        if event::is_left_key(evt) {
                             state.borrow_mut().config.set(&t, less);
                             true
-                        } else if &Event::Key(Key::Right) == evt {
+                        } else if event::is_right_key(evt) {
                             state.borrow_mut().config.set(&t, more);
                             true
                         } else {
@@ -616,10 +621,10 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                             return;
                         };
                     dispatcher.borrow_mut().add_listener(move |evt| {
-                        if &Event::Key(Key::Char('-')) == evt {
+                        if event::is_minus_key(evt) {
                             set_level_for_target(&t, less);
                             true
-                        } else if &Event::Key(Key::Char('+')) == evt {
+                        } else if event::is_plus_key(evt) {
                             set_level_for_target(&t, more);
                             true
                         } else {
@@ -633,18 +638,18 @@ impl<'b> TuiLoggerTargetWidget<'b> {
 }
 impl<'b> Widget for TuiLoggerTargetWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
-        let list_area = match self.block {
-            Some(ref b) => {
+        buf.set_style(area, self.style);
+        let list_area = match self.block.take() {
+            Some(b) => {
+                let inner_area = b.inner(area);
                 b.render(area, buf);
-                b.inner(area)
+                inner_area
             }
             None => area,
         };
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        //self.background(list_area.clone(), buf, self.style.bg);
-        buf.set_background(list_area.clone(), self.style.bg);
 
         let la_left = list_area.left();
         let la_top = list_area.top();
@@ -711,7 +716,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     (4, "T", Level::Trace),
                 ] {
                     let mut cell = buf.get_mut(la_left + j, la_top + i as u16);
-                    cell.style = if *hot_level_filter >= lev {
+                    let cell_style = if *hot_level_filter >= lev {
                         if *level_filter >= lev {
                             self.style_show
                         } else {
@@ -725,6 +730,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                             continue;
                         }
                     };
+                    cell.set_style(cell_style);
                     cell.symbol = sym.to_string();
                 }
                 buf.set_stringn(la_left + 5, la_top + i as u16, &":", la_width, self.style);
@@ -848,10 +854,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self.style_debug = Some(style);
         self
     }
-    fn inner_state(
-        mut self,
-        state: Rc<RefCell<TuiWidgetInnerState>>,
-    ) -> TuiLoggerWidget<'b> {
+    fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerWidget<'b> {
         self.state = state.clone();
         self
     }
@@ -861,18 +864,19 @@ impl<'b> TuiLoggerWidget<'b> {
     }
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        let list_area = match self.block {
-            Some(ref b) => {
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
+        buf.set_style(area, self.style);
+        let list_area = match self.block.take() {
+            Some(b) => {
+                let inner_area = b.inner(area);
                 b.render(area, buf);
-                b.inner(area)
+                inner_area
             }
             None => area,
         };
         if list_area.width < 8 || list_area.height < 1 {
             return;
         }
-        buf.set_background(list_area.clone(), self.style.bg);
 
         let state = self.state.borrow();
         let la_height = list_area.height as usize;
@@ -1010,7 +1014,7 @@ impl TuiLoggerSmartWidget {
         self.border_style = style;
         self
     }
-    pub fn style(mut self, style: Style) ->  TuiLoggerSmartWidget {
+    pub fn style(mut self, style: Style) -> TuiLoggerSmartWidget {
         self.style = Some(style);
         self
     }
@@ -1052,17 +1056,14 @@ impl TuiLoggerSmartWidget {
     }
 }
 impl EventListener<Event> for TuiLoggerSmartWidget {
-    fn dispatcher(
-        mut self,
-        dispatcher: Rc<RefCell<Dispatcher<Event>>>,
-    ) -> TuiLoggerSmartWidget {
+    fn dispatcher(mut self, dispatcher: Rc<RefCell<Dispatcher<Event>>>) -> TuiLoggerSmartWidget {
         self.event_dispatcher = Some(dispatcher.clone());
         self
     }
 }
 impl Widget for TuiLoggerSmartWidget {
     /// Nothing to draw for combo widget
-    fn render(mut self, area: Rect, buf: &mut Buffer) { 
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
         let entries_s = {
             let mut tui_lock = TUI_LOGGER.inner.lock();
             let first_timestamp = {
@@ -1100,7 +1101,7 @@ impl Widget for TuiLoggerSmartWidget {
             let state = self.state.clone();
             if hide_target {
                 dispatcher.borrow_mut().add_listener(move |evt| {
-                    if &Event::Key(Key::Char('h')) == evt {
+                    if event::is_h_key(evt) {
                         state.borrow_mut().hide_target = false;
                         true
                     } else {
@@ -1109,7 +1110,7 @@ impl Widget for TuiLoggerSmartWidget {
                 });
             } else {
                 dispatcher.borrow_mut().add_listener(move |evt| {
-                    if &Event::Key(Key::Char('h')) == evt {
+                    if event::is_h_key(evt) {
                         state.borrow_mut().hide_target = true;
                         true
                     } else {
@@ -1119,11 +1120,10 @@ impl Widget for TuiLoggerSmartWidget {
             }
         }
         if hide_target {
-           let tui_lw = TuiLoggerWidget::default()
+            let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title(&self.title_log)
-                        .title_style(self.style.unwrap_or(Style::default()))
+                        .title(self.title_log.as_ref())
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1164,8 +1164,7 @@ impl Widget for TuiLoggerSmartWidget {
             let tui_ltw = TuiLoggerTargetWidget::default()
                 .block(
                     Block::default()
-                        .title(&self.title_target)
-                        .title_style(self.style.unwrap_or(Style::default()))
+                        .title(self.title_target.as_ref())
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1176,13 +1175,12 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_show(self.style_show)
                 .inner_state(self.state.clone())
                 .opt_dispatcher(self.event_dispatcher.take());
-             tui_ltw.render(chunks[0], buf);
-             let title = format!("{}  [log={:.1}/s]", self.title_log, entries_s);
+            tui_ltw.render(chunks[0], buf);
+            let title = format!("{}  [log={:.1}/s]", self.title_log, entries_s);
             let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title(&title)
-                        .title_style(self.style.unwrap_or(Style::default()))
+                        .title(title.as_ref())
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1193,7 +1191,7 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_debug(self.style_debug)
                 .opt_style_trace(self.style_trace)
                 .inner_state(self.state.clone());
-             tui_lw.render(chunks[1], buf);
+            tui_lw.render(chunks[1], buf);
         }
     }
 }
