@@ -22,6 +22,7 @@
 //! - [X] Smart Widget with dynamic event dispatcher for `termion` events (see demo code)
 //! - [X] Logging of enabled logs to file
 //! - [X] Event dispatcher for termion key events for smart/simple widget control
+//! - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 //! - [ ] Allow configuration of target dependent loglevel specifically for file logging
 //! - [ ] Avoid duplicating of target, module and filename in every log record
 //! - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
@@ -91,6 +92,10 @@
 //!
 //! For use of the widget please check examples/demo.rs
 //!
+//! ## `slog` support
+//!
+//! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
+//! it receives to the `tui-logger` widget
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -118,6 +123,7 @@ use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
 mod dispatcher;
+mod slog;
 
 #[cfg(feature = "tui-crossterm")]
 #[path = "event/crossterm_impl.rs"]
@@ -130,6 +136,7 @@ use crate::event::Event;
 
 pub use crate::circular::CircularBuffer;
 pub use crate::dispatcher::{Dispatcher, EventListener};
+pub use crate::slog::TuiSlogDrain;
 
 struct ExtLogRecord {
     timestamp: DateTime<Local>,
@@ -326,6 +333,10 @@ lazy_static! {
 pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     log::set_max_level(max_level);
     log::set_logger(&*TUI_LOGGER)
+}
+
+pub fn slog_drain() -> TuiSlogDrain {
+    TuiSlogDrain
 }
 
 /// Set the depth of the hot buffer in order to avoid message loss.
