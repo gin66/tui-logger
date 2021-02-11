@@ -865,12 +865,10 @@ impl<'b> TuiLoggerWidget<'b> {
         self.style_debug = Some(style);
         self
     }
-
     fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerWidget<'b> {
         self.state = state.clone();
         self
     }
-
     pub fn state(&mut self, state: &TuiWidgetState) -> &mut TuiLoggerWidget<'b> {
         self.state = state.inner.clone();
         self
