@@ -869,7 +869,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self.state = state.clone();
         self
     }
-    pub fn state(&'b mut self, state: &TuiWidgetState) -> &mut TuiLoggerWidget<'b> {
+    pub fn state(&mut self, state: &TuiWidgetState) -> &mut TuiLoggerWidget<'b> {
         self.state = state.inner.clone();
         self
     }
