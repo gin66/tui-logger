@@ -677,9 +677,8 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                 targets.merge(hot_targets);
                 self.targets.clear();
                 for (t, levelfilter) in targets.iter() {
-                    if hide_off 
-                        && levelfilter == &LevelFilter::Off {
-                            continue;
+                    if hide_off && levelfilter == &LevelFilter::Off {
+                        continue;
                     }
                     self.targets.push(t.clone());
                 }
@@ -695,17 +694,17 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             let offset = if list_height > self.targets.len() {
                 0
             } else if let Some(sel) = selected {
-                    // sel must be < self.target.len() from above test
-                    if sel >= offset + list_height {
-                        // selected is below visible list range => make it the bottom
-                        sel - list_height + 1
-                    } else if sel.min(offset) + list_height > self.targets.len() {
-                            self.targets.len() - list_height
-                        } else {
-                            sel.min(offset)
-                    }
+                // sel must be < self.target.len() from above test
+                if sel >= offset + list_height {
+                    // selected is below visible list range => make it the bottom
+                    sel - list_height + 1
+                } else if sel.min(offset) + list_height > self.targets.len() {
+                    self.targets.len() - list_height
                 } else {
-                    0
+                    sel.min(offset)
+                }
+            } else {
+                0
             };
             state.offset = offset;
 
@@ -729,10 +728,10 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                             self.style_hide
                         }
                     } else if let Some(style_off) = self.style_off {
-                            style_off
-                        } else {
-                            cell.symbol = " ".to_string();
-                            continue;
+                        style_off
+                    } else {
+                        cell.symbol = " ".to_string();
+                        continue;
                     };
                     cell.set_style(cell_style);
                     cell.symbol = sym.to_string();
@@ -1147,9 +1146,8 @@ impl Widget for TuiLoggerSmartWidget {
                     let targets = &mut state.config;
                     targets.merge(hot_targets);
                     for (t, levelfilter) in targets.iter() {
-                        if hide_off 
-                            && levelfilter == &LevelFilter::Off {
-                                continue;
+                        if hide_off && levelfilter == &LevelFilter::Off {
+                            continue;
                         }
                         width = width.max(t.len())
                     }

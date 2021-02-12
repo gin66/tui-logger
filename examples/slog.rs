@@ -16,10 +16,10 @@ use termion::screen::AlternateScreen;
 use tui::backend::{Backend, TermionBackend};
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
+use tui::text::Spans;
 use tui::widgets::{Block, Borders, Gauge, Tabs};
 use tui::Frame;
 use tui::Terminal;
-use tui::text::Spans;
 use tui_logger::*;
 
 struct App {
