@@ -1,4 +1,3 @@
-use std;
 use std::iter;
 /// CircularBuffer is used to store the last elements of an endless sequence.
 /// Oldest elements will be overwritten. The implementation focus on
@@ -69,6 +68,9 @@ impl<T> CircularBuffer<T> {
     /// Return the number of elements present in the buffer
     pub fn len(&self) -> usize {
         self.buffer.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.buffer.is_empty()
     }
     /// Push a new element into the buffer.
     /// Until the capacity is reached, elements are pushed.

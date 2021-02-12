@@ -13,7 +13,7 @@ struct KSV<W: io::Write> {
 
 impl<W: io::Write> KSV<W> {
     fn new(io: W) -> Self {
-        KSV { io: io }
+        KSV { io }
     }
 
     fn into_inner(self) -> W {
@@ -64,6 +64,7 @@ impl<'a> fmt::Display for LazyLogString<'a> {
     }
 }
 
+#[allow(clippy::needless_doctest_main)]
 ///  slog-compatible Drain that feeds messages to `tui-logger`.
 ///
 ///  ## Basic usage:

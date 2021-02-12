@@ -15,6 +15,7 @@ use std::rc::Rc;
 /// dispatcher.add_listener(|ev| { println!("called"); true });
 /// dispatcher.dispatch(&Event::Key(Key::Up));
 /// ```
+#[derive(Default)]
 pub struct Dispatcher<E: Debug> {
     map: Vec<Box<dyn Fn(&E) -> bool>>,
 }

@@ -100,7 +100,6 @@
 extern crate log;
 #[macro_use]
 extern crate lazy_static;
-use fxhash;
 
 use std::cell::RefCell;
 use std::collections::hash_map::Iter;
@@ -148,13 +147,13 @@ struct ExtLogRecord {
 }
 
 fn advance_levelfilter(levelfilter: &LevelFilter) -> (LevelFilter, LevelFilter) {
-    match levelfilter {
-        &LevelFilter::Trace => (LevelFilter::Trace, LevelFilter::Debug),
-        &LevelFilter::Debug => (LevelFilter::Trace, LevelFilter::Info),
-        &LevelFilter::Info => (LevelFilter::Debug, LevelFilter::Warn),
-        &LevelFilter::Warn => (LevelFilter::Info, LevelFilter::Error),
-        &LevelFilter::Error => (LevelFilter::Warn, LevelFilter::Off),
-        &LevelFilter::Off => (LevelFilter::Error, LevelFilter::Off),
+    match *levelfilter {
+        LevelFilter::Trace => (LevelFilter::Trace, LevelFilter::Debug),
+        LevelFilter::Debug => (LevelFilter::Trace, LevelFilter::Info),
+        LevelFilter::Info => (LevelFilter::Debug, LevelFilter::Warn),
+        LevelFilter::Warn => (LevelFilter::Info, LevelFilter::Error),
+        LevelFilter::Error => (LevelFilter::Warn, LevelFilter::Off),
+        LevelFilter::Off => (LevelFilter::Error, LevelFilter::Off),
     }
 }
 
@@ -164,6 +163,7 @@ fn advance_levelfilter(levelfilter: &LevelFilter) -> (LevelFilter, LevelFilter) 
 /// a widget's LevelConfig. In order to detect changes, the generation
 /// of the hash table is compared with any previous copied table.
 /// On every change the generation is incremented.
+#[derive(Default)]
 pub struct LevelConfig {
     config: HashMap<String, LevelFilter>,
     generation: u64,
@@ -359,7 +359,6 @@ pub fn set_log_file(fname: &str) -> io::Result<()> {
         .open(fname)
         .map(|file| {
             TUI_LOGGER.inner.lock().dump = Some(file);
-            ()
         })
 }
 
@@ -404,6 +403,7 @@ impl Log for TuiLogger {
     fn flush(&self) {}
 }
 
+#[derive(Default)]
 struct TuiWidgetInnerState {
     config: LevelConfig,
     selected: Option<usize>,
@@ -424,6 +424,7 @@ impl TuiWidgetInnerState {
 }
 
 /// This struct contains the shared state of a TuiLoggerWidget and a TuiLoggerTargetWidget.
+#[derive(Default)]
 pub struct TuiWidgetState {
     inner: Rc<RefCell<TuiWidgetInnerState>>,
 }
@@ -528,7 +529,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         self
     }
     fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerTargetWidget<'b> {
-        self.state = state.clone();
+        self.state = state;
         self
     }
     pub fn state(mut self, state: &TuiWidgetState) -> TuiLoggerTargetWidget<'b> {
@@ -540,7 +541,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         dispatcher: Option<Rc<RefCell<Dispatcher<Event>>>>,
     ) -> TuiLoggerTargetWidget<'b> {
         if let Some(d) = dispatcher {
-            self.event_dispatcher = Some(d.clone());
+            self.event_dispatcher = Some(d);
         }
         self
     }
@@ -566,7 +567,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     }
                 });
             }
-            if self.targets.len() > 0 {
+            if !self.targets.is_empty() {
                 let state = self.state.clone();
                 if self.state.borrow().selected.is_none() {
                     dispatcher.borrow_mut().add_listener(move |evt| {
@@ -581,7 +582,6 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     let selected = self.state.borrow().selected.unwrap();
                     let max_selected = self.targets.len();
                     if selected > 0 {
-                        let state = state.clone();
                         dispatcher.borrow_mut().add_listener(move |evt| {
                             if event::is_up_key(evt) {
                                 state.borrow_mut().selected = Some(selected - 1);
@@ -673,14 +673,13 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             let hide_off = state.hide_off;
             let offset = state.offset;
             {
-                let ref mut targets = &mut state.config;
+                let targets = &mut state.config;
                 targets.merge(hot_targets);
                 self.targets.clear();
                 for (t, levelfilter) in targets.iter() {
-                    if hide_off {
-                        if levelfilter == &LevelFilter::Off {
+                    if hide_off 
+                        && levelfilter == &LevelFilter::Off {
                             continue;
-                        }
                     }
                     self.targets.push(t.clone());
                 }
@@ -695,31 +694,27 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             let list_height = (list_area.height as usize).min(self.targets.len());
             let offset = if list_height > self.targets.len() {
                 0
-            } else {
-                if let Some(sel) = selected {
+            } else if let Some(sel) = selected {
                     // sel must be < self.target.len() from above test
                     if sel >= offset + list_height {
                         // selected is below visible list range => make it the bottom
                         sel - list_height + 1
-                    } else {
-                        if sel.min(offset) + list_height - 1 >= self.targets.len() {
+                    } else if sel.min(offset) + list_height > self.targets.len() {
                             self.targets.len() - list_height
                         } else {
                             sel.min(offset)
-                        }
                     }
                 } else {
                     0
-                }
             };
             state.offset = offset;
 
-            let ref targets = &state.config;
+            let targets = &(&state.config);
             for i in 0..list_height {
                 let t = &self.targets[i + offset];
                 let hot_level_filter = hot_targets.get(&t).unwrap();
                 let level_filter = targets.get(&t).unwrap();
-                for (j, sym, lev) in vec![
+                for (j, sym, lev) in &[
                     (0, "E", Level::Error),
                     (1, "W", Level::Warn),
                     (2, "I", Level::Info),
@@ -727,19 +722,17 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     (4, "T", Level::Trace),
                 ] {
                     let mut cell = buf.get_mut(la_left + j, la_top + i as u16);
-                    let cell_style = if *hot_level_filter >= lev {
-                        if *level_filter >= lev {
+                    let cell_style = if *hot_level_filter >= *lev {
+                        if *level_filter >= *lev {
                             self.style_show
                         } else {
                             self.style_hide
                         }
-                    } else {
-                        if let Some(style_off) = self.style_off {
+                    } else if let Some(style_off) = self.style_off {
                             style_off
                         } else {
                             cell.symbol = " ".to_string();
                             continue;
-                        }
                     };
                     cell.set_style(cell_style);
                     cell.symbol = sym.to_string();
@@ -766,7 +759,7 @@ impl<'b> EventListener<Event> for TuiLoggerTargetWidget<'b> {
         mut self,
         dispatcher: Rc<RefCell<Dispatcher<Event>>>,
     ) -> TuiLoggerTargetWidget<'b> {
-        self.event_dispatcher = Some(dispatcher.clone());
+        self.event_dispatcher = Some(dispatcher);
         self
     }
 }
@@ -866,7 +859,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self
     }
     fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerWidget<'b> {
-        self.state = state.clone();
+        self.state = state;
         self
     }
     pub fn state(&mut self, state: &TuiWidgetState) -> &mut TuiLoggerWidget<'b> {
@@ -959,8 +952,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         } else {
             wrapped_lines.len() - la_height as usize
         };
-        let mut i = 0;
-        for (sty, left, l) in &wrapped_lines[offset..] {
+        for (i, (sty, left, l)) in wrapped_lines[offset..].iter().enumerate() {
             buf.set_stringn(
                 la_left + left,
                 la_top + i as u16,
@@ -968,7 +960,6 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 l.len(),
                 sty.unwrap_or(self.style),
             );
-            i = i + 1;
         }
     }
 }
@@ -1068,7 +1059,7 @@ impl TuiLoggerSmartWidget {
 }
 impl EventListener<Event> for TuiLoggerSmartWidget {
     fn dispatcher(mut self, dispatcher: Rc<RefCell<Dispatcher<Event>>>) -> TuiLoggerSmartWidget {
-        self.event_dispatcher = Some(dispatcher.clone());
+        self.event_dispatcher = Some(dispatcher);
         self
     }
 }
@@ -1153,13 +1144,12 @@ impl Widget for TuiLoggerSmartWidget {
                 let mut state = self.state.borrow_mut();
                 let hide_off = state.hide_off;
                 {
-                    let ref mut targets = &mut state.config;
+                    let targets = &mut state.config;
                     targets.merge(hot_targets);
                     for (t, levelfilter) in targets.iter() {
-                        if hide_off {
-                            if levelfilter == &LevelFilter::Off {
+                        if hide_off 
+                            && levelfilter == &LevelFilter::Off {
                                 continue;
-                            }
                         }
                         width = width.max(t.len())
                     }
