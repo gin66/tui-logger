@@ -91,16 +91,6 @@ fn main() {
 
 For use of the widget please check examples/demo.rs
 
-## Using the `crossterm` backend
-
-Use these in `Cargo.toml`:
-
-```toml
-[dependencies]
-tui = { version = "0.10", default-features = false, features = ["crossterm"]}
-tui-logger = { version = "0.4", default-features = false, features = ["tui-crossterm"] }
-```
-
 ## THANKS TO
 
 * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
