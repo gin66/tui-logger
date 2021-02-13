@@ -8,7 +8,7 @@
 
 [Documentation](https://docs.rs/tui-logger/0.4.2/tui_logger/)
 
-[Demo](https://github.com/gin66/tui-logger/blob/master/doc/example.svg?raw=true)
+![Demo](https://github.com/gin66/tui-logger/blob/master/doc/example.svg?raw=true)
 
 ## Features
 
