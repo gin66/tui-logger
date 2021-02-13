@@ -8,6 +8,8 @@
 
 [Documentation](https://docs.rs/tui-logger/0.4.2/tui_logger/)
 
+[Demo](https://github.com/gin66/tui-logger/blob/master/doc/example.svg?raw=true)
+
 ## Features
 
 - [X] Logger implementation for the `log` crate
