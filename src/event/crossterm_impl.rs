@@ -81,3 +81,13 @@ pub(crate) fn is_h_key(evt: &Event) -> bool {
         })
     )
 }
+
+pub(crate) fn is_f_key(evt: &Event) -> bool {
+    matches!(
+        evt,
+        &Event::Key(KeyEvent {
+            code: KeyCode::Char('f'),
+            modifiers: _,
+        })
+    )
+}

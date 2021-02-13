@@ -60,7 +60,8 @@ This could even be used for mouse events, but this is not yet implemented.
 
 |  KEY   | ACTION 
 |:------:|-----------------------------------------------------------|
-| `h`    | Toggles target selector widget
+| `h`    | Toggles target selector widget hidden/visible 
+| `f`    | Toggle focus on the selected target only
 | `UP`   | Select previous target in target selector widget
 | `DOWN` | Select next target in target selector widget
 | `LEFT` | Reduce SHOWN (!) log messages by one level

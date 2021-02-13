@@ -33,3 +33,7 @@ pub(crate) fn is_minus_key(evt: &Event) -> bool {
 pub(crate) fn is_h_key(evt: &Event) -> bool {
     &Event::Key(Key::Char('h')) == evt
 }
+
+pub(crate) fn is_f_key(evt: &Event) -> bool {
+    &Event::Key(Key::Char('f')) == evt
+}

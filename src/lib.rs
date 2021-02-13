@@ -62,7 +62,8 @@
 //!
 //! |  KEY   | ACTION
 //! |:------:|-----------------------------------------------------------|
-//! | `h`    | Toggles target selector widget
+//! | `h`    | Toggles target selector widget hidden/visible
+//! | `f`    | Toggle focus on the selected target only
 //! | `UP`   | Select previous target in target selector widget
 //! | `DOWN` | Select next target in target selector widget
 //! | `LEFT` | Reduce SHOWN (!) log messages by one level
@@ -410,6 +411,7 @@ struct TuiWidgetInnerState {
     offset: usize,
     hide_off: bool,
     hide_target: bool,
+    focus_selected: Option<String>,
 }
 impl TuiWidgetInnerState {
     pub fn new() -> TuiWidgetInnerState {
@@ -419,6 +421,7 @@ impl TuiWidgetInnerState {
             offset: 0,
             hide_off: false,
             hide_target: false,
+            focus_selected: None,
         }
     }
 }
@@ -582,6 +585,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     let selected = self.state.borrow().selected.unwrap();
                     let max_selected = self.targets.len();
                     if selected > 0 {
+                        let state = self.state.clone();
                         dispatcher.borrow_mut().add_listener(move |evt| {
                             if event::is_up_key(evt) {
                                 state.borrow_mut().selected = Some(selected - 1);
@@ -602,6 +606,19 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                             }
                         });
                     }
+                    let curr_selected = self.targets[selected].to_string();
+                    let d_state = state.clone();
+                    dispatcher.borrow_mut().add_listener(move |evt| {
+                        if event::is_f_key(evt) {
+                            let mut d_state = d_state.borrow_mut();
+                            if let None = d_state.focus_selected.take() {
+                                d_state.focus_selected = Some(curr_selected.clone());
+                            }
+                            true
+                        } else {
+                            false
+                        }
+                    });
                 }
                 if self.state.borrow().selected.is_some() {
                     let selected = self.state.borrow().selected.unwrap();
@@ -890,6 +907,11 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             for l in tui_lock.events.rev_iter() {
                 if let Some(level) = state.config.get(&l.target) {
                     if *level < l.level {
+                        continue;
+                    }
+                }
+                if let Some(target) = state.focus_selected.as_ref() {
+                    if target != &l.target {
                         continue;
                     }
                 }
