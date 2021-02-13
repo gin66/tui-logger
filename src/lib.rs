@@ -582,13 +582,20 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                         }
                     });
                 } else {
-                    let selected = self.state.borrow().selected.unwrap();
+                    let focus_selected = state.borrow().focus_selected.is_some();
+                    let selected = state.borrow().selected.unwrap();
                     let max_selected = self.targets.len();
                     if selected > 0 {
                         let state = self.state.clone();
+                        let focus_on = if focus_selected {
+                            Some(self.targets[selected - 1].to_string())
+                        } else {
+                            None
+                        };
                         dispatcher.borrow_mut().add_listener(move |evt| {
                             if event::is_up_key(evt) {
                                 state.borrow_mut().selected = Some(selected - 1);
+                                state.borrow_mut().focus_selected = focus_on.clone();
                                 true
                             } else {
                                 false
@@ -597,9 +604,15 @@ impl<'b> TuiLoggerTargetWidget<'b> {
                     }
                     if selected + 1 < max_selected {
                         let state = self.state.clone();
+                        let focus_on = if focus_selected {
+                            Some(self.targets[selected + 1].to_string())
+                        } else {
+                            None
+                        };
                         dispatcher.borrow_mut().add_listener(move |evt| {
                             if event::is_down_key(evt) {
                                 state.borrow_mut().selected = Some(selected + 1);
+                                state.borrow_mut().focus_selected = focus_on.clone();
                                 true
                             } else {
                                 false
