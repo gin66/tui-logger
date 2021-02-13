@@ -689,6 +689,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             let mut selected = state.selected;
             let hide_off = state.hide_off;
             let offset = state.offset;
+            let focus_selected = state.focus_selected.is_some();
             {
                 let targets = &mut state.config;
                 targets.merge(hot_targets);
@@ -740,7 +741,11 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     let mut cell = buf.get_mut(la_left + j, la_top + i as u16);
                     let cell_style = if *hot_level_filter >= *lev {
                         if *level_filter >= *lev {
-                            self.style_show
+                            if !focus_selected || Some(i + offset) == selected {
+                                self.style_show
+                            } else {
+                                self.style_hide
+                            }
                         } else {
                             self.style_hide
                         }
