@@ -1,8 +1,10 @@
+// Generate README by gawk 'substr($0,1,3) == "//!"{print(substr($0,4))}' src/lib.rs
+
 //! # Logger with smart widget for the `tui` crate
 //!
-//! ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
-//! ![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github)](https://deps.rs/repo/github/gin66/tui-logger)
-//! -![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
+//! ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
+//! ![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github)
+//! ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 //!
 //!
 //! ## Demo of the widget
