@@ -1,6 +1,4 @@
-use std::cell::RefCell;
 use std::io;
-use std::rc::Rc;
 use std::sync::mpsc;
 use std::{thread, time};
 
@@ -25,7 +23,7 @@ use tui_logger::*;
 struct App {
     states: Vec<TuiWidgetState>,
     tabs: Vec<String>,
-    selected_tab: Rc<RefCell<usize>>,
+    selected_tab: usize,
     opt_info_cnt: Option<u16>,
 }
 
@@ -89,15 +87,15 @@ fn main() -> std::result::Result<(), std::io::Error> {
     let mut app = App {
         states: vec![],
         tabs: vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()],
-        selected_tab: Rc::new(RefCell::new(0)),
+        selected_tab: 0,
         opt_info_cnt: None,
     };
 
     // Here is the main loop
     for evt in rx {
         trace!(target: "New event", "{:?}",evt);
-        let opt_state = if *app.selected_tab.borrow() < app.states.len() {
-            Some(&mut app.states[*app.selected_tab.borrow()])
+        let opt_state = if app.selected_tab < app.states.len() {
+            Some(&mut app.states[app.selected_tab])
         } else {
             None
         };
@@ -108,9 +106,9 @@ fn main() -> std::result::Result<(), std::io::Error> {
                     Event::Key(Key::Char('q')) => break,
                     Event::Key(Key::Char('\t')) => {
                         // tab
-                        let sel = *app.selected_tab.borrow();
+                        let sel = app.selected_tab;
                         let sel_tab = if sel + 1 < app.tabs.len() { sel + 1 } else { 0 };
-                        *app.selected_tab.borrow_mut() = sel_tab;
+                        app.selected_tab = sel_tab;
                     }
                     Event::Key(Key::Char(' ')) => {
                         opt_state.map(|state| state.transition(&TuiWidgetEvent::SpaceKey));
@@ -159,7 +157,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
 
 fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     let tabs: Vec<tui::text::Spans> = vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()];
-    let sel = *app.selected_tab.borrow();
+    let sel = app.selected_tab;
 
     if app.states.len() <= sel {
         app.states.push(TuiWidgetState::new());
