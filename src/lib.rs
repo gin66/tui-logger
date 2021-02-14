@@ -390,6 +390,7 @@ impl Log for TuiLogger {
     fn flush(&self) {}
 }
 
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub enum TuiWidgetEvent {
     SpaceKey,
     UpKey,
