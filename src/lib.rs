@@ -1,14 +1,17 @@
 //! # Logger with smart widget for the `tui` crate
 //!
-//! [![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
+//! ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
+//! ![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github)](https://deps.rs/repo/github/gin66/tui-logger)
+//! -![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
+//!
 //!
 //! ## Demo of the widget
 //!
-//! [![alt](https://asciinema.org/a/6Jxk6i3lK6IDGyWGyLZkS5Rdl.png)](https://asciinema.org/a/6Jxk6i3lK6IDGyWGyLZkS5Rdl)
+//! ![Demo](https://github.com/gin66/tui-logger/blob/master/doc/example.svg?raw=true)
 //!
 //! ## Documentation
 //!
-//! [Documentation](https://docs.rs/tui-logger/0.2.0/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.5.0/tui_logger/)
 //!
 //! ## Features
 //!
