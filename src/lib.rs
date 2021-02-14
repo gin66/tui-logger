@@ -19,9 +19,7 @@
 //! - [X] Lost message detection due to circular buffer
 //! - [X] Log filtering performed on log record target
 //! - [X] Simple Widgets to view logs and configure debuglevel per target
-//! - [X] Smart Widget with dynamic event dispatcher for `termion` events (see demo code)
 //! - [X] Logging of enabled logs to file
-//! - [X] Event dispatcher for termion key events for smart/simple widget control
 //! - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 //! - [ ] Allow configuration of target dependent loglevel specifically for file logging
 //! - [ ] Avoid duplicating of target, module and filename in every log record
@@ -32,6 +30,7 @@
 //! Smart widget consists of two widgets. Left is the target selector widget and
 //! on the right side the logging messages view scrolling up. The target selector widget
 //! can be hidden/shown during runtime via key command.
+//! The key command to be provided to the TuiLoggerWidget via transition() function.
 //!
 //! The target selector widget looks like this:
 //!
@@ -50,14 +49,6 @@
 //!   + If any of EWIDT are not shown, then the respective log level is not captured
 //! - Target of the log events can be defined in the log e.g. `warn!(target: "demo", "Log message");`
 //!  
-//! ## Event Dispatcher
-//!
-//! In order to allow above mentioned control via key events, a dispatcher has been integrated.
-//! The dispatcher as module is independent from the backend, but the widgets are in the moment
-//! specifically only for termion. The event handler queue is dynamically built during drawing of
-//! the tui elements. This allows an easy link between complex ui layouts and the embedded widgets.
-//! This could even be used for mouse events, but this is not yet implemented.
-//!
 //! ## Smart Widget Key Commands
 //!
 //! |  KEY   | ACTION
@@ -72,6 +63,9 @@
 //! | `+`    | Increase CAPTURED (!) log messages by one level
 //! | `SPACE`| Toggles hiding of targets, which have logfilter set to off
 //!  
+//! The mapping of key to action has to be done in the application. The respective TuiWidgetEvent
+//! has to be provided to the transition() function of TuiWidgetState
+//!
 //! ## Basic usage to initialize logger-system:
 //! ```
 //! #[macro_use]
@@ -98,8 +92,6 @@
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
 //! it receives to the `tui-logger` widget
 #[macro_use]
-extern crate log;
-#[macro_use]
 extern crate lazy_static;
 
 use std::cell::RefCell;
@@ -122,20 +114,9 @@ use tui::style::{Modifier, Style};
 use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
-mod dispatcher;
 mod slog;
 
-#[cfg(feature = "tui-crossterm")]
-#[path = "event/crossterm_impl.rs"]
-mod event;
-#[cfg(feature = "tui-termion")]
-#[path = "event/termion_impl.rs"]
-mod event;
-
-use crate::event::Event;
-
 pub use crate::circular::CircularBuffer;
-pub use crate::dispatcher::{Dispatcher, EventListener};
 pub use crate::slog::TuiSlogDrain;
 
 struct ExtLogRecord {
@@ -147,14 +128,14 @@ struct ExtLogRecord {
     msg: String,
 }
 
-fn advance_levelfilter(levelfilter: &LevelFilter) -> (LevelFilter, LevelFilter) {
+fn advance_levelfilter(levelfilter: &LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {
     match *levelfilter {
-        LevelFilter::Trace => (LevelFilter::Trace, LevelFilter::Debug),
-        LevelFilter::Debug => (LevelFilter::Trace, LevelFilter::Info),
-        LevelFilter::Info => (LevelFilter::Debug, LevelFilter::Warn),
-        LevelFilter::Warn => (LevelFilter::Info, LevelFilter::Error),
-        LevelFilter::Error => (LevelFilter::Warn, LevelFilter::Off),
-        LevelFilter::Off => (LevelFilter::Error, LevelFilter::Off),
+        LevelFilter::Trace => (None, Some(LevelFilter::Debug)),
+        LevelFilter::Debug => (Some(LevelFilter::Trace), Some(LevelFilter::Info)),
+        LevelFilter::Info => (Some(LevelFilter::Debug), Some(LevelFilter::Warn)),
+        LevelFilter::Warn => (Some(LevelFilter::Info), Some(LevelFilter::Error)),
+        LevelFilter::Error => (Some(LevelFilter::Warn), Some(LevelFilter::Off)),
+        LevelFilter::Off => (Some(LevelFilter::Error), None),
     }
 }
 
@@ -404,24 +385,102 @@ impl Log for TuiLogger {
     fn flush(&self) {}
 }
 
+pub enum TuiWidgetEvent {
+    SpaceKey,
+    UpKey,
+    DownKey,
+    LeftKey,
+    RightKey,
+    PlusKey,
+    MinusKey,
+    HideKey,
+    FocusKey,
+}
+
 #[derive(Default)]
 struct TuiWidgetInnerState {
     config: LevelConfig,
-    selected: Option<usize>,
+    nr_items: usize,
+    selected: usize,
+    opt_selected_target: Option<String>,
+    opt_selected_visibility_more: Option<LevelFilter>,
+    opt_selected_visibility_less: Option<LevelFilter>,
+    opt_selected_recording_more: Option<LevelFilter>,
+    opt_selected_recording_less: Option<LevelFilter>,
     offset: usize,
     hide_off: bool,
     hide_target: bool,
-    focus_selected: Option<String>,
+    focus_selected: bool,
 }
 impl TuiWidgetInnerState {
     pub fn new() -> TuiWidgetInnerState {
         TuiWidgetInnerState {
             config: LevelConfig::new(),
-            selected: None,
+            nr_items: 0,
+            selected: 0,
             offset: 0,
             hide_off: false,
             hide_target: false,
-            focus_selected: None,
+            focus_selected: false,
+            opt_selected_target: None,
+            opt_selected_visibility_more: None,
+            opt_selected_visibility_less: None,
+            opt_selected_recording_more: None,
+            opt_selected_recording_less: None,
+        }
+    }
+    fn transition(&mut self, event: &TuiWidgetEvent) {
+        use TuiWidgetEvent::*;
+        match *event {
+            SpaceKey => {
+                self.hide_off ^= true;
+            }
+            HideKey => {
+                self.hide_target ^= true;
+            }
+            FocusKey => {
+                self.focus_selected ^= true;
+            }
+            UpKey => {
+                if !self.hide_target && self.selected > 0 {
+                    self.selected -= 1;
+                }
+            }
+            DownKey => {
+                if !self.hide_target && self.selected + 1 < self.nr_items {
+                    self.selected += 1;
+                }
+            }
+            LeftKey => {
+                if let Some(selected_target) = self.opt_selected_target.take() {
+                    if let Some(selected_visibility_less) = self.opt_selected_visibility_less.take()
+                    {
+                        self.config.set(&selected_target, selected_visibility_less);
+                    }
+                }
+            }
+            RightKey => {
+                if let Some(selected_target) = self.opt_selected_target.take() {
+                    if let Some(selected_visibility_more) = self.opt_selected_visibility_more.take()
+                    {
+                        self.config.set(&selected_target, selected_visibility_more);
+                    }
+                }
+            }
+            PlusKey => {
+                if let Some(selected_target) = self.opt_selected_target.take() {
+                    if let Some(selected_recording_more) = self.opt_selected_recording_more.take() {
+                        set_level_for_target(&selected_target, selected_recording_more);
+                    }
+                }
+            }
+            MinusKey => {
+                if let Some(selected_target) = self.opt_selected_target.take() {
+                    if let Some(selected_recording_less) = self.opt_selected_recording_less.take() {
+                        set_level_for_target(&selected_target, selected_recording_less);
+                    }
+                }
+            }
         }
     }
 }
@@ -442,12 +501,13 @@ impl TuiWidgetState {
         self.inner.borrow_mut().config.set(target, levelfilter);
         self
     }
+    pub fn transition(&mut self, event: &TuiWidgetEvent) {
+        self.inner.borrow_mut().transition(event);
+    }
 }
 
 /// This is the definition for the TuiLoggerTargetWidget,
 /// which allows configuration of the logger system and selection of log messages.
-/// It implements the EventListener trait, because it can enter event handlers to the dispatcher
-/// for the key commands.
 pub struct TuiLoggerTargetWidget<'b> {
     block: Option<Block<'b>>,
     /// Base style of the widget
@@ -458,7 +518,6 @@ pub struct TuiLoggerTargetWidget<'b> {
     highlight_style: Style,
     state: Rc<RefCell<TuiWidgetInnerState>>,
     targets: Vec<String>,
-    event_dispatcher: Option<Rc<RefCell<Dispatcher<Event>>>>,
 }
 impl<'b> Default for TuiLoggerTargetWidget<'b> {
     fn default() -> TuiLoggerTargetWidget<'b> {
@@ -472,7 +531,6 @@ impl<'b> Default for TuiLoggerTargetWidget<'b> {
             highlight_style: Style::default().add_modifier(Modifier::REVERSED),
             state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
             targets: vec![],
-            event_dispatcher: None,
         }
     }
 }
@@ -539,143 +597,6 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         self.state = state.inner.clone();
         self
     }
-    fn opt_dispatcher(
-        mut self,
-        dispatcher: Option<Rc<RefCell<Dispatcher<Event>>>>,
-    ) -> TuiLoggerTargetWidget<'b> {
-        if let Some(d) = dispatcher {
-            self.event_dispatcher = Some(d);
-        }
-        self
-    }
-    fn add_to_dispatcher(&mut self) {
-        if let Some(ref dispatcher) = self.event_dispatcher {
-            let state = self.state.clone();
-            if state.borrow().hide_off {
-                dispatcher.borrow_mut().add_listener(move |evt| {
-                    if event::is_space_key(evt) {
-                        state.borrow_mut().hide_off = false;
-                        true
-                    } else {
-                        false
-                    }
-                });
-            } else {
-                dispatcher.borrow_mut().add_listener(move |evt| {
-                    if event::is_space_key(evt) {
-                        state.borrow_mut().hide_off = true;
-                        true
-                    } else {
-                        false
-                    }
-                });
-            }
-            if !self.targets.is_empty() {
-                let state = self.state.clone();
-                if self.state.borrow().selected.is_none() {
-                    dispatcher.borrow_mut().add_listener(move |evt| {
-                        if event::is_down_key(evt) || event::is_up_key(evt) {
-                            state.borrow_mut().selected = Some(0);
-                            true
-                        } else {
-                            false
-                        }
-                    });
-                } else {
-                    let focus_selected = state.borrow().focus_selected.is_some();
-                    let selected = state.borrow().selected.unwrap();
-                    let max_selected = self.targets.len();
-                    if selected > 0 {
-                        let state = self.state.clone();
-                        let focus_on = if focus_selected {
-                            Some(self.targets[selected - 1].to_string())
-                        } else {
-                            None
-                        };
-                        dispatcher.borrow_mut().add_listener(move |evt| {
-                            if event::is_up_key(evt) {
-                                state.borrow_mut().selected = Some(selected - 1);
-                                state.borrow_mut().focus_selected = focus_on.clone();
-                                true
-                            } else {
-                                false
-                            }
-                        })
-                    }
-                    if selected + 1 < max_selected {
-                        let state = self.state.clone();
-                        let focus_on = if focus_selected {
-                            Some(self.targets[selected + 1].to_string())
-                        } else {
-                            None
-                        };
-                        dispatcher.borrow_mut().add_listener(move |evt| {
-                            if event::is_down_key(evt) {
-                                state.borrow_mut().selected = Some(selected + 1);
-                                state.borrow_mut().focus_selected = focus_on.clone();
-                                true
-                            } else {
-                                false
-                            }
-                        });
-                    }
-                    let curr_selected = self.targets[selected].to_string();
-                    let d_state = state.clone();
-                    dispatcher.borrow_mut().add_listener(move |evt| {
-                        if event::is_f_key(evt) {
-                            let mut d_state = d_state.borrow_mut();
-                            if let None = d_state.focus_selected.take() {
-                                d_state.focus_selected = Some(curr_selected.clone());
-                            }
-                            true
-                        } else {
-                            false
-                        }
-                    });
-                }
-                if self.state.borrow().selected.is_some() {
-                    let selected = self.state.borrow().selected.unwrap();
-                    let t = self.targets[selected].clone();
-                    let (more, less) = if let Some(levelfilter) = self.state.borrow().config.get(&t)
-                    {
-                        advance_levelfilter(levelfilter)
-                    } else {
-                        return;
-                    };
-                    let state = self.state.clone();
-                    dispatcher.borrow_mut().add_listener(move |evt| {
-                        if event::is_left_key(evt) {
-                            state.borrow_mut().config.set(&t, less);
-                            true
-                        } else if event::is_right_key(evt) {
-                            state.borrow_mut().config.set(&t, more);
-                            true
-                        } else {
-                            false
-                        }
-                    });
-                    let t = self.targets[selected].clone();
-                    let (more, less) =
-                        if let Some(levelfilter) = TUI_LOGGER.inner.lock().targets.get(&t) {
-                            advance_levelfilter(levelfilter)
-                        } else {
-                            return;
-                        };
-                    dispatcher.borrow_mut().add_listener(move |evt| {
-                        if event::is_minus_key(evt) {
-                            set_level_for_target(&t, less);
-                            true
-                        } else if event::is_plus_key(evt) {
-                            set_level_for_target(&t, more);
-                            true
-                        } else {
-                            false
-                        }
-                    });
-                }
-            }
-        };
-    }
 }
 impl<'b> Widget for TuiLoggerTargetWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
@@ -699,10 +620,9 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
         {
             let hot_targets = &TUI_LOGGER.inner.lock().targets;
             let mut state = self.state.borrow_mut();
-            let mut selected = state.selected;
             let hide_off = state.hide_off;
             let offset = state.offset;
-            let focus_selected = state.focus_selected.is_some();
+            let focus_selected = state.focus_selected;
             {
                 let targets = &mut state.config;
                 targets.merge(hot_targets);
@@ -715,17 +635,33 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                 }
                 self.targets.sort();
             }
-            if let Some(sel) = selected {
-                if sel >= self.targets.len() {
-                    state.selected = None;
-                    selected = None;
-                }
+            state.nr_items = self.targets.len();
+            if state.selected >= state.nr_items {
+                state.selected = state.nr_items.max(1) - 1;
+            }
+            if state.selected < state.nr_items {
+                state.opt_selected_target = Some(self.targets[state.selected].clone());
+                let t = &self.targets[state.selected];
+                let (more, less) = if let Some(levelfilter) = state.config.get(t) {
+                    advance_levelfilter(levelfilter)
+                } else {
+                    (None, None)
+                };
+                state.opt_selected_visibility_less = less;
+                state.opt_selected_visibility_more = more;
+                let (more, less) = if let Some(levelfilter) = hot_targets.get(t) {
+                    advance_levelfilter(levelfilter)
+                } else {
+                    (None, None)
+                };
+                state.opt_selected_recording_less = less;
+                state.opt_selected_recording_more = more;
             }
             let list_height = (list_area.height as usize).min(self.targets.len());
             let offset = if list_height > self.targets.len() {
                 0
-            } else if let Some(sel) = selected {
-                // sel must be < self.target.len() from above test
+            } else if state.selected < state.nr_items {
+                let sel = state.selected;
                 if sel >= offset + list_height {
                     // selected is below visible list range => make it the bottom
                     sel - list_height + 1
@@ -754,7 +690,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     let mut cell = buf.get_mut(la_left + j, la_top + i as u16);
                     let cell_style = if *hot_level_filter >= *lev {
                         if *level_filter >= *lev {
-                            if !focus_selected || Some(i + offset) == selected {
+                            if !focus_selected || i + offset == state.selected {
                                 self.style_show
                             } else {
                                 self.style_hide
@@ -777,7 +713,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     la_top + i as u16,
                     t,
                     la_width,
-                    if Some(i + offset) == selected {
+                    if i + offset == state.selected {
                         self.highlight_style
                     } else {
                         self.style
@@ -785,16 +721,6 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                 );
             }
         }
-        self.add_to_dispatcher();
-    }
-}
-impl<'b> EventListener<Event> for TuiLoggerTargetWidget<'b> {
-    fn dispatcher(
-        mut self,
-        dispatcher: Rc<RefCell<Dispatcher<Event>>>,
-    ) -> TuiLoggerTargetWidget<'b> {
-        self.event_dispatcher = Some(dispatcher);
-        self
     }
 }
 
@@ -928,9 +854,11 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                         continue;
                     }
                 }
-                if let Some(target) = state.focus_selected.as_ref() {
-                    if target != &l.target {
-                        continue;
+                if state.focus_selected {
+                    if let Some(target) = state.opt_selected_target.as_ref() {
+                        if target != &l.target {
+                            continue;
+                        }
                     }
                 }
                 let mut output = String::new();
@@ -1022,7 +950,6 @@ pub struct TuiLoggerSmartWidget {
     style_hide: Option<Style>,
     style_off: Option<Style>,
     state: Rc<RefCell<TuiWidgetInnerState>>,
-    event_dispatcher: Option<Rc<RefCell<Dispatcher<Event>>>>,
 }
 impl Default for TuiLoggerSmartWidget {
     fn default() -> TuiLoggerSmartWidget {
@@ -1042,7 +969,6 @@ impl Default for TuiLoggerSmartWidget {
             style_hide: None,
             style_off: None,
             state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
-            event_dispatcher: None,
         }
     }
 }
@@ -1096,15 +1022,9 @@ impl TuiLoggerSmartWidget {
         self
     }
 }
-impl EventListener<Event> for TuiLoggerSmartWidget {
-    fn dispatcher(mut self, dispatcher: Rc<RefCell<Dispatcher<Event>>>) -> TuiLoggerSmartWidget {
-        self.event_dispatcher = Some(dispatcher);
-        self
-    }
-}
 impl Widget for TuiLoggerSmartWidget {
     /// Nothing to draw for combo widget
-    fn render(mut self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let entries_s = {
             let mut tui_lock = TUI_LOGGER.inner.lock();
             let first_timestamp = {
@@ -1138,28 +1058,6 @@ impl Widget for TuiLoggerSmartWidget {
         };
 
         let hide_target = self.state.borrow().hide_target;
-        if let Some(ref dispatcher) = self.event_dispatcher {
-            let state = self.state.clone();
-            if hide_target {
-                dispatcher.borrow_mut().add_listener(move |evt| {
-                    if event::is_h_key(evt) {
-                        state.borrow_mut().hide_target = false;
-                        true
-                    } else {
-                        false
-                    }
-                });
-            } else {
-                dispatcher.borrow_mut().add_listener(move |evt| {
-                    if event::is_h_key(evt) {
-                        state.borrow_mut().hide_target = true;
-                        true
-                    } else {
-                        false
-                    }
-                });
-            }
-        }
         if hide_target {
             let tui_lw = TuiLoggerWidget::default()
                 .block(
@@ -1212,8 +1110,7 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_off(self.style_off)
                 .opt_style_hide(self.style_hide)
                 .opt_style_show(self.style_show)
-                .inner_state(self.state.clone())
-                .opt_dispatcher(self.event_dispatcher.take());
+                .inner_state(self.state.clone());
             tui_ltw.render(chunks[0], buf);
             let title = format!("{}  [log={:.1}/s]", self.title_log, entries_s);
             let tui_lw = TuiLoggerWidget::default()
