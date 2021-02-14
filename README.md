@@ -37,7 +37,7 @@
 
  The target selector widget looks like this:
 
-    ![alt text](https://github.com/gin66/tui-logger/blob/master/doc/example.png?raw=true)
+ ![widget](https://github.com/gin66/tui-logger/blob/master/doc/example.png?raw=true)
 
  It controls:
 
