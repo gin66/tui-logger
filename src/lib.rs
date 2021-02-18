@@ -25,6 +25,8 @@
 //! - [X] Log filtering performed on log record target
 //! - [X] Simple Widgets to view logs and configure debuglevel per target
 //! - [X] Logging of enabled logs to file
+//! - [X] Scrollback in log history
+//! - [x] Title of target and log pane can be configured
 //! - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 //! - [ ] Allow configuration of target dependent loglevel specifically for file logging
 //! - [ ] Avoid duplicating of target, module and filename in every log record
@@ -46,7 +48,7 @@
 //! - Capturing of log messages by the logger
 //! - Selection of levels for display in the logging message view
 //!  
-//! The target selector widget consists of two columns:
+//! The two columns have the following meaning:
 //!
 //! - Code EWIDT: E stands for Error, W for Warn, Info, Debug and Trace.
 //!   + Inverted characters (EWIDT) are enabled log levels in the view
@@ -56,20 +58,28 @@
 //!  
 //! ## Smart Widget Key Commands
 //!
-//! |  KEY   | ACTION
-//! |:------:|-----------------------------------------------------------|
-//! | `h`    | Toggles target selector widget hidden/visible
-//! | `f`    | Toggle focus on the selected target only
-//! | `UP`   | Select previous target in target selector widget
-//! | `DOWN` | Select next target in target selector widget
-//! | `LEFT` | Reduce SHOWN (!) log messages by one level
-//! | `RIGHT`| Increase SHOWN (!) log messages by one level
-//! | `-`    | Reduce CAPTURED (!) log messages by one level
-//! | `+`    | Increase CAPTURED (!) log messages by one level
-//! | `SPACE`| Toggles hiding of targets, which have logfilter set to off
+//! |  KEY     | ACTION
+//! |--------.-|-----------------------------------------------------------|
+//! | h        | Toggles target selector widget hidden/visible
+//! | f        | Toggle focus on the selected target only
+//! | UP       | Select previous target in target selector widget
+//! | DOWN     | Select next target in target selector widget
+//! | LEFT     | Reduce SHOWN (!) log messages by one level
+//! | RIGHT    | Increase SHOWN (!) log messages by one level
+//! | -        | Reduce CAPTURED (!) log messages by one level
+//! | +        | Increase CAPTURED (!) log messages by one level
+//! | PAGEUP   | Enter Page Mode and scroll approx. half page up in log history.
+//! | PAGEDOWN | Only in page mode: scroll 10 events down in log history.
+//! | ESCAPE   | Exit page mode and go back to scrolling mode
+//! | SPACE    | Toggles hiding of targets, which have logfilter set to off
 //!  
 //! The mapping of key to action has to be done in the application. The respective TuiWidgetEvent
-//! has to be provided to the transition() function of TuiWidgetState
+//! has to be provided to TuiWidgetState::transition().
+//!
+//! Remark to the page mode: The timestamp of the event at event history's bottom line is used as
+//! reference. This means, changing the filters in the EWIDT/focus from the target selector window
+//! should work as expected without jumps in the history. The page next/forward advances as
+//! per visibility of the events.
 //!
 //! ## Basic usage to initialize logger-system:
 //! ```
@@ -96,6 +106,21 @@
 //!
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
 //! it receives to the `tui-logger` widget
+//!
+//! ## Applications using tui-logger
+//!
+//! * [wash](https://github.com/wasmCloud/wash)
+//! * [rocker](https://github.com/atlassian/rocker)
+//!
+//! ## THANKS TO
+//!
+//! * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
+//! * [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 and v0.6.0
+//! * [Adam Sypniewski](https://github.com/ajsyp) for providing the patches to tui-rs v0.6.2
+//! * [James aka jklong](https://github.com/jklong) for providing the patch to tui-rs v0.7
+//! * [icy-ux](https://github.com/icy-ux) for adding slog support and example
+//! * [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
+//!
 #[macro_use]
 extern crate lazy_static;
 
@@ -116,6 +141,7 @@ use parking_lot::Mutex;
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Modifier, Style};
+use tui::text::{Spans};
 use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
@@ -401,6 +427,9 @@ pub enum TuiWidgetEvent {
     MinusKey,
     HideKey,
     FocusKey,
+    PrevPageKey,
+    NextPageKey,
+    EscapeKey,
 }
 
 #[derive(Default)]
@@ -408,6 +437,9 @@ struct TuiWidgetInnerState {
     config: LevelConfig,
     nr_items: usize,
     selected: usize,
+    opt_timestamp_bottom: Option<DateTime<Local>>,
+    opt_timestamp_next_page: Option<DateTime<Local>>,
+    opt_timestamp_prev_page: Option<DateTime<Local>>,
     opt_selected_target: Option<String>,
     opt_selected_visibility_more: Option<LevelFilter>,
     opt_selected_visibility_less: Option<LevelFilter>,
@@ -420,20 +452,7 @@ struct TuiWidgetInnerState {
 }
 impl TuiWidgetInnerState {
     pub fn new() -> TuiWidgetInnerState {
-        TuiWidgetInnerState {
-            config: LevelConfig::new(),
-            nr_items: 0,
-            selected: 0,
-            offset: 0,
-            hide_off: false,
-            hide_target: false,
-            focus_selected: false,
-            opt_selected_target: None,
-            opt_selected_visibility_more: None,
-            opt_selected_visibility_less: None,
-            opt_selected_recording_more: None,
-            opt_selected_recording_less: None,
-        }
+        TuiWidgetInnerState::default()
     }
     fn transition(&mut self, event: &TuiWidgetEvent) {
         use TuiWidgetEvent::*;
@@ -487,6 +506,9 @@ impl TuiWidgetInnerState {
                     }
                 }
             }
+            PrevPageKey => self.opt_timestamp_bottom = self.opt_timestamp_prev_page,
+            NextPageKey => self.opt_timestamp_bottom = self.opt_timestamp_next_page,
+            EscapeKey => self.opt_timestamp_bottom = None,
         }
     }
 }
@@ -848,29 +870,44 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             return;
         }
 
-        let state = self.state.borrow();
+        let mut state = self.state.borrow_mut();
         let la_height = list_area.height as usize;
         let mut lines: Vec<(Option<Style>, u16, String)> = vec![];
         let indent = 9;
         {
+            state.opt_timestamp_next_page = None;
+            let opt_timestamp_bottom = state.opt_timestamp_bottom;
+            let mut opt_timestamp_prev_page = None;
             let mut tui_lock = TUI_LOGGER.inner.lock();
-            for l in tui_lock.events.rev_iter() {
-                if let Some(level) = state.config.get(&l.target) {
-                    if *level < l.level {
+            let mut circular = CircularBuffer::new(10); // MAGIC constant
+            for evt in tui_lock.events.rev_iter() {
+                if let Some(level) = state.config.get(&evt.target) {
+                    if *level < evt.level {
                         continue;
                     }
                 }
                 if state.focus_selected {
                     if let Some(target) = state.opt_selected_target.as_ref() {
-                        if target != &l.target {
+                        if target != &evt.target {
                             continue;
                         }
                     }
                 }
+                // Here all filters have been applied,
+                // So check, if user is paging through history
+                if let Some(timestamp) = opt_timestamp_bottom.as_ref() {
+                    if *timestamp < evt.timestamp {
+                        circular.push(evt.timestamp);
+                        continue;
+                    }
+                }
+                if !circular.is_empty() {
+                    state.opt_timestamp_next_page = circular.take().first().cloned();
+                }
                 let mut output = String::new();
-                output.push_str(&format!("{}", l.timestamp.format("%H:%M:%S")));
+                output.push_str(&format!("{}", evt.timestamp.format("%H:%M:%S")));
                 output.push(':');
-                let (col_style, txt, with_loc) = match l.level {
+                let (col_style, txt, with_loc) = match evt.level {
                     log::Level::Error => (self.style_error, "ERROR", true),
                     log::Level::Warn => (self.style_warn, "WARN ", true),
                     log::Level::Info => (self.style_info, "INFO ", false),
@@ -879,15 +916,15 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 };
                 output.push_str(txt);
                 output.push(':');
-                output.push_str(&l.target);
+                output.push_str(&evt.target);
                 if with_loc {
                     output.push(':');
-                    output.push_str(&l.file);
+                    output.push_str(&evt.file);
                     output.push(':');
-                    output.push_str(&format!("{}", l.line));
+                    output.push_str(&format!("{}", evt.line));
                 }
                 output.push(':');
-                let mut sublines: Vec<&str> = l.msg.lines().rev().collect();
+                let mut sublines: Vec<&str> = evt.msg.lines().rev().collect();
                 output.push_str(sublines.pop().unwrap());
                 for subline in sublines {
                     lines.push((col_style, indent, subline.to_string()));
@@ -896,7 +933,16 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 if lines.len() == la_height {
                     break;
                 }
+                if opt_timestamp_prev_page.is_none() && lines.len() >= la_height / 2 {
+                    opt_timestamp_prev_page = Some(evt.timestamp);
+                }
             }
+            state.opt_timestamp_prev_page = opt_timestamp_prev_page.or(state.opt_timestamp_bottom);
+            log::info!(
+                "{:?} {:?}",
+                state.opt_timestamp_bottom,
+                state.opt_timestamp_prev_page
+            );
         }
         let la_left = list_area.left();
         let la_top = list_area.top();
@@ -904,7 +950,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
 
         // lines is a vector with bottom line at index 0
         // wrapped_lines will be a vector with top line first
-        let mut wrapped_lines = vec![];
+        let mut wrapped_lines = CircularBuffer::new(la_height);
         while let Some((style, left, line)) = lines.pop() {
             if line.len() > la_width {
                 wrapped_lines.push((style, left, line[..la_width].to_owned()));
@@ -920,15 +966,17 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             }
         }
 
-        let offset = if wrapped_lines.len() < la_height {
+        let offset: u16 = if state.opt_timestamp_bottom.is_none() {
             0
         } else {
-            wrapped_lines.len() - la_height as usize
+            let lines_cnt = wrapped_lines.len();
+            (la_height - lines_cnt) as u16
         };
-        for (i, (sty, left, l)) in wrapped_lines[offset..].iter().enumerate() {
+
+        for (i, (sty, left, l)) in wrapped_lines.iter().enumerate() {
             buf.set_stringn(
                 la_left + left,
-                la_top + i as u16,
+                la_top + i as u16 + offset,
                 l,
                 l.len(),
                 sty.unwrap_or(self.style),
@@ -941,9 +989,9 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
 /// into a nice combo, where the TuiLoggerTargetWidget can be shown/hidden.
 ///
 /// In the title the number of logging messages/s in the whole buffer is shown.
-pub struct TuiLoggerSmartWidget {
-    title_log: String,
-    title_target: String,
+pub struct TuiLoggerSmartWidget<'a> {
+    title_log: Spans<'a>,
+    title_target: Spans<'a>,
     style: Option<Style>,
     border_style: Style,
     highlight_style: Option<Style>,
@@ -957,12 +1005,12 @@ pub struct TuiLoggerSmartWidget {
     style_off: Option<Style>,
     state: Rc<RefCell<TuiWidgetInnerState>>,
 }
-impl Default for TuiLoggerSmartWidget {
-    fn default() -> TuiLoggerSmartWidget {
+impl<'a> Default for TuiLoggerSmartWidget<'a> {
+    fn default() -> Self {
         TUI_LOGGER.move_events();
         TuiLoggerSmartWidget {
-            title_log: "Tui Log".to_owned(),
-            title_target: "Tui Target Selector".to_owned(),
+            title_log: Spans::from("Tui Log"),
+            title_target: Spans::from("Tui Target Selector"),
             style: None,
             border_style: Style::default(),
             highlight_style: None,
@@ -978,57 +1026,71 @@ impl Default for TuiLoggerSmartWidget {
         }
     }
 }
-impl TuiLoggerSmartWidget {
-    pub fn highlight_style(mut self, style: Style) -> TuiLoggerSmartWidget {
+impl<'a> TuiLoggerSmartWidget<'a> {
+    pub fn highlight_style(mut self, style: Style) -> Self {
         self.highlight_style = Some(style);
         self
     }
-    pub fn border_style(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn border_style(mut self, style: Style) -> Self {
         self.border_style = style;
         self
     }
-    pub fn style(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style(mut self, style: Style) -> Self {
         self.style = Some(style);
         self
     }
-    pub fn style_error(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_error(mut self, style: Style) -> Self {
         self.style_error = Some(style);
         self
     }
-    pub fn style_warn(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_warn(mut self, style: Style) -> Self {
         self.style_warn = Some(style);
         self
     }
-    pub fn style_info(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_info(mut self, style: Style) -> Self {
         self.style_info = Some(style);
         self
     }
-    pub fn style_trace(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_trace(mut self, style: Style) -> Self {
         self.style_trace = Some(style);
         self
     }
-    pub fn style_debug(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_debug(mut self, style: Style) -> Self {
         self.style_debug = Some(style);
         self
     }
-    pub fn style_off(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_off(mut self, style: Style) -> Self {
         self.style_off = Some(style);
         self
     }
-    pub fn style_hide(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_hide(mut self, style: Style) -> Self {
         self.style_hide = Some(style);
         self
     }
-    pub fn style_show(mut self, style: Style) -> TuiLoggerSmartWidget {
+    pub fn style_show(mut self, style: Style) -> Self {
         self.style_show = Some(style);
         self
     }
-    pub fn state(mut self, state: &TuiWidgetState) -> TuiLoggerSmartWidget {
+    pub fn title_target<T>(mut self, title: T) -> Self 
+        where 
+            T: Into<Spans<'a>>,
+    {
+        self.title_target = title.into();
+        self
+    }
+    pub fn title_log<T>(mut self, title: T) -> Self 
+        where 
+            T: Into<Spans<'a>>,
+    {
+        self.title_log = title.into();
+        self
+    }
+    pub fn state(mut self, state: &TuiWidgetState) -> Self {
         self.state = state.inner.clone();
         self
     }
 }
-impl Widget for TuiLoggerSmartWidget {
+impl<'a> Widget for TuiLoggerSmartWidget<'a> {
     /// Nothing to draw for combo widget
     fn render(self, area: Rect, buf: &mut Buffer) {
         let entries_s = {
@@ -1063,12 +1125,15 @@ impl Widget for TuiLoggerSmartWidget {
             }
         };
 
+        let mut title_log = self.title_log.clone();
+        title_log.0.push(format!(" [log={:.1}/s]", entries_s).into());
+
         let hide_target = self.state.borrow().hide_target;
         if hide_target {
             let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title(self.title_log.as_ref())
+                        .title(title_log)
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1078,7 +1143,7 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_info(self.style_info)
                 .opt_style_debug(self.style_debug)
                 .opt_style_trace(self.style_trace)
-                .inner_state(self.state.clone());
+                .inner_state(self.state);
             tui_lw.render(area, buf);
         } else {
             let mut width: usize = 0;
@@ -1107,7 +1172,7 @@ impl Widget for TuiLoggerSmartWidget {
             let tui_ltw = TuiLoggerTargetWidget::default()
                 .block(
                     Block::default()
-                        .title(self.title_target.as_ref())
+                        .title(self.title_target)
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )
@@ -1118,11 +1183,10 @@ impl Widget for TuiLoggerSmartWidget {
                 .opt_style_show(self.style_show)
                 .inner_state(self.state.clone());
             tui_ltw.render(chunks[0], buf);
-            let title = format!("{}  [log={:.1}/s]", self.title_log, entries_s);
             let tui_lw = TuiLoggerWidget::default()
                 .block(
                     Block::default()
-                        .title(title.as_ref())
+                        .title(title_log)
                         .border_style(self.border_style)
                         .borders(Borders::ALL),
                 )

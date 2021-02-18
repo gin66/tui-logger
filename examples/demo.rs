@@ -110,34 +110,49 @@ fn main() -> std::result::Result<(), std::io::Error> {
                         let sel_tab = if sel + 1 < app.tabs.len() { sel + 1 } else { 0 };
                         app.selected_tab = sel_tab;
                     }
-                    Event::Key(Key::Char(' ')) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::SpaceKey));
+                    evt => {
+                        if let Some(state) = opt_state {
+                            match evt {
+                                Event::Key(Key::Char(' ')) => {
+                                    state.transition(&TuiWidgetEvent::SpaceKey);
+                                }
+                                Event::Key(Key::Esc) => {
+                                    state.transition(&TuiWidgetEvent::EscapeKey);
+                                }
+                                Event::Key(Key::PageUp) => {
+                                    state.transition(&TuiWidgetEvent::PrevPageKey);
+                                }
+                                Event::Key(Key::PageDown) => {
+                                    state.transition(&TuiWidgetEvent::NextPageKey);
+                                }
+                                Event::Key(Key::Up) => {
+                                    state.transition(&TuiWidgetEvent::UpKey);
+                                }
+                                Event::Key(Key::Down) => {
+                                    state.transition(&TuiWidgetEvent::DownKey);
+                                }
+                                Event::Key(Key::Left) => {
+                                    state.transition(&TuiWidgetEvent::LeftKey);
+                                }
+                                Event::Key(Key::Right) => {
+                                    state.transition(&TuiWidgetEvent::RightKey);
+                                }
+                                Event::Key(Key::Char('+')) => {
+                                    state.transition(&TuiWidgetEvent::PlusKey);
+                                }
+                                Event::Key(Key::Char('-')) => {
+                                    state.transition(&TuiWidgetEvent::MinusKey);
+                                }
+                                Event::Key(Key::Char('h')) => {
+                                    state.transition(&TuiWidgetEvent::HideKey);
+                                }
+                                Event::Key(Key::Char('f')) => {
+                                    state.transition(&TuiWidgetEvent::FocusKey);
+                                }
+                                _ => (),
+                            }
+                        }
                     }
-                    Event::Key(Key::Up) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::UpKey));
-                    }
-                    Event::Key(Key::Down) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::DownKey));
-                    }
-                    Event::Key(Key::Left) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::LeftKey));
-                    }
-                    Event::Key(Key::Right) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::RightKey));
-                    }
-                    Event::Key(Key::Char('+')) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::PlusKey));
-                    }
-                    Event::Key(Key::Char('-')) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::MinusKey));
-                    }
-                    Event::Key(Key::Char('h')) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::HideKey));
-                    }
-                    Event::Key(Key::Char('f')) => {
-                        opt_state.map(|state| state.transition(&TuiWidgetEvent::FocusKey));
-                    }
-                    _ => (),
                 }
             }
             AppEvent::LoopCnt(opt_cnt) => {
