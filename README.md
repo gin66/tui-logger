@@ -7,7 +7,7 @@
 
  ## Demo of the widget
 
- ![Demo](https://github.com/gin66/tui-logger/blob/master/doc/example.svg?raw=true)
+ [Demo](https://github.com/gin66/tui-logger/blob/master/doc/example.svg?raw=true)
 
  ## Documentation
 
@@ -55,9 +55,9 @@
  - Target of the log events can be defined in the log e.g. `warn!(target: "demo", "Log message");`
   
  ## Smart Widget Key Commands
-
+ ```
  |  KEY     | ACTION
- |--------.-|-----------------------------------------------------------|
+ |----------|-----------------------------------------------------------|
  | h        | Toggles target selector widget hidden/visible
  | f        | Toggle focus on the selected target only
  | UP       | Select previous target in target selector widget
@@ -70,6 +70,7 @@
  | PAGEDOWN | Only in page mode: scroll 10 events down in log history.
  | ESCAPE   | Exit page mode and go back to scrolling mode
  | SPACE    | Toggles hiding of targets, which have logfilter set to off
+ ```
   
  The mapping of key to action has to be done in the application. The respective TuiWidgetEvent
  has to be provided to TuiWidgetState::transition().
