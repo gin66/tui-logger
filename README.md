@@ -81,7 +81,7 @@
  per visibility of the events.
 
  ## Basic usage to initialize logger-system:
- ```
+ ```rust
  #[macro_use]
  extern crate log;
  //use tui_logger;
