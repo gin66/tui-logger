@@ -1,3 +1,6 @@
+0.6.1:
+- Fix by Wuelle to avoid panic on line wrapping inside a utf8 character
+
 0.6.0:
 - Support Scrollback in log history with TuiWidgetEvent::PrevPageKey, NextPageKey and EscapeKey
 - log and target panes' title can be set via .title_log(String) and .title_target(String)
