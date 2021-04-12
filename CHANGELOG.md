@@ -1,5 +1,8 @@
-0.6.1:
+0.6.2:
 - Fix by Wuelle to avoid panic on line wrapping inside a utf8 character
+
+0.6.1:
+- Changes in README
 
 0.6.0:
 - Support Scrollback in log history with TuiWidgetEvent::PrevPageKey, NextPageKey and EscapeKey
