@@ -142,7 +142,7 @@ use parking_lot::Mutex;
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Modifier, Style};
-use tui::text::{Spans};
+use tui::text::Spans;
 use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
@@ -953,13 +953,18 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         // wrapped_lines will be a vector with top line first
         let mut wrapped_lines = CircularBuffer::new(la_height);
         while let Some((style, left, line)) = lines.pop() {
-            if line.len() > la_width {
-                wrapped_lines.push((style, left, line[..la_width].to_owned()));
-                let mut remain = &line[la_width..];
+            if line.chars().count() > la_width {
+                wrapped_lines.push((style, left, line.chars().take(la_width).collect()));
+                let mut remain: String = line.chars().skip(la_width).collect();
                 let rem_width = la_width - indent as usize;
-                while remain.len() > rem_width {
-                    wrapped_lines.push((style, indent, remain[..rem_width].to_owned()));
-                    remain = &remain[rem_width..];
+                while remain.chars().count() > rem_width {
+                    let remove: String = remain.chars().take(rem_width).collect();
+                    wrapped_lines.push((
+                        style,
+                        indent,
+                        remove,
+                    ));
+                    remain = remain.chars().skip(rem_width).collect();
                 }
                 wrapped_lines.push((style, indent, remain.to_owned()));
             } else {
@@ -1072,16 +1077,16 @@ impl<'a> TuiLoggerSmartWidget<'a> {
         self.style_show = Some(style);
         self
     }
-    pub fn title_target<T>(mut self, title: T) -> Self 
-        where 
-            T: Into<Spans<'a>>,
+    pub fn title_target<T>(mut self, title: T) -> Self
+    where
+        T: Into<Spans<'a>>,
     {
         self.title_target = title.into();
         self
     }
-    pub fn title_log<T>(mut self, title: T) -> Self 
-        where 
-            T: Into<Spans<'a>>,
+    pub fn title_log<T>(mut self, title: T) -> Self
+    where
+        T: Into<Spans<'a>>,
     {
         self.title_log = title.into();
         self
@@ -1127,7 +1132,9 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
         };
 
         let mut title_log = self.title_log.clone();
-        title_log.0.push(format!(" [log={:.1}/s]", entries_s).into());
+        title_log
+            .0
+            .push(format!(" [log={:.1}/s]", entries_s).into());
 
         let hide_target = self.state.borrow().hide_target;
         if hide_target {
