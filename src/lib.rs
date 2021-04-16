@@ -939,11 +939,6 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 }
             }
             state.opt_timestamp_prev_page = opt_timestamp_prev_page.or(state.opt_timestamp_bottom);
-            log::info!(
-                "{:?} {:?}",
-                state.opt_timestamp_bottom,
-                state.opt_timestamp_prev_page
-            );
         }
         let la_left = list_area.left();
         let la_top = list_area.top();
