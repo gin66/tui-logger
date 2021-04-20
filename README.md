@@ -119,5 +119,5 @@
  * [James aka jklong](https://github.com/jklong) for providing the patch to tui-rs v0.7
  * [icy-ux](https://github.com/icy-ux) for adding slog support and example
  * [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
- * [Wuelle](https://github.com/Wuelle) for utf8-fix to avoid panic on inter-character line wrap
+ * [brooksmtownsend](https://github.com/brooksmtownsend) Patch to remove verbose timestamp info
 

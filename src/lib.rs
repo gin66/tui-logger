@@ -83,7 +83,7 @@
 //! per visibility of the events.
 //!
 //! ## Basic usage to initialize logger-system:
-//! ```
+//! ```rust
 //! #[macro_use]
 //! extern crate log;
 //! //use tui_logger;
@@ -121,6 +121,7 @@
 //! * [James aka jklong](https://github.com/jklong) for providing the patch to tui-rs v0.7
 //! * [icy-ux](https://github.com/icy-ux) for adding slog support and example
 //! * [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
+//! * [brooksmtownsend](https://github.com/brooksmtownsend) Patch to remove verbose timestamp info
 //!
 #[macro_use]
 extern crate lazy_static;

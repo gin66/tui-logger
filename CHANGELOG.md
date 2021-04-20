@@ -1,3 +1,6 @@
+0.6.3:
+- Removed verbose timestamp info log (issue #16)
+
 0.6.2:
 - Fix by Wuelle to avoid panic on line wrapping inside a utf8 character
 
