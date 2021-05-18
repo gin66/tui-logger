@@ -16,13 +16,13 @@ travis-ci = { repository = "gin66/tui-logger" }
 [dependencies]
 log = "0.4"
 chrono = "0.4"
-tui = { version = "0.14", default-features = false }
+tui = { version = "0.15", default-features = false }
 lazy_static = "1.0"
 fxhash = "0.2"
 parking_lot = "0"
 slog = "2.5"
 
 [dev-dependencies]
-tui = { version = "0.14", default-features = true }
+tui = { version = "0.15", default-features = true }
 termion = "1.5"
 
