@@ -57,7 +57,7 @@
 //! - Target of the log events can be defined in the log e.g. `warn!(target: "demo", "Log message");`
 //!  
 //! ## Smart Widget Key Commands
-//! ```
+//! ```ignore
 //! |  KEY     | ACTION
 //! |----------|-----------------------------------------------------------|
 //! | h        | Toggles target selector widget hidden/visible
