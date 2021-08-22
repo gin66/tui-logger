@@ -1,6 +1,5 @@
  # Logger with smart widget for the `tui` crate
 
- ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
  ![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github)
  ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 
