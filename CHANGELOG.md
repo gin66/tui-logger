@@ -1,3 +1,6 @@
+0.6.4:
+- Bump version up for update to tui 0.16
+
 0.6.3:
 - Removed verbose timestamp info log (issue #16)
 
