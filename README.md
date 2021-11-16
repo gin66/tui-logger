@@ -1,6 +1,6 @@
  # Logger with smart widget for the `tui` crate
 
- ![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_4)
+ [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_4)](https://deps.rs/repo/github/gin66/tui-logger)
  ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 
 
