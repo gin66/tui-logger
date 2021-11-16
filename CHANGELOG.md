@@ -1,3 +1,6 @@
+0.6.5:
+- Use thread safe counterparts for Rc/RefCell
+
 0.6.4:
 - Bump version up for update to tui 0.16
 

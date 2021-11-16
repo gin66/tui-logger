@@ -119,4 +119,5 @@
  * [icy-ux](https://github.com/icy-ux) for adding slog support and example
  * [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
  * [brooksmtownsend](https://github.com/brooksmtownsend) Patch to remove verbose timestamp info
+ * [Kibouo](https://github.com/Kibouo) Patch to change Rc/Refcell to thread-safe counterparts
 
