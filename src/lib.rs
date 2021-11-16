@@ -47,7 +47,7 @@
 //!
 //! - Capturing of log messages by the logger
 //! - Selection of levels for display in the logging message view
-//!  
+//!
 //! The two columns have the following meaning:
 //!
 //! - Code EWIDT: E stands for Error, W for Warn, Info, Debug and Trace.
@@ -55,7 +55,7 @@
 //!   + Normal characters show enabled capturing of a log level per target
 //!   + If any of EWIDT are not shown, then the respective log level is not captured
 //! - Target of the log events can be defined in the log e.g. `warn!(target: "demo", "Log message");`
-//!  
+//!
 //! ## Smart Widget Key Commands
 //! ```ignore
 //! |  KEY     | ACTION
@@ -73,7 +73,7 @@
 //! | ESCAPE   | Exit page mode and go back to scrolling mode
 //! | SPACE    | Toggles hiding of targets, which have logfilter set to off
 //! ```
-//!  
+//!
 //! The mapping of key to action has to be done in the application. The respective TuiWidgetEvent
 //! has to be provided to TuiWidgetState::transition().
 //!
@@ -126,7 +126,6 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::cell::RefCell;
 use std::collections::hash_map::Iter;
 use std::collections::hash_map::Keys;
 use std::collections::HashMap;
@@ -135,7 +134,7 @@ use std::fs::OpenOptions;
 use std::io;
 use std::io::Write;
 use std::mem;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
@@ -518,21 +517,21 @@ impl TuiWidgetInnerState {
 /// This struct contains the shared state of a TuiLoggerWidget and a TuiLoggerTargetWidget.
 #[derive(Default)]
 pub struct TuiWidgetState {
-    inner: Rc<RefCell<TuiWidgetInnerState>>,
+    inner: Arc<Mutex<TuiWidgetInnerState>>,
 }
 impl TuiWidgetState {
     /// Create a new TuiWidgetState
     pub fn new() -> TuiWidgetState {
         TuiWidgetState {
-            inner: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
+            inner: Arc::new(Mutex::new(TuiWidgetInnerState::new())),
         }
     }
     pub fn set_level_for_target(&self, target: &str, levelfilter: LevelFilter) -> &TuiWidgetState {
-        self.inner.borrow_mut().config.set(target, levelfilter);
+        self.inner.lock().config.set(target, levelfilter);
         self
     }
     pub fn transition(&mut self, event: &TuiWidgetEvent) {
-        self.inner.borrow_mut().transition(event);
+        self.inner.lock().transition(event);
     }
 }
 
@@ -546,7 +545,7 @@ pub struct TuiLoggerTargetWidget<'b> {
     style_hide: Style,
     style_off: Option<Style>,
     highlight_style: Style,
-    state: Rc<RefCell<TuiWidgetInnerState>>,
+    state: Arc<Mutex<TuiWidgetInnerState>>,
     targets: Vec<String>,
 }
 impl<'b> Default for TuiLoggerTargetWidget<'b> {
@@ -559,7 +558,7 @@ impl<'b> Default for TuiLoggerTargetWidget<'b> {
             style_hide: Style::default(),
             style_show: Style::default().add_modifier(Modifier::REVERSED),
             highlight_style: Style::default().add_modifier(Modifier::REVERSED),
-            state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
+            state: Arc::new(Mutex::new(TuiWidgetInnerState::new())),
             targets: vec![],
         }
     }
@@ -619,7 +618,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         self.highlight_style = style;
         self
     }
-    fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerTargetWidget<'b> {
+    fn inner_state(mut self, state: Arc<Mutex<TuiWidgetInnerState>>) -> TuiLoggerTargetWidget<'b> {
         self.state = state;
         self
     }
@@ -649,7 +648,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
 
         {
             let hot_targets = &TUI_LOGGER.inner.lock().targets;
-            let mut state = self.state.borrow_mut();
+            let mut state = self.state.lock();
             let hide_off = state.hide_off;
             let offset = state.offset;
             let focus_selected = state.focus_selected;
@@ -766,7 +765,7 @@ pub struct TuiLoggerWidget<'b> {
     style_debug: Option<Style>,
     style_trace: Option<Style>,
     style_info: Option<Style>,
-    state: Rc<RefCell<TuiWidgetInnerState>>,
+    state: Arc<Mutex<TuiWidgetInnerState>>,
 }
 impl<'b> Default for TuiLoggerWidget<'b> {
     fn default() -> TuiLoggerWidget<'b> {
@@ -779,7 +778,7 @@ impl<'b> Default for TuiLoggerWidget<'b> {
             style_debug: None,
             style_trace: None,
             style_info: None,
-            state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
+            state: Arc::new(Mutex::new(TuiWidgetInnerState::new())),
         }
     }
 }
@@ -848,7 +847,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self.style_debug = Some(style);
         self
     }
-    fn inner_state(mut self, state: Rc<RefCell<TuiWidgetInnerState>>) -> TuiLoggerWidget<'b> {
+    fn inner_state(mut self, state: Arc<Mutex<TuiWidgetInnerState>>) -> TuiLoggerWidget<'b> {
         self.state = state;
         self
     }
@@ -872,7 +871,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             return;
         }
 
-        let mut state = self.state.borrow_mut();
+        let mut state = self.state.lock();
         let la_height = list_area.height as usize;
         let mut lines: Vec<(Option<Style>, u16, String)> = vec![];
         let indent = 9;
@@ -955,11 +954,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 let rem_width = la_width - indent as usize;
                 while remain.chars().count() > rem_width {
                     let remove: String = remain.chars().take(rem_width).collect();
-                    wrapped_lines.push((
-                        style,
-                        indent,
-                        remove,
-                    ));
+                    wrapped_lines.push((style, indent, remove));
                     remain = remain.chars().skip(rem_width).collect();
                 }
                 wrapped_lines.push((style, indent, remain.to_owned()));
@@ -1005,7 +1000,7 @@ pub struct TuiLoggerSmartWidget<'a> {
     style_show: Option<Style>,
     style_hide: Option<Style>,
     style_off: Option<Style>,
-    state: Rc<RefCell<TuiWidgetInnerState>>,
+    state: Arc<Mutex<TuiWidgetInnerState>>,
 }
 impl<'a> Default for TuiLoggerSmartWidget<'a> {
     fn default() -> Self {
@@ -1024,7 +1019,7 @@ impl<'a> Default for TuiLoggerSmartWidget<'a> {
             style_show: None,
             style_hide: None,
             style_off: None,
-            state: Rc::new(RefCell::new(TuiWidgetInnerState::new())),
+            state: Arc::new(Mutex::new(TuiWidgetInnerState::new())),
         }
     }
 }
@@ -1132,7 +1127,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
             .0
             .push(format!(" [log={:.1}/s]", entries_s).into());
 
-        let hide_target = self.state.borrow().hide_target;
+        let hide_target = self.state.lock().hide_target;
         if hide_target {
             let tui_lw = TuiLoggerWidget::default()
                 .block(
@@ -1153,7 +1148,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
             let mut width: usize = 0;
             {
                 let hot_targets = &TUI_LOGGER.inner.lock().targets;
-                let mut state = self.state.borrow_mut();
+                let mut state = self.state.lock();
                 let hide_off = state.hide_off;
                 {
                     let targets = &mut state.config;
