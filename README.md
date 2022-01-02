@@ -1,6 +1,6 @@
  # Logger with smart widget for the `tui` crate
 
- [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_4)](https://deps.rs/repo/github/gin66/tui-logger)
+ [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_6)](https://deps.rs/repo/github/gin66/tui-logger)
  ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 
 
@@ -10,7 +10,7 @@
 
  ## Documentation
 
- [Documentation](https://docs.rs/tui-logger/0.5.0/tui_logger/)
+ [Documentation](https://docs.rs/tui-logger/0.6.6/tui_logger/)
 
  ## Features
 

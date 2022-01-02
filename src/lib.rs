@@ -755,6 +755,12 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
 
 /// The TuiLoggerWidget shows the logging messages in an endless scrolling view.
 /// It is controlled by a TuiWidgetState for selected events.
+#[derive(Debug, Clone, PartialEq, Hash)]
+pub enum TuiLoggerLevelOutput {
+    Abbreviated,
+    Long
+}
+
 pub struct TuiLoggerWidget<'b> {
     block: Option<Block<'b>>,
     /// Base style of the widget
@@ -765,6 +771,12 @@ pub struct TuiLoggerWidget<'b> {
     style_debug: Option<Style>,
     style_trace: Option<Style>,
     style_info: Option<Style>,
+    format_separator: char,
+    format_timestamp: Option<String>,
+    format_output_level: Option<TuiLoggerLevelOutput>,
+    format_output_target: bool,
+    format_output_file: bool,
+    format_output_line: bool,
     state: Arc<Mutex<TuiWidgetInnerState>>,
 }
 impl<'b> Default for TuiLoggerWidget<'b> {
@@ -778,76 +790,166 @@ impl<'b> Default for TuiLoggerWidget<'b> {
             style_debug: None,
             style_trace: None,
             style_info: None,
+            format_separator: ':',
+            format_timestamp: Some("%H:%M:%S".to_string()),
+            format_output_level: Some(TuiLoggerLevelOutput::Long),
+            format_output_target: true,
+            format_output_file: true,
+            format_output_line: true,
             state: Arc::new(Mutex::new(TuiWidgetInnerState::new())),
         }
     }
 }
 impl<'b> TuiLoggerWidget<'b> {
-    pub fn block(mut self, block: Block<'b>) -> TuiLoggerWidget<'b> {
+    pub fn block(mut self, block: Block<'b>) -> Self {
         self.block = Some(block);
         self
     }
-    fn opt_style(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
+    fn opt_style(mut self, style: Option<Style>) -> Self {
         if let Some(s) = style {
             self.style = s;
         }
         self
     }
-    fn opt_style_error(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
+    fn opt_style_error(mut self, style: Option<Style>) -> Self {
         if style.is_some() {
             self.style_error = style;
         }
         self
     }
-    fn opt_style_warn(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
+    fn opt_style_warn(mut self, style: Option<Style>) -> Self {
         if style.is_some() {
             self.style_warn = style;
         }
         self
     }
-    fn opt_style_info(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
+    fn opt_style_info(mut self, style: Option<Style>) -> Self {
         if style.is_some() {
             self.style_info = style;
         }
         self
     }
-    fn opt_style_trace(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
+    fn opt_style_trace(mut self, style: Option<Style>) -> Self {
         if style.is_some() {
             self.style_trace = style;
         }
         self
     }
-    fn opt_style_debug(mut self, style: Option<Style>) -> TuiLoggerWidget<'b> {
+    fn opt_style_debug(mut self, style: Option<Style>) -> Self {
         if style.is_some() {
             self.style_debug = style;
         }
         self
     }
-    pub fn style(mut self, style: Style) -> TuiLoggerWidget<'b> {
+    pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
     }
-    pub fn style_error(mut self, style: Style) -> TuiLoggerWidget<'b> {
+    pub fn style_error(mut self, style: Style) -> Self {
         self.style_error = Some(style);
         self
     }
-    pub fn style_warn(mut self, style: Style) -> TuiLoggerWidget<'b> {
+    pub fn style_warn(mut self, style: Style) -> Self {
         self.style_warn = Some(style);
         self
     }
-    pub fn style_info(mut self, style: Style) -> TuiLoggerWidget<'b> {
+    pub fn style_info(mut self, style: Style) -> Self {
         self.style_info = Some(style);
         self
     }
-    pub fn style_trace(mut self, style: Style) -> TuiLoggerWidget<'b> {
+    pub fn style_trace(mut self, style: Style) -> Self {
         self.style_trace = Some(style);
         self
     }
-    pub fn style_debug(mut self, style: Style) -> TuiLoggerWidget<'b> {
+    pub fn style_debug(mut self, style: Style) -> Self {
         self.style_debug = Some(style);
         self
     }
-    fn inner_state(mut self, state: Arc<Mutex<TuiWidgetInnerState>>) -> TuiLoggerWidget<'b> {
+    fn opt_output_separator(mut self, opt_sep: Option<char>) -> Self {
+        if let Some(ch) = opt_sep {
+            self.format_separator = ch;
+        }
+        self
+    }
+    /// Separator character between field.
+    /// Default is ':'
+    pub fn output_separator(mut self, sep: char) -> Self {
+        self.format_separator = sep;
+        self
+    }
+    fn opt_output_timestamp(mut self, opt_fmt: Option<Option<String>>) -> Self {
+        if let Some(fmt) = opt_fmt {
+            self.format_timestamp = fmt;
+        }
+        self
+    }
+    /// The format string can be defined as described in
+    /// <https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html>
+    ///
+    /// If called with None, timestamp is not included in output.
+    ///
+    /// Default is %H:%M:%S
+    pub fn output_timestamp(mut self, fmt: Option<String>) -> Self {
+        self.format_timestamp = fmt;
+        self
+    }
+    fn opt_output_level(mut self, opt_fmt: Option<Option<TuiLoggerLevelOutput>>) -> Self {
+        if let Some(fmt) = opt_fmt {
+            self.format_output_level = fmt;
+        }
+        self
+    }
+    /// Possible values are
+    /// - TuiLoggerLevelOutput::Long        => DEBUG/TRACE/...
+    /// - TuiLoggerLevelOutput::Abbreviated => D/T/...
+    ///
+    /// If called with None, level is not included in output.
+    ///
+    /// Default is Long
+    pub fn output_level(mut self, level: Option<TuiLoggerLevelOutput>) -> Self {
+        self.format_output_level = level;
+        self
+    }
+    fn opt_output_target(mut self, opt_enabled: Option<bool>) -> Self {
+        if let Some(enabled) = opt_enabled {
+            self.format_output_target = enabled;
+        }
+        self
+    }
+    /// Enables output of target field of event
+    ///
+    /// Default is true
+    pub fn output_target(mut self, enabled: bool) -> Self {
+        self.format_output_target = enabled;
+        self
+    }
+    fn opt_output_file(mut self, opt_enabled: Option<bool>) -> Self {
+        if let Some(enabled) = opt_enabled {
+            self.format_output_file = enabled;
+        }
+        self
+    }
+    /// Enables output of file field of event
+    ///
+    /// Default is true
+    pub fn output_file(mut self, enabled: bool) -> Self {
+        self.format_output_file = enabled;
+        self
+    }
+    fn opt_output_line(mut self, opt_enabled: Option<bool>) -> Self {
+        if let Some(enabled) = opt_enabled {
+            self.format_output_line = enabled;
+        }
+        self
+    }
+    /// Enables output of line field of event
+    ///
+    /// Default is true
+    pub fn output_line(mut self, enabled: bool) -> Self {
+        self.format_output_line = enabled;
+        self
+    }
+    fn inner_state(mut self, state: Arc<Mutex<TuiWidgetInnerState>>) -> Self {
         self.state = state;
         self
     }
@@ -857,27 +959,42 @@ impl<'b> TuiLoggerWidget<'b> {
     }
     fn format_event(&self, evt: &ExtLogRecord) -> (String, Option<Style>) {
         let mut output = String::new();
-        output.push_str(&format!("{}", evt.timestamp.format("%H:%M:%S")));
-        output.push(':');
-        let (col_style, txt, with_loc) = match evt.level {
-            log::Level::Error => (self.style_error, "ERROR", true),
-            log::Level::Warn => (self.style_warn, "WARN ", true),
-            log::Level::Info => (self.style_info, "INFO ", false),
-            log::Level::Debug => (self.style_debug, "DEBUG", true),
-            log::Level::Trace => (self.style_trace, "TRACE", true),
+        let (col_style, lev_long, lev_abbr, with_loc) = match evt.level {
+            log::Level::Error => (self.style_error, "ERROR", "E", true),
+            log::Level::Warn => (self.style_warn, "WARN ", "W", true),
+            log::Level::Info => (self.style_info, "INFO ", "I", false),
+            log::Level::Debug => (self.style_debug, "DEBUG", "D", true),
+            log::Level::Trace => (self.style_trace, "TRACE", "T", true),
         };
-        output.push_str(txt);
-        output.push(':');
-        output.push_str(&evt.target);
-        if with_loc {
-            output.push(':');
-            output.push_str(&evt.file);
-            output.push(':');
-            output.push_str(&format!("{}", evt.line));
+        if let Some(fmt) = self.format_timestamp.as_ref() {
+            output.push_str(&format!("{}", evt.timestamp.format(&fmt)));
+            output.push(self.format_separator);
         }
-        output.push(':');
-        let mut sublines: Vec<&str> = evt.msg.lines().rev().collect();
-        output.push_str(sublines.pop().unwrap());
+        match &self.format_output_level {
+            None => {},
+            Some(TuiLoggerLevelOutput::Abbreviated) => {
+                output.push_str(lev_abbr);
+                output.push(self.format_separator);
+            }
+            Some(TuiLoggerLevelOutput::Long) => {
+                output.push_str(lev_long);
+                output.push(self.format_separator);
+            }
+        }
+        if self.format_output_target {
+            output.push_str(&evt.target);
+            output.push(self.format_separator);
+        }
+        if with_loc {
+            if self.format_output_file {
+                output.push_str(&evt.file);
+                output.push(self.format_separator);
+            }
+            if self.format_output_line {
+                output.push_str(&format!("{}", evt.line));
+                output.push(self.format_separator);
+            }
+        }
         (output, col_style)
     }
 }
@@ -1006,6 +1123,12 @@ pub struct TuiLoggerSmartWidget<'a> {
     style_show: Option<Style>,
     style_hide: Option<Style>,
     style_off: Option<Style>,
+    format_separator: Option<char>,
+    format_timestamp: Option<Option<String>>,
+    format_output_level: Option<Option<TuiLoggerLevelOutput>>,
+    format_output_target: Option<bool>,
+    format_output_file: Option<bool>,
+    format_output_line: Option<bool>,
     state: Arc<Mutex<TuiWidgetInnerState>>,
 }
 impl<'a> Default for TuiLoggerSmartWidget<'a> {
@@ -1025,6 +1148,12 @@ impl<'a> Default for TuiLoggerSmartWidget<'a> {
             style_show: None,
             style_hide: None,
             style_off: None,
+            format_separator: None,
+            format_timestamp: None,
+            format_output_level: None,
+            format_output_target: None,
+            format_output_file: None,
+            format_output_line: None,
             state: Arc::new(Mutex::new(TuiWidgetInnerState::new())),
         }
     }
@@ -1072,6 +1201,54 @@ impl<'a> TuiLoggerSmartWidget<'a> {
     }
     pub fn style_show(mut self, style: Style) -> Self {
         self.style_show = Some(style);
+        self
+    }
+    /// Separator character between field.
+    /// Default is ':'
+    pub fn output_separator(mut self, sep: char) -> Self {
+        self.format_separator = Some(sep);
+        self
+    }
+    /// The format string can be defined as described in
+    /// <https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html>
+    ///
+    /// If called with None, timestamp is not included in output.
+    ///
+    /// Default is %H:%M:%S
+    pub fn output_timestamp(mut self, fmt: Option<String>) -> Self {
+        self.format_timestamp = Some(fmt);
+        self
+    }
+    /// Possible values are
+    /// - TuiLoggerLevelOutput::Long        => DEBUG/TRACE/...
+    /// - TuiLoggerLevelOutput::Abbreviated => D/T/...
+    ///
+    /// If called with None, level is not included in output.
+    ///
+    /// Default is Long
+    pub fn output_level(mut self, level: Option<TuiLoggerLevelOutput>) -> Self {
+        self.format_output_level = Some(level);
+        self
+    }
+    /// Enables output of target field of event
+    ///
+    /// Default is true
+    pub fn output_target(mut self, enabled: bool) -> Self {
+        self.format_output_target = Some(enabled);
+        self
+    }
+    /// Enables output of file field of event
+    ///
+    /// Default is true
+    pub fn output_file(mut self, enabled: bool) -> Self {
+        self.format_output_file = Some(enabled);
+        self
+    }
+    /// Enables output of line field of event
+    ///
+    /// Default is true
+    pub fn output_line(mut self, enabled: bool) -> Self {
+        self.format_output_line = Some(enabled);
         self
     }
     pub fn title_target<T>(mut self, title: T) -> Self
@@ -1148,6 +1325,12 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                 .opt_style_info(self.style_info)
                 .opt_style_debug(self.style_debug)
                 .opt_style_trace(self.style_trace)
+                .opt_output_separator(self.format_separator)
+                .opt_output_timestamp(self.format_timestamp)
+                .opt_output_level(self.format_output_level)
+                .opt_output_target(self.format_output_target)
+                .opt_output_file(self.format_output_file)
+                .opt_output_line(self.format_output_line)
                 .inner_state(self.state);
             tui_lw.render(area, buf);
         } else {
@@ -1201,6 +1384,12 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                 .opt_style_info(self.style_info)
                 .opt_style_debug(self.style_debug)
                 .opt_style_trace(self.style_trace)
+                .opt_output_separator(self.format_separator)
+                .opt_output_timestamp(self.format_timestamp)
+                .opt_output_level(self.format_output_level)
+                .opt_output_target(self.format_output_target)
+                .opt_output_file(self.format_output_file)
+                .opt_output_line(self.format_output_line)
                 .inner_state(self.state.clone());
             tui_lw.render(chunks[1], buf);
         }

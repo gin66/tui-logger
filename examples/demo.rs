@@ -207,6 +207,12 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .style_warn(Style::default().fg(Color::Yellow))
         .style_trace(Style::default().fg(Color::Magenta))
         .style_info(Style::default().fg(Color::Cyan))
+        .output_separator(':')
+        .output_timestamp(Some("%H:%M:%S".to_string()))
+        .output_level(Some(TuiLoggerLevelOutput::Abbreviated))
+        .output_target(true)
+        .output_file(true)
+        .output_line(true)
         .state(&mut app.states[sel]);
     t.render_widget(tui_sm, chunks[1]);
     let tui_w: TuiLoggerWidget = TuiLoggerWidget::default()
@@ -216,6 +222,12 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
                 .border_style(Style::default().fg(Color::White).bg(Color::Black))
                 .borders(Borders::ALL),
         )
+        .output_separator('|')
+        .output_timestamp(Some("%F %H:%M:%S%.3f".to_string()))
+        .output_level(Some(TuiLoggerLevelOutput::Long))
+        .output_target(false)
+        .output_file(false)
+        .output_line(false)
         .style(Style::default().fg(Color::White).bg(Color::Black));
     t.render_widget(tui_w, chunks[2]);
     if let Some(percent) = app.opt_info_cnt {
