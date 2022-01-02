@@ -1,12 +1,14 @@
 0.6.6:
 - Add functions to format output of log data as discussed in [issue #19](https://github.com/gin66/tui-logger/issues/19)
   The functions are with their default values:
-        output_separator(':')
-        output_timestamp(Some("%H:%M:%S".to_string()))
-        output_level(Some(TuiLoggerLevelOutput::Long))
-        output_target(true)
-        output_file(true)
-        output_line(true)
+  ```
+  output_separator(':')
+  output_timestamp(Some("%H:%M:%S".to_string()))
+  output_level(Some(TuiLoggerLevelOutput::Long))
+  output_target(true)
+  output_file(true)
+  output_line(true)
+  ```
 
 0.6.5:
 - Use thread safe counterparts for Rc/RefCell
