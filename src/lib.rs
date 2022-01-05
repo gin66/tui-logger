@@ -707,8 +707,8 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             let targets = &(&state.config);
             for i in 0..list_height {
                 let t = &self.targets[i + offset];
-                let hot_level_filter = hot_targets.get(&t).unwrap();
-                let level_filter = targets.get(&t).unwrap();
+                let hot_level_filter = hot_targets.get(t).unwrap();
+                let level_filter = targets.get(t).unwrap();
                 for (j, sym, lev) in &[
                     (0, "E", Level::Error),
                     (1, "W", Level::Warn),
@@ -758,7 +758,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub enum TuiLoggerLevelOutput {
     Abbreviated,
-    Long
+    Long,
 }
 
 pub struct TuiLoggerWidget<'b> {
@@ -967,11 +967,11 @@ impl<'b> TuiLoggerWidget<'b> {
             log::Level::Trace => (self.style_trace, "TRACE", "T", true),
         };
         if let Some(fmt) = self.format_timestamp.as_ref() {
-            output.push_str(&format!("{}", evt.timestamp.format(&fmt)));
+            output.push_str(&format!("{}", evt.timestamp.format(fmt)));
             output.push(self.format_separator);
         }
         match &self.format_output_level {
-            None => {},
+            None => {}
             Some(TuiLoggerLevelOutput::Abbreviated) => {
                 output.push_str(lev_abbr);
                 output.push(self.format_separator);
@@ -1275,20 +1275,16 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let entries_s = {
             let mut tui_lock = TUI_LOGGER.inner.lock();
-            let first_timestamp = {
-                if let Some(entry) = tui_lock.events.iter().next() {
-                    Some(entry.timestamp.timestamp_millis())
-                } else {
-                    None
-                }
-            };
-            let last_timestamp = {
-                if let Some(entry) = tui_lock.events.rev_iter().next() {
-                    Some(entry.timestamp.timestamp_millis())
-                } else {
-                    None
-                }
-            };
+            let first_timestamp = tui_lock
+                .events
+                .iter()
+                .next()
+                .map(|entry| entry.timestamp.timestamp_millis());
+            let last_timestamp = tui_lock
+                .events
+                .rev_iter()
+                .next()
+                .map(|entry| entry.timestamp.timestamp_millis());
             if let Some(first) = first_timestamp {
                 if let Some(last) = last_timestamp {
                     let dt = last - first;

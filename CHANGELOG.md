@@ -1,5 +1,6 @@
 next:
 - Update rust edition in Cargo.toml to 2021
+- Fix all warnings from cargo clippy
 
 0.6.6:
 - Add functions to format output of log data as discussed in [issue #19](https://github.com/gin66/tui-logger/issues/19)
