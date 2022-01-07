@@ -1,6 +1,18 @@
-next:
+0.7.0:
 - Update rust edition in Cargo.toml to 2021
 - Fix all warnings from cargo clippy
+- new function for TuiWidgetState to set the default display level - not impacting the recording
+  ```rust
+    set_default_display_level(self, levelfilter: LevelFilter) -> TuiWidgetState
+- changed signature for TuiWidgetState function from
+  ```rust
+    set_level_for_target(&self, target: &str, levelfilter: LevelFilter) -> &TuiWidgetState
+  ```
+  to
+  ```rust
+    set_level_for_target(self, target: &str, levelfilter: LevelFilter) -> TuiWidgetState
+  ```
+
 
 0.6.6:
 - Add functions to format output of log data as discussed in [issue #19](https://github.com/gin66/tui-logger/issues/19)

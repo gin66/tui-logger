@@ -182,6 +182,7 @@ pub struct LevelConfig {
     config: HashMap<String, LevelFilter>,
     generation: u64,
     origin_generation: u64,
+    default_display_level: Option<LevelFilter>,
 }
 impl LevelConfig {
     /// Create an empty LevelConfig.
@@ -190,6 +191,7 @@ impl LevelConfig {
             config: HashMap::new(),
             generation: 0,
             origin_generation: 0,
+            default_display_level: None,
         }
     }
     /// Set for a given target the LevelFilter in the table and update the generation.
@@ -203,6 +205,10 @@ impl LevelConfig {
         }
         self.config.insert(target.to_string(), level);
         self.generation += 1;
+    }
+    /// Set default display level filter for new targets - independent from recording
+    pub fn set_default_display_level(&mut self, level: LevelFilter) {
+        self.default_display_level = Some(level);
     }
     /// Retrieve an iter for all the targets stored in the hash table.
     pub fn keys(&self) -> Keys<String, LevelFilter> {
@@ -229,7 +235,17 @@ impl LevelConfig {
                         continue;
                     }
                 }
-                self.set(target, *origin_levelfilter);
+                let levelfilter = self
+                    .default_display_level
+                    .map(|lvl| {
+                        if lvl > *origin_levelfilter {
+                            *origin_levelfilter
+                        } else {
+                            lvl
+                        }
+                    })
+                    .unwrap_or(*origin_levelfilter);
+                self.set(target, levelfilter);
             }
             self.generation = origin.generation;
         }
@@ -526,7 +542,11 @@ impl TuiWidgetState {
             inner: Arc::new(Mutex::new(TuiWidgetInnerState::new())),
         }
     }
-    pub fn set_level_for_target(&self, target: &str, levelfilter: LevelFilter) -> &TuiWidgetState {
+    pub fn set_default_display_level(self, levelfilter: LevelFilter) -> TuiWidgetState {
+        self.inner.lock().config.default_display_level = Some(levelfilter);
+        self
+    }
+    pub fn set_level_for_target(self, target: &str, levelfilter: LevelFilter) -> TuiWidgetState {
         self.inner.lock().config.set(target, levelfilter);
         self
     }

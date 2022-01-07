@@ -175,7 +175,8 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     let sel = app.selected_tab;
 
     if app.states.len() <= sel {
-        app.states.push(TuiWidgetState::new());
+        let tws = TuiWidgetState::new().set_default_display_level(log::LevelFilter::Info);
+        app.states.push(tws);
     }
 
     let block = Block::default().borders(Borders::ALL);
