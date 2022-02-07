@@ -120,4 +120,5 @@
  * [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
  * [brooksmtownsend](https://github.com/brooksmtownsend) Patch to remove verbose timestamp info
  * [Kibouo](https://github.com/Kibouo) Patch to change Rc/Refcell to thread-safe counterparts
+ * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
 
