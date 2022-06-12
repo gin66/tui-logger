@@ -121,4 +121,5 @@
  * [brooksmtownsend](https://github.com/brooksmtownsend) Patch to remove verbose timestamp info
  * [Kibouo](https://github.com/Kibouo) Patch to change Rc/Refcell to thread-safe counterparts
  * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
+ * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
 

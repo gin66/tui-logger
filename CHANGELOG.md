@@ -1,3 +1,9 @@
+0.8.0:
+- Update to tui-rs 0.18
+
+0.7.1:
+- Update to tui-rs 0.17
+
 0.7.0:
 - Update rust edition in Cargo.toml to 2021
 - Fix all warnings from cargo clippy
