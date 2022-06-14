@@ -20,9 +20,11 @@ tui = { version = "0.18", default-features = false }
 lazy_static = "1.0"
 fxhash = "0.2"
 parking_lot = "0"
-slog = "2.5"
+slog = { version = "2.5", optional = true }
 
 [dev-dependencies]
 tui = { version = "0.18", default-features = true, features = ["termion"] }
 termion = "1.5"
 
+[features]
+default = ["slog"]

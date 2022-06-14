@@ -146,9 +146,11 @@ use tui::text::Spans;
 use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
+#[cfg(feature = "slog")]
 mod slog;
 
 pub use crate::circular::CircularBuffer;
+#[cfg(feature = "slog")]
 pub use crate::slog::TuiSlogDrain;
 
 struct ExtLogRecord {
@@ -365,6 +367,7 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     log::set_logger(&*TUI_LOGGER)
 }
 
+#[cfg(feature = "slog")]
 pub fn slog_drain() -> TuiSlogDrain {
     TuiSlogDrain
 }
