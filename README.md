@@ -10,7 +10,7 @@
 
  ## Documentation
 
- [Documentation](https://docs.rs/tui-logger/0.6.6/tui_logger/)
+ [Documentation](https://docs.rs/tui-logger/latest/tui_logger/)
 
  ## Features
 
