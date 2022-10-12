@@ -1,3 +1,6 @@
+0.8.1:
+- Update to tui-rs 0.19 and slog to 2.7.0
+
 0.8.0:
 - Update to tui-rs 0.18
 
