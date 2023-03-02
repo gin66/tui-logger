@@ -216,6 +216,12 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .output_line(true)
         .state(&mut app.states[sel]);
     t.render_widget(tui_sm, chunks[1]);
+    // Example to filter out log entries below Info for targets "trace" and "DEMO"
+    // Best to store TuiWidgetState on application level,
+    // but this temporary usage as shown here works, too.
+    let filter_state = TuiWidgetState::new()
+        .set_level_for_target("DEMO", log::LevelFilter::Info)
+        .set_level_for_target("trace", log::LevelFilter::Info);
     let tui_w: TuiLoggerWidget = TuiLoggerWidget::default()
         .block(
             Block::default()
@@ -229,7 +235,8 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .output_target(false)
         .output_file(false)
         .output_line(false)
-        .style(Style::default().fg(Color::White).bg(Color::Black));
+        .style(Style::default().fg(Color::White).bg(Color::Black))
+        .state(&filter_state);
     t.render_widget(tui_w, chunks[2]);
     if let Some(percent) = app.opt_info_cnt {
         let gauge = Gauge::default()

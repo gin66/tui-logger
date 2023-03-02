@@ -1,5 +1,6 @@
  # Logger with smart widget for the `tui` crate
 
+ ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
  [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_6)](https://deps.rs/repo/github/gin66/tui-logger)
  ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 
@@ -10,7 +11,7 @@
 
  ## Documentation
 
- [Documentation](https://docs.rs/tui-logger/0.6.6/tui_logger/)
+ [Documentation](https://docs.rs/tui-logger/0.8.2/tui_logger/)
 
  ## Features
 
@@ -44,7 +45,7 @@
 
  - Capturing of log messages by the logger
  - Selection of levels for display in the logging message view
-  
+
  The two columns have the following meaning:
 
  - Code EWIDT: E stands for Error, W for Warn, Info, Debug and Trace.
@@ -52,9 +53,9 @@
    + Normal characters show enabled capturing of a log level per target
    + If any of EWIDT are not shown, then the respective log level is not captured
  - Target of the log events can be defined in the log e.g. `warn!(target: "demo", "Log message");`
-  
+
  ## Smart Widget Key Commands
- ```
+ ```ignore
  |  KEY     | ACTION
  |----------|-----------------------------------------------------------|
  | h        | Toggles target selector widget hidden/visible
@@ -70,7 +71,7 @@
  | ESCAPE   | Exit page mode and go back to scrolling mode
  | SPACE    | Toggles hiding of targets, which have logfilter set to off
  ```
-  
+
  The mapping of key to action has to be done in the application. The respective TuiWidgetEvent
  has to be provided to TuiWidgetState::transition().
 

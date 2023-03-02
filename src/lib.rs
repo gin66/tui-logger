@@ -3,17 +3,17 @@
 //! # Logger with smart widget for the `tui` crate
 //!
 //! ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
-//! ![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github)
+//! [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_6)](https://deps.rs/repo/github/gin66/tui-logger)
 //! ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 //!
 //!
 //! ## Demo of the widget
 //!
-//! [Demo](https://github.com/gin66/tui-logger/blob/master/doc/example.svg?raw=true)
+//! ![Demo](https://github.com/gin66/tui-logger/blob/master/doc/demo_v0.6.6.gif?raw=true)
 //!
 //! ## Documentation
 //!
-//! [Documentation](https://docs.rs/tui-logger/0.5.0/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/0.8.2/tui_logger/)
 //!
 //! ## Features
 //!
@@ -122,6 +122,9 @@
 //! * [icy-ux](https://github.com/icy-ux) for adding slog support and example
 //! * [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
 //! * [brooksmtownsend](https://github.com/brooksmtownsend) Patch to remove verbose timestamp info
+//! * [Kibouo](https://github.com/Kibouo) Patch to change Rc/Refcell to thread-safe counterparts
+//! * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
+//! * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
 //!
 #[macro_use]
 extern crate lazy_static;
@@ -976,7 +979,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self.state = state;
         self
     }
-    pub fn state(&mut self, state: &TuiWidgetState) -> &mut TuiLoggerWidget<'b> {
+    pub fn state(mut self, state: &TuiWidgetState) -> Self {
         self.state = state.inner.clone();
         self
     }

@@ -1,3 +1,7 @@
+0.8.2:
+- Allow TuiLoggerWidget to be controlled with TuiWidgetState by calling state() builder function (#30)
+- Extend demo for an example for this TuiLoggerWidget control
+
 0.8.1:
 - Update to tui-rs 0.19 and slog to 2.7.0
 
