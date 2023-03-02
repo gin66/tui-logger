@@ -186,7 +186,8 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     let mut constraints = vec![
         Constraint::Length(3),
         Constraint::Percentage(50),
-        Constraint::Min(3),
+        Constraint::Percentage(30),
+        Constraint::Min(10),
     ];
     if app.opt_info_cnt.is_some() {
         constraints.push(Constraint::Length(3));
@@ -216,12 +217,24 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .output_line(true)
         .state(&mut app.states[sel]);
     t.render_widget(tui_sm, chunks[1]);
+
+    // show two TuiWidgetState side-by-side
+    constraints = vec![
+        Constraint::Percentage(50),
+        Constraint::Percentage(30),
+    ];
+    let hchunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(constraints)
+        .split(chunks[2]);
+
     // Example to filter out log entries below Info for targets "trace" and "DEMO"
     // Best to store TuiWidgetState on application level,
     // but this temporary usage as shown here works, too.
     let filter_state = TuiWidgetState::new()
         .set_level_for_target("DEMO", log::LevelFilter::Info)
-        .set_level_for_target("trace", log::LevelFilter::Info);
+        .set_level_for_target("trace", log::LevelFilter::Info)
+        .set_level_for_target("New event", log::LevelFilter::Off);
     let tui_w: TuiLoggerWidget = TuiLoggerWidget::default()
         .block(
             Block::default()
@@ -238,6 +251,26 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .style(Style::default().fg(Color::White).bg(Color::Black))
         .state(&filter_state);
     t.render_widget(tui_w, chunks[2]);
+
+    let filter_state = TuiWidgetState::new()
+        .set_level_for_target("trace", log::LevelFilter::Info);
+    let tui_w: TuiLoggerWidget = TuiLoggerWidget::default()
+        .block(
+            Block::default()
+                .title("Independent Tui Logger View")
+                .border_style(Style::default().fg(Color::White).bg(Color::Black))
+                .borders(Borders::ALL),
+        )
+        .output_separator('|')
+        .output_timestamp(Some("%F %H:%M:%S%.3f".to_string()))
+        .output_level(Some(TuiLoggerLevelOutput::Long))
+        .output_target(false)
+        .output_file(false)
+        .output_line(false)
+        .style(Style::default().fg(Color::White).bg(Color::Black))
+        .state(&filter_state);
+    t.render_widget(tui_w, hchunks[1]);
+
     if let Some(percent) = app.opt_info_cnt {
         let gauge = Gauge::default()
             .block(Block::default().borders(Borders::ALL).title("Progress"))

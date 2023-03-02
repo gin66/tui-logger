@@ -11,7 +11,7 @@
 
  ## Documentation
 
- [Documentation](https://docs.rs/tui-logger/0.8.2/tui_logger/)
+ [Documentation](https://docs.rs/tui-logger/latest/tui_logger/)
 
  ## Features
 

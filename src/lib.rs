@@ -108,6 +108,26 @@
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
 //! it receives to the `tui-logger` widget
 //!
+//! ## Custom filtering
+//! ```rust
+//! #[macro_use]
+//! extern crate log;
+//! //use tui_logger;
+//! use env_logger;
+//!
+//! fn main() {
+//!     // Early initialization of the logger
+//!     let drain = tui_logger::Drain::new();
+//!     // instead of tui_logger::init_logger, we use `env_logger`
+//!     env_logger::Builder::default()
+//!         .format(move |buf, record|
+//!             // patch the env-logger entry through our drain to the tui-logger
+//!             Ok(drain.log(record))
+//!         ).init(); // make this the global logger
+//!     // code....
+//! }
+//! ```
+//!
 //! ## Applications using tui-logger
 //!
 //! * [wash](https://github.com/wasmCloud/wash)
@@ -411,6 +431,21 @@ pub fn set_level_for_target(target: &str, levelfilter: LevelFilter) {
     let mut hs = TUI_LOGGER.hot_select.lock();
     hs.hashtable.insert(h, levelfilter);
 }
+
+impl TuiLogger {
+    fn raw_log(&self, record: &Record) {
+        let log_entry = ExtLogRecord {
+            timestamp: chrono::Local::now(),
+            level: record.level(),
+            target: record.target().to_string(),
+            file: record.file().unwrap_or("?").to_string(),
+            line: record.line().unwrap_or(0),
+            msg: format!("{}", record.args()),
+        };
+        self.hot_log.lock().events.push(log_entry);
+    }
+}
+
 impl Log for TuiLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
         let h = fxhash::hash64(metadata.target());
@@ -424,19 +459,25 @@ impl Log for TuiLogger {
 
     fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) {
-            let log_entry = ExtLogRecord {
-                timestamp: chrono::Local::now(),
-                level: record.level(),
-                target: record.target().to_string(),
-                file: record.file().unwrap_or("?").to_string(),
-                line: record.line().unwrap_or(0),
-                msg: format!("{}", record.args()),
-            };
-            self.hot_log.lock().events.push(log_entry);
+            self.raw_log(record)
         }
     }
 
     fn flush(&self) {}
+}
+
+/// A simple `Drain` to log any event directly.
+pub struct Drain;
+
+impl Drain {
+    /// Create a new Drain
+    pub fn new() -> Self {
+        Drain
+    }
+    /// Log the given record to the main tui-logger
+    pub fn log(&self, record: &Record) {
+        TUI_LOGGER.raw_log(record)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Hash)]
