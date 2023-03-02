@@ -13,7 +13,7 @@
 //!
 //! ## Documentation
 //!
-//! [Documentation](https://docs.rs/tui-logger/0.8.2/tui_logger/)
+//! [Documentation](https://docs.rs/tui-logger/latest/tui_logger/)
 //!
 //! ## Features
 //!
@@ -145,6 +145,7 @@
 //! * [Kibouo](https://github.com/Kibouo) Patch to change Rc/Refcell to thread-safe counterparts
 //! * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
 //! * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
+//! * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
 //!
 #[macro_use]
 extern crate lazy_static;
@@ -1094,6 +1095,12 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 if let Some(level) = state.config.get(&evt.target) {
                     if *level < evt.level {
                         continue;
+                    }
+                } else {
+                    if let Some(level) = state.config.default_display_level {
+                        if level < evt.level {
+                            continue;
+                        }
                     }
                 }
                 if state.focus_selected {

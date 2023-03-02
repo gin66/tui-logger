@@ -1,3 +1,6 @@
+0.8.3:
+- Make `TuiWidgetState.set_default_display_level()` work for TuiLoggerWidget (#30)
+
 0.8.2:
 - Allow TuiLoggerWidget to be controlled with TuiWidgetState by calling state() builder function (#30)
 - Extend demo for an example for this TuiLoggerWidget control

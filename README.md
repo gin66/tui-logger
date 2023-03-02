@@ -106,6 +106,26 @@
  `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
  it receives to the `tui-logger` widget
 
+ ## Custom filtering
+ ```rust
+ #[macro_use]
+ extern crate log;
+ //use tui_logger;
+ use env_logger;
+
+ fn main() {
+     // Early initialization of the logger
+     let drain = tui_logger::Drain::new();
+     // instead of tui_logger::init_logger, we use `env_logger`
+     env_logger::Builder::default()
+         .format(move |buf, record|
+             // patch the env-logger entry through our drain to the tui-logger
+             Ok(drain.log(record))
+         ).init(); // make this the global logger
+     // code....
+ }
+ ```
+
  ## Applications using tui-logger
 
  * [wash](https://github.com/wasmCloud/wash)
@@ -123,4 +143,5 @@
  * [Kibouo](https://github.com/Kibouo) Patch to change Rc/Refcell to thread-safe counterparts
  * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
  * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
+ * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
 

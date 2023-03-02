@@ -93,7 +93,6 @@ fn main() -> std::result::Result<(), std::io::Error> {
 
     // Here is the main loop
     for evt in rx {
-        trace!(target: "New event", "{:?}",evt);
         let opt_state = if app.selected_tab < app.states.len() {
             Some(&mut app.states[app.selected_tab])
         } else {
@@ -101,6 +100,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
         };
         match evt {
             AppEvent::Termion(evt) => {
+                debug!(target: "New event", "{:?}",evt);
                 use termion::event::{Event, Key};
                 match evt {
                     Event::Key(Key::Char('q')) => break,
@@ -156,6 +156,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
                 }
             }
             AppEvent::LoopCnt(opt_cnt) => {
+                trace!(target: "New event", "{:?}",evt);
                 app.opt_info_cnt = opt_cnt;
             }
         }
@@ -219,10 +220,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     t.render_widget(tui_sm, chunks[1]);
 
     // show two TuiWidgetState side-by-side
-    constraints = vec![
-        Constraint::Percentage(50),
-        Constraint::Percentage(30),
-    ];
+    constraints = vec![Constraint::Percentage(50), Constraint::Percentage(30)];
     let hchunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(constraints)
@@ -232,9 +230,9 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
     // Best to store TuiWidgetState on application level,
     // but this temporary usage as shown here works, too.
     let filter_state = TuiWidgetState::new()
-        .set_level_for_target("DEMO", log::LevelFilter::Info)
-        .set_level_for_target("trace", log::LevelFilter::Info)
-        .set_level_for_target("New event", log::LevelFilter::Off);
+        .set_default_display_level(log::LevelFilter::Off)
+        .set_level_for_target("New event", log::LevelFilter::Debug)
+        .set_level_for_target("info", log::LevelFilter::Info);
     let tui_w: TuiLoggerWidget = TuiLoggerWidget::default()
         .block(
             Block::default()
@@ -252,8 +250,6 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .state(&filter_state);
     t.render_widget(tui_w, chunks[2]);
 
-    let filter_state = TuiWidgetState::new()
-        .set_level_for_target("trace", log::LevelFilter::Info);
     let tui_w: TuiLoggerWidget = TuiLoggerWidget::default()
         .block(
             Block::default()
@@ -267,8 +263,7 @@ fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
         .output_target(false)
         .output_file(false)
         .output_line(false)
-        .style(Style::default().fg(Color::White).bg(Color::Black))
-        .state(&filter_state);
+        .style(Style::default().fg(Color::White).bg(Color::Black));
     t.render_widget(tui_w, hchunks[1]);
 
     if let Some(percent) = app.opt_info_cnt {
