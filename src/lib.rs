@@ -185,7 +185,7 @@ pub use crate::circular::CircularBuffer;
 #[cfg(feature = "slog")]
 pub use crate::slog::TuiSlogDrain;
 #[cfg(feature = "tracing-support")]
-pub use crate::tracing_subscriber::TuiTracingSubscriber;
+pub use crate::tracing_subscriber::TuiTracingSubscriberLayer;
 
 struct ExtLogRecord {
     timestamp: DateTime<Local>,

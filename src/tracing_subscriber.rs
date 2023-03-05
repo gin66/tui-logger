@@ -1,8 +1,8 @@
 //! `tracing-subscriber` support for `tui-logger`
 
-use std::collections::HashMap;
 use super::TUI_LOGGER;
 use log::{self, Log, Record};
+use std::collections::HashMap;
 use tracing_subscriber::Layer;
 
 #[derive(Default)]
@@ -21,23 +21,28 @@ impl ToStringVisitor<'_> {
 
 impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
     fn record_f64(&mut self, field: &tracing::field::Field, value: f64) {
-        self.0.insert(field.name(), format_args!("{}", value).to_string());
+        self.0
+            .insert(field.name(), format_args!("{}", value).to_string());
     }
 
     fn record_i64(&mut self, field: &tracing::field::Field, value: i64) {
-        self.0.insert(field.name(), format_args!("{}", value).to_string());
+        self.0
+            .insert(field.name(), format_args!("{}", value).to_string());
     }
 
     fn record_u64(&mut self, field: &tracing::field::Field, value: u64) {
-        self.0.insert(field.name(), format_args!("{}", value).to_string());
+        self.0
+            .insert(field.name(), format_args!("{}", value).to_string());
     }
 
     fn record_bool(&mut self, field: &tracing::field::Field, value: bool) {
-        self.0.insert(field.name(), format_args!("{}", value).to_string());
+        self.0
+            .insert(field.name(), format_args!("{}", value).to_string());
     }
 
     fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
-        self.0.insert(field.name(), format_args!("{}", value).to_string());
+        self.0
+            .insert(field.name(), format_args!("{}", value).to_string());
     }
 
     fn record_error(
@@ -45,14 +50,15 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
         field: &tracing::field::Field,
         value: &(dyn std::error::Error + 'static),
     ) {
-        self.0.insert(field.name(), format_args!("{}", value).to_string());
+        self.0
+            .insert(field.name(), format_args!("{}", value).to_string());
     }
 
     fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
-        self.0.insert(field.name(), format_args!("{:?}", value).to_string());
+        self.0
+            .insert(field.name(), format_args!("{:?}", value).to_string());
     }
 }
-
 
 #[allow(clippy::needless_doctest_main)]
 ///  tracing-subscriber-compatible layer that feeds messages to `tui-logger`.
@@ -70,15 +76,14 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
 pub struct TuiTracingSubscriberLayer;
 
 impl<S> Layer<S> for TuiTracingSubscriberLayer
-    where
-        S: tracing::Subscriber,
+where
+    S: tracing::Subscriber,
 {
     fn on_event(
         &self,
         event: &tracing::Event<'_>,
         _ctx: tracing_subscriber::layer::Context<'_, S>,
     ) {
-
         let mut visitor = ToStringVisitor::default();
         event.record(&mut visitor);
 
