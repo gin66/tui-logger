@@ -3,19 +3,17 @@
 use super::TUI_LOGGER;
 use log::{self, Log, Record};
 use std::collections::HashMap;
+use std::fmt;
 use tracing_subscriber::Layer;
 
 #[derive(Default)]
 struct ToStringVisitor<'a>(HashMap<&'a str, String>);
 
-impl ToStringVisitor<'_> {
-    fn to_string<'a>(&self) -> String {
+impl fmt::Display for ToStringVisitor<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0
             .iter()
-            .fold("".to_string(), |mut str: String, (k, v)| {
-                str += &*format!(" {}: {}", k, v);
-                str
-            })
+            .try_for_each(|(k, v)| -> fmt::Result { write!(f, " {}: {}", k, v) })
     }
 }
 
@@ -97,7 +95,7 @@ where
 
         TUI_LOGGER.log(
             &Record::builder()
-                .args(format_args!("{}", visitor.to_string()))
+                .args(format_args!("{}", visitor))
                 .level(level)
                 .target(event.metadata().target())
                 .file(event.metadata().file())
