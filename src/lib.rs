@@ -108,6 +108,12 @@
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
 //! it receives to the `tui-logger` widget
 //!
+//! //! ## `tracing-subscriber` support
+//!
+//! `tui-logger` provides a TuiTracingSubscriberLayer which implements
+//! `tracing_subscriber::Layer` and will collect all events
+//! it receives to the `tui-logger` widget
+//!
 //! ## Custom filtering
 //! ```rust
 //! #[macro_use]
@@ -401,8 +407,8 @@ pub fn slog_drain() -> TuiSlogDrain {
 }
 
 #[cfg(feature = "tracing-support")]
-pub fn tracing_subscriber_layer() -> TuiTracingSubscriber {
-    TuiTracingSubscriber
+pub fn tracing_subscriber_layer() -> TuiTracingSubscriberLayer {
+    TuiTracingSubscriberLayer
 }
 
 /// Set the depth of the hot buffer in order to avoid message loss.

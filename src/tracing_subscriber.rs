@@ -53,9 +53,23 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
     }
 }
 
-pub struct TuiTracingSubscriber;
 
-impl<S> Layer<S> for TuiTracingSubscriber
+#[allow(clippy::needless_doctest_main)]
+///  tracing-subscriber-compatible layer that feeds messages to `tui-logger`.
+///
+///  ## Basic usage:
+///  ```
+///  //use tui_logger;
+///
+///  fn main() {
+///     tracing_subscriber::registry()
+///          .with(tui_logger::tracing_subscriber_layer())
+///          .init();
+///     info!(log, "Logging via tracing works!");
+///  }
+pub struct TuiTracingSubscriberLayer;
+
+impl<S> Layer<S> for TuiTracingSubscriberLayer
     where
         S: tracing::Subscriber,
 {
@@ -75,7 +89,6 @@ impl<S> Layer<S> for TuiTracingSubscriber
             tracing::Level::DEBUG => log::Level::Debug,
             tracing::Level::TRACE => log::Level::Trace,
         };
-
 
         TUI_LOGGER.log(
             &Record::builder()
