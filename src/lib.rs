@@ -172,10 +172,14 @@ use tui::widgets::{Block, Borders, Widget};
 mod circular;
 #[cfg(feature = "slog")]
 mod slog;
+#[cfg(feature = "tracing-support")]
+mod tracing_subscriber;
 
 pub use crate::circular::CircularBuffer;
 #[cfg(feature = "slog")]
 pub use crate::slog::TuiSlogDrain;
+#[cfg(feature = "tracing-support")]
+pub use crate::tracing_subscriber::TuiTracingSubscriber;
 
 struct ExtLogRecord {
     timestamp: DateTime<Local>,
@@ -394,6 +398,11 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
 #[cfg(feature = "slog")]
 pub fn slog_drain() -> TuiSlogDrain {
     TuiSlogDrain
+}
+
+#[cfg(feature = "tracing-support")]
+pub fn tracing_subscriber_layer() -> TuiTracingSubscriber {
+    TuiTracingSubscriber
 }
 
 /// Set the depth of the hot buffer in order to avoid message loss.

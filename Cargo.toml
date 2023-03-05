@@ -17,6 +17,8 @@ travis-ci = { repository = "gin66/tui-logger" }
 log = "0.4"
 chrono = "0.4"
 tui = { version = "0.19", default-features = false }
+tracing = {version = "0.1.37", optional = true}
+tracing-subscriber = {version = "0.3", optional = true}
 lazy_static = "1.0"
 fxhash = "0.2"
 parking_lot = "0.12"
@@ -28,4 +30,6 @@ termion = "1.5"
 env_logger = "0.10.0"
 
 [features]
-default = ["slog"]
+default = ["slog", "tracing-subscriber", "tracing-support"]
+tracing-support = ["tracing", "tracing-subscriber"]
+
