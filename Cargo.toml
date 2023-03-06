@@ -30,6 +30,6 @@ termion = "1.5"
 env_logger = "0.10.0"
 
 [features]
-default = ["slog", "tracing-subscriber", "tracing-support"]
+default = ["slog"]
 tracing-support = ["tracing", "tracing-subscriber"]
 
