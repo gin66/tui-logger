@@ -108,6 +108,12 @@
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
 //! it receives to the `tui-logger` widget
 //!
+//! //! ## `tracing-subscriber` support
+//!
+//! `tui-logger` provides a TuiTracingSubscriberLayer which implements
+//! `tracing_subscriber::Layer` and will collect all events
+//! it receives to the `tui-logger` widget
+//!
 //! ## Custom filtering
 //! ```rust
 //! #[macro_use]
@@ -172,10 +178,14 @@ use tui::widgets::{Block, Borders, Widget};
 mod circular;
 #[cfg(feature = "slog")]
 mod slog;
+#[cfg(feature = "tracing-support")]
+mod tracing_subscriber;
 
 pub use crate::circular::CircularBuffer;
 #[cfg(feature = "slog")]
 pub use crate::slog::TuiSlogDrain;
+#[cfg(feature = "tracing-support")]
+pub use crate::tracing_subscriber::TuiTracingSubscriberLayer;
 
 struct ExtLogRecord {
     timestamp: DateTime<Local>,
@@ -394,6 +404,11 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
 #[cfg(feature = "slog")]
 pub fn slog_drain() -> TuiSlogDrain {
     TuiSlogDrain
+}
+
+#[cfg(feature = "tracing-support")]
+pub fn tracing_subscriber_layer() -> TuiTracingSubscriberLayer {
+    TuiTracingSubscriberLayer
 }
 
 /// Set the depth of the hot buffer in order to avoid message loss.
