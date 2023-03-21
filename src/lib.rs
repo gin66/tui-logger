@@ -1,6 +1,6 @@
 // Generate README by gawk 'substr($0,1,3) == "//!"{print(substr($0,4))}' src/lib.rs
 
-//! # Logger with smart widget for the `tui` crate
+//! # Logger with smart widget for the `tui` and `ratatui` crate
 //!
 //! ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
 //! [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_6)](https://deps.rs/repo/github/gin66/tui-logger)
@@ -28,6 +28,7 @@
 //! - [X] Scrollback in log history
 //! - [x] Title of target and log pane can be configured
 //! - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
+//! - [X] `tracing` support
 //! - [ ] Allow configuration of target dependent loglevel specifically for file logging
 //! - [ ] Avoid duplicating of target, module and filename in every log record
 //! - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
@@ -104,6 +105,9 @@
 //! For use of the widget please check examples/demo.rs
 //!
 //! ## Demo
+//!
+//! The demo does not support another terminal backend besides termion.
+//! During build the termion feature of tui needs to be enabled
 //!
 //! Run demo with tui and termion:
 //!
