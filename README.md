@@ -101,16 +101,44 @@
 
  For use of the widget please check examples/demo.rs
 
+ ## Demo
+
+ Run demo with tui and termion:
+
+ ```
+ cargo run --example demo --no-default-features -F tui-rs,tui/termion
+ ```
+
+ or simply:
+
+ ```
+ cargo run --example demo
+ ```
+ 
+ Run demo with ratatui and termion:
+
+ ```
+ cargo run --example demo --no-default-features -F ratatui-support,ratatui/termion
+ ```
+ 
  ## `slog` support
 
  `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
- it receives to the `tui-logger` widget
+ it receives to the `tui-logger` widget.
+
+ Enabled by feature "slog-support"
 
  ## `tracing-subscriber` support
 
  `tui-logger` provides a TuiTracingSubscriberLayer which implements
  `tracing_subscriber::Layer` and will collect all events
  it receives to the `tui-logger` widget
+
+ Enabled by feature "tracing-support"
+
+ ## `ratatui` support
+
+ Enabled by feature "ratatui-support" + disable default-features of tui-logger
 
  ## Custom filtering
  ```rust

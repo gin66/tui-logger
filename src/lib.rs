@@ -103,16 +103,44 @@
 //!
 //! For use of the widget please check examples/demo.rs
 //!
+//! ## Demo
+//!
+//! Run demo with tui and termion:
+//!
+//! ```
+//! cargo run --example demo --no-default-features -F tui-rs,tui/termion
+//! ```
+//!
+//! or simply:
+//!
+//! ```
+//! cargo run --example demo
+//! ```
+//! 
+//! Run demo with ratatui and termion:
+//!
+//! ```
+//! cargo run --example demo --no-default-features -F ratatui-support,ratatui/termion
+//! ```
+//! 
 //! ## `slog` support
 //!
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
-//! it receives to the `tui-logger` widget
+//! it receives to the `tui-logger` widget.
+//!
+//! Enabled by feature "slog-support"
 //!
 //! ## `tracing-subscriber` support
 //!
 //! `tui-logger` provides a TuiTracingSubscriberLayer which implements
 //! `tracing_subscriber::Layer` and will collect all events
 //! it receives to the `tui-logger` widget
+//!
+//! Enabled by feature "tracing-support"
+//!
+//! ## `ratatui` support
+//!
+//! Enabled by feature "ratatui-support" + disable default-features of tui-logger
 //!
 //! ## Custom filtering
 //! ```rust
@@ -167,6 +195,9 @@ use std::io::Write;
 use std::mem;
 use std::sync::Arc;
 
+#[cfg(feature = "ratatui-support")]
+use ratatui as tui;
+
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
@@ -177,13 +208,13 @@ use tui::text::Spans;
 use tui::widgets::{Block, Borders, Widget};
 
 mod circular;
-#[cfg(feature = "slog")]
+#[cfg(feature = "slog-support")]
 mod slog;
 #[cfg(feature = "tracing-support")]
 mod tracing_subscriber;
 
 pub use crate::circular::CircularBuffer;
-#[cfg(feature = "slog")]
+#[cfg(feature = "slog-support")]
 pub use crate::slog::TuiSlogDrain;
 #[cfg(feature = "tracing-support")]
 pub use crate::tracing_subscriber::TuiTracingSubscriberLayer;
@@ -402,7 +433,7 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
     log::set_logger(&*TUI_LOGGER)
 }
 
-#[cfg(feature = "slog")]
+#[cfg(feature = "slog-support")]
 pub fn slog_drain() -> TuiSlogDrain {
     TuiSlogDrain
 }

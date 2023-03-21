@@ -11,6 +11,9 @@ use termion::{
     screen::AlternateScreen,
 };
 
+#[cfg(feature = "ratatui-support")]
+use ratatui as tui;
+
 use tui::backend::Backend;
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};

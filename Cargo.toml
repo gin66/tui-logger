@@ -16,7 +16,8 @@ travis-ci = { repository = "gin66/tui-logger" }
 [dependencies]
 log = "0.4"
 chrono = "0.4"
-tui = { version = "0.19", default-features = false }
+tui = { version = "0.19", default-features = false, package = "tui", optional = true }
+ratatui = { version = "0.20", default-features = false, package = "ratatui", optional = true }
 tracing = {version = "0.1.37", optional = true}
 tracing-subscriber = {version = "0.3", optional = true}
 lazy_static = "1.0"
@@ -25,11 +26,13 @@ parking_lot = "0.12"
 slog = { version = "2.7.0", optional = true }
 
 [dev-dependencies]
-tui = { version = "0.19", default-features = true, features = ["termion"] }
 termion = "1.5"
 env_logger = "0.10.0"
 
 [features]
-default = ["slog"]
+default = ["tui","tui/termion"]
+tui-rs = ["tui"]
+slog-support = ["slog"]
+ratatui-support = ["ratatui"]
 tracing-support = ["tracing", "tracing-subscriber"]
 
