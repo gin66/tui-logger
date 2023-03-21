@@ -1,3 +1,6 @@
+pre-0.8.4:
+- support for tracing-subscriber
+
 0.8.3:
 - Make `TuiWidgetState.set_default_display_level()` work for TuiLoggerWidget (#30)
 

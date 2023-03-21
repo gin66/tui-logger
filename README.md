@@ -106,6 +106,12 @@
  `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
  it receives to the `tui-logger` widget
 
+ ## `tracing-subscriber` support
+
+ `tui-logger` provides a TuiTracingSubscriberLayer which implements
+ `tracing_subscriber::Layer` and will collect all events
+ it receives to the `tui-logger` widget
+
  ## Custom filtering
  ```rust
  #[macro_use]
@@ -144,4 +150,5 @@
  * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
  * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
  * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
+ * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in (https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
 
