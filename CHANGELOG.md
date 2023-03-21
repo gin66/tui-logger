@@ -1,6 +1,7 @@
 pre-0.8.4:
 - support for tracing-subscriber
 - add optional ratatui support as proposed by (#32)
+- slog is NOT a default feature anymore. Enable with `slog-support`
 
 0.8.3:
 - Make `TuiWidgetState.set_default_display_level()` work for TuiLoggerWidget (#30)
