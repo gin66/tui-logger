@@ -1,6 +1,6 @@
 pre-0.8.4:
 - support for tracing-subscriber
-- add optional ratatui support as proposed by (#31)
+- add optional ratatui support as proposed by (#32)
 
 0.8.3:
 - Make `TuiWidgetState.set_default_display_level()` work for TuiLoggerWidget (#30)
