@@ -1,4 +1,4 @@
-pre-0.8.4:
+0.9.0:
 - support for tracing-subscriber
 - add optional ratatui support as proposed by (#32)
 - slog is NOT a default feature anymore. Enable with `slog-support`
