@@ -209,7 +209,7 @@ use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Modifier, Style};
 use tui::text::Spans;
-use tui::widgets::{Block, Borders, Widget};
+use tui::widgets::{Block, BorderType, Borders, Widget};
 
 mod circular;
 #[cfg(feature = "slog-support")]
@@ -1239,6 +1239,7 @@ pub struct TuiLoggerSmartWidget<'a> {
     title_target: Spans<'a>,
     style: Option<Style>,
     border_style: Style,
+    border_type: BorderType,
     highlight_style: Option<Style>,
     style_error: Option<Style>,
     style_warn: Option<Style>,
@@ -1264,6 +1265,7 @@ impl<'a> Default for TuiLoggerSmartWidget<'a> {
             title_target: Spans::from("Tui Target Selector"),
             style: None,
             border_style: Style::default(),
+            border_type: BorderType::Plain,
             highlight_style: None,
             style_error: None,
             style_warn: None,
@@ -1290,6 +1292,10 @@ impl<'a> TuiLoggerSmartWidget<'a> {
     }
     pub fn border_style(mut self, style: Style) -> Self {
         self.border_style = style;
+        self
+    }
+    pub fn border_type(mut self, border_type: BorderType) -> Self {
+        self.border_type = border_type;
         self
     }
     pub fn style(mut self, style: Style) -> Self {
@@ -1438,6 +1444,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                     Block::default()
                         .title(title_log)
                         .border_style(self.border_style)
+                        .border_type(self.border_type)
                         .borders(Borders::ALL),
                 )
                 .opt_style(self.style)
@@ -1483,6 +1490,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                     Block::default()
                         .title(self.title_target)
                         .border_style(self.border_style)
+                        .border_type(self.border_type)
                         .borders(Borders::ALL),
                 )
                 .opt_style(self.style)
@@ -1497,6 +1505,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                     Block::default()
                         .title(title_log)
                         .border_style(self.border_style)
+                        .border_type(self.border_type)
                         .borders(Borders::ALL),
                 )
                 .opt_style(self.style)
