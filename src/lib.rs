@@ -532,7 +532,7 @@ impl Drain {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum TuiWidgetEvent {
     SpaceKey,
     UpKey,
