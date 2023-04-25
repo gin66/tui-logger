@@ -1,3 +1,8 @@
+0.9.1:
+- Implement Eq for TuiWidgetEvent 
+- suppport `border_type()` for TuiLoggerSmartWidget
+- Disable default features of chrono to avoid import of `time` v0.1.x
+
 0.9.0:
 - support for tracing-subscriber
 - add optional ratatui support as proposed by (#32)

@@ -1,7 +1,7 @@
  # Logger with smart widget for the `tui` and `ratatui` crate
 
  ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
- [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_6_6)](https://deps.rs/repo/github/gin66/tui-logger)
+ [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_9_1)](https://deps.rs/repo/github/gin66/tui-logger)
  ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 
 
@@ -183,4 +183,5 @@
  * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
  * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
  * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in (https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
+ * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34) and [#37](https://github.com/gin66/tui-logger/issues/37)
 
