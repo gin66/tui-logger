@@ -120,13 +120,13 @@
 //! ```
 //! cargo run --example demo
 //! ```
-//! 
+//!
 //! Run demo with ratatui and termion:
 //!
 //! ```
 //! cargo run --example demo --no-default-features -F ratatui-support,ratatui/termion
 //! ```
-//! 
+//!
 //! ## `slog` support
 //!
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
@@ -209,7 +209,10 @@ use parking_lot::Mutex;
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Modifier, Style};
-use tui::text::Spans;
+#[cfg(feature = "ratatui-support")]
+use tui::text::Line;
+#[cfg(not(feature = "ratatui-support"))]
+use tui::text::Spans as Line;
 use tui::widgets::{Block, BorderType, Borders, Widget};
 
 mod circular;
@@ -1236,8 +1239,8 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
 ///
 /// In the title the number of logging messages/s in the whole buffer is shown.
 pub struct TuiLoggerSmartWidget<'a> {
-    title_log: Spans<'a>,
-    title_target: Spans<'a>,
+    title_log: Line<'a>,
+    title_target: Line<'a>,
     style: Option<Style>,
     border_style: Style,
     border_type: BorderType,
@@ -1262,8 +1265,8 @@ impl<'a> Default for TuiLoggerSmartWidget<'a> {
     fn default() -> Self {
         TUI_LOGGER.move_events();
         TuiLoggerSmartWidget {
-            title_log: Spans::from("Tui Log"),
-            title_target: Spans::from("Tui Target Selector"),
+            title_log: Line::from("Tui Log"),
+            title_target: Line::from("Tui Target Selector"),
             style: None,
             border_style: Style::default(),
             border_type: BorderType::Plain,
@@ -1385,14 +1388,14 @@ impl<'a> TuiLoggerSmartWidget<'a> {
     }
     pub fn title_target<T>(mut self, title: T) -> Self
     where
-        T: Into<Spans<'a>>,
+        T: Into<Line<'a>>,
     {
         self.title_target = title.into();
         self
     }
     pub fn title_log<T>(mut self, title: T) -> Self
     where
-        T: Into<Spans<'a>>,
+        T: Into<Line<'a>>,
     {
         self.title_log = title.into();
         self
@@ -1434,6 +1437,11 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
         };
 
         let mut title_log = self.title_log.clone();
+        #[cfg(feature = "ratatui-support")]
+        title_log
+            .spans
+            .push(format!(" [log={:.1}/s]", entries_s).into());
+        #[cfg(not(feature = "ratatui-support"))]
         title_log
             .0
             .push(format!(" [log={:.1}/s]", entries_s).into());

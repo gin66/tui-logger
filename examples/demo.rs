@@ -175,7 +175,10 @@ fn main() -> std::result::Result<(), std::io::Error> {
 }
 
 fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
+    #[cfg(not(feature = "ratatui-support"))]
     let tabs: Vec<tui::text::Spans> = vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()];
+    #[cfg(feature = "ratatui-support")]
+    let tabs: Vec<tui::text::Line> = vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()];
     let sel = app.selected_tab;
 
     if app.states.len() <= sel {
