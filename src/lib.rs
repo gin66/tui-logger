@@ -120,13 +120,13 @@
 //! ```
 //! cargo run --example demo
 //! ```
-//! 
+//!
 //! Run demo with ratatui and termion:
 //!
 //! ```
 //! cargo run --example demo --no-default-features -F ratatui-support,ratatui/termion
 //! ```
-//! 
+//!
 //! ## `slog` support
 //!
 //! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
@@ -209,6 +209,9 @@ use parking_lot::Mutex;
 use tui::buffer::Buffer;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Modifier, Style};
+#[cfg(feature = "ratatui-support")]
+use tui::text::Line as Spans;
+#[cfg(not(feature = "ratatui-support"))]
 use tui::text::Spans;
 use tui::widgets::{Block, BorderType, Borders, Widget};
 
@@ -1401,6 +1404,20 @@ impl<'a> TuiLoggerSmartWidget<'a> {
         self.state = state.inner.clone();
         self
     }
+
+    #[cfg(not(feature = "tui-rs"))]
+    fn push_title(title_log: &mut Spans, entries_s: f64) {
+        title_log
+            .0
+            .push(format!(" [log={:.1}/s]", entries_s).into());
+    }
+
+    #[cfg(feature = "ratatui-support")]
+    fn push_title(title_log: &mut Spans, entries_s: f64) {
+        title_log
+            .spans
+            .push(format!(" [log={:.1}/s]", entries_s).into());
+    }
 }
 impl<'a> Widget for TuiLoggerSmartWidget<'a> {
     /// Nothing to draw for combo widget
@@ -1434,9 +1451,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
         };
 
         let mut title_log = self.title_log.clone();
-        title_log
-            .0
-            .push(format!(" [log={:.1}/s]", entries_s).into());
+        TuiLoggerSmartWidget::push_title(&mut title_log, entries_s);
 
         let hide_target = self.state.lock().hide_target;
         if hide_target {
