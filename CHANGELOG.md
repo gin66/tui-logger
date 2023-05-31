@@ -1,3 +1,6 @@
+0.9.2:
+- update to ratatui 0.21
+
 0.9.1:
 - Implement Eq for TuiWidgetEvent 
 - suppport `border_type()` for TuiLoggerSmartWidget
