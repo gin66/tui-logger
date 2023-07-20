@@ -15,14 +15,13 @@ use termion::{
 use ratatui::prelude::*;
 #[cfg(feature = "ratatui-support")]
 use ratatui::widgets::*;
-
 #[cfg(feature = "ratatui-support")]
-use ratatui::backend::CrosstermBackend as SelectedBackend;
+use ratatui::backend::TermionBackend;
 
 #[cfg(not(feature = "ratatui-support"))]
 use tui::backend::Backend;
 #[cfg(not(feature = "ratatui-support"))]
-use tui::backend::TermionBackend as SelectedBackend;
+use tui::backend::TermionBackend;
 #[cfg(not(feature = "ratatui-support"))]
 use tui::layout::{Constraint, Direction, Layout, Rect};
 #[cfg(not(feature = "ratatui-support"))]
@@ -33,6 +32,7 @@ use tui::widgets::{Block, Borders, Gauge, Tabs};
 use tui::Frame;
 #[cfg(not(feature = "ratatui-support"))]
 use tui::Terminal;
+
 use tui_logger::*;
 
 struct App {
@@ -73,7 +73,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
         let stdout = io::stdout().into_raw_mode().unwrap();
         let stdout = MouseTerminal::from(stdout);
         let stdout = AlternateScreen::from(stdout);
-        SelectedBackend::new(stdout)
+        TermionBackend::new(stdout)
     };
 
     let mut terminal = Terminal::new(backend).unwrap();
