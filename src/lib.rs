@@ -201,18 +201,23 @@ use std::mem;
 use std::sync::Arc;
 
 #[cfg(feature = "ratatui-support")]
-use ratatui as tui;
+use ratatui::prelude::*;
+#[cfg(feature = "ratatui-support")]
+use ratatui::widgets::*;
 
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
+
+#[cfg(not(feature = "ratatui-support"))]
 use tui::buffer::Buffer;
+#[cfg(not(feature = "ratatui-support"))]
 use tui::layout::{Constraint, Direction, Layout, Rect};
+#[cfg(not(feature = "ratatui-support"))]
 use tui::style::{Modifier, Style};
-#[cfg(feature = "ratatui-support")]
-use tui::text::Line;
 #[cfg(not(feature = "ratatui-support"))]
 use tui::text::Spans as Line;
+#[cfg(not(feature = "ratatui-support"))]
 use tui::widgets::{Block, BorderType, Borders, Widget};
 
 mod circular;
