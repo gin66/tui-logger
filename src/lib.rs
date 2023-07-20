@@ -201,18 +201,23 @@ use std::mem;
 use std::sync::Arc;
 
 #[cfg(feature = "ratatui-support")]
-use ratatui as tui;
+use ratatui::prelude::*;
+#[cfg(feature = "ratatui-support")]
+use ratatui::widgets::*;
 
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
+
+#[cfg(not(feature = "ratatui-support"))]
 use tui::buffer::Buffer;
+#[cfg(not(feature = "ratatui-support"))]
 use tui::layout::{Constraint, Direction, Layout, Rect};
+#[cfg(not(feature = "ratatui-support"))]
 use tui::style::{Modifier, Style};
-#[cfg(feature = "ratatui-support")]
-use tui::text::Line;
 #[cfg(not(feature = "ratatui-support"))]
 use tui::text::Spans as Line;
+#[cfg(not(feature = "ratatui-support"))]
 use tui::widgets::{Block, BorderType, Borders, Widget};
 
 mod circular;
@@ -523,6 +528,7 @@ impl Log for TuiLogger {
 }
 
 /// A simple `Drain` to log any event directly.
+#[derive(Default)]
 pub struct Drain;
 
 impl Drain {
@@ -859,7 +865,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     cell.set_style(cell_style);
                     cell.symbol = sym.to_string();
                 }
-                buf.set_stringn(la_left + 5, la_top + i as u16, &":", la_width, self.style);
+                buf.set_stringn(la_left + 5, la_top + i as u16, ":", la_width, self.style);
                 buf.set_stringn(
                     la_left + 6,
                     la_top + i as u16,
@@ -1151,11 +1157,9 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                     if *level < evt.level {
                         continue;
                     }
-                } else {
-                    if let Some(level) = state.config.default_display_level {
-                        if level < evt.level {
-                            continue;
-                        }
+                } else if let Some(level) = state.config.default_display_level {
+                    if level < evt.level {
+                        continue;
                     }
                 }
                 if state.focus_selected {
