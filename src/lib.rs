@@ -528,6 +528,7 @@ impl Log for TuiLogger {
 }
 
 /// A simple `Drain` to log any event directly.
+#[derive(Default)]
 pub struct Drain;
 
 impl Drain {
@@ -864,7 +865,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     cell.set_style(cell_style);
                     cell.symbol = sym.to_string();
                 }
-                buf.set_stringn(la_left + 5, la_top + i as u16, &":", la_width, self.style);
+                buf.set_stringn(la_left + 5, la_top + i as u16, ":", la_width, self.style);
                 buf.set_stringn(
                     la_left + 6,
                     la_top + i as u16,
@@ -1156,11 +1157,9 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                     if *level < evt.level {
                         continue;
                     }
-                } else {
-                    if let Some(level) = state.config.default_display_level {
-                        if level < evt.level {
-                            continue;
-                        }
+                } else if let Some(level) = state.config.default_display_level {
+                    if level < evt.level {
+                        continue;
                     }
                 }
                 if state.focus_selected {
