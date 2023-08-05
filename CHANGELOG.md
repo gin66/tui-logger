@@ -1,3 +1,6 @@
+0.9.3:
+- update to ratatui 0.22 and fix clippy warnings
+
 0.9.2:
 - update to ratatui 0.21
 
