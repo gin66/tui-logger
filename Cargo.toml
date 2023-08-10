@@ -1,6 +1,6 @@
 [package]
 name = "tui-logger"
-version = "0.9.3"
+version = "0.9.4"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
 edition = "2021"
 license = "MIT"
@@ -30,7 +30,7 @@ termion = "1.5"
 env_logger = "0.10.0"
 
 [features]
-default = ["tui","tui/termion"]
+default = ["tui","tui/termion", "examples-tui-termion"]
 tui-rs = ["tui"]
 slog-support = ["slog"]
 ratatui-support = ["ratatui"]
