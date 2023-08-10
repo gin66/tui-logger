@@ -15,15 +15,18 @@ use termion::{
 use ratatui::prelude::*;
 #[cfg(feature = "ratatui-support")]
 use ratatui::widgets::*;
-#[cfg(feature = "examples-termion")]
+#[cfg(feature = "examples-ratatui-termion")]
 use ratatui::backend::TermionBackend as SelectedBackend;
-#[cfg(feature = "examples-crossterm")]
+#[cfg(feature = "examples-ratatui-crossterm")]
 use ratatui::backend::CrosstermBackend as SelectedBackend;
 
 #[cfg(not(feature = "ratatui-support"))]
 use tui::backend::Backend;
-#[cfg(not(feature = "ratatui-support"))]
+#[cfg(feature = "examples-tui-termion")]
 use tui::backend::TermionBackend as SelectedBackend;
+#[cfg(feature = "examples-tui-crossterm")]
+use tui::backend::CrosstermBackend as SelectedBackend;
+
 #[cfg(not(feature = "ratatui-support"))]
 use tui::layout::{Constraint, Direction, Layout, Rect};
 #[cfg(not(feature = "ratatui-support"))]

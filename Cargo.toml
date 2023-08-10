@@ -35,5 +35,9 @@ tui-rs = ["tui"]
 slog-support = ["slog"]
 ratatui-support = ["ratatui"]
 tracing-support = ["tracing", "tracing-subscriber"]
-examples-termion = ["ratatui/termion"]
-examples-crossterm = ["ratatui/crossterm"]
+
+# This features are exclusively used by examples/demo.rs
+examples-tui-termion = ["tui/termion"]
+examples-tui-crossterm = ["tui/crossterm"]
+examples-ratatui-termion = ["ratatui/termion"]
+examples-ratatui-crossterm = ["ratatui/crossterm"]

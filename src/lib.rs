@@ -112,7 +112,7 @@
 //! Run demo with tui and termion:
 //!
 //! ```
-//! cargo run --example demo --no-default-features -F tui-rs,tui/termion
+//! cargo run --example demo --no-default-features -F tui-rs,examples-tui-termion
 //! ```
 //!
 //! or simply:
@@ -121,10 +121,22 @@
 //! cargo run --example demo
 //! ```
 //!
+//! Run demo with tui and crossterm:
+//!
+//! ```
+//! cargo run --example demo --no-default-features -F tui-rs,examples-tui-crossterm
+//! ```
+//!
 //! Run demo with ratatui and termion:
 //!
 //! ```
-//! cargo run --example demo --no-default-features -F ratatui-support,ratatui/termion
+//! cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-termion
+//! ```
+//!
+//! Run demo with ratatui and crossterm:
+//!
+//! ```
+//! cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-crossterm
 //! ```
 //!
 //! ## `slog` support

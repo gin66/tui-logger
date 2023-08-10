@@ -110,7 +110,7 @@
  Run demo with tui and termion:
 
  ```
- cargo run --example demo --no-default-features -F tui-rs,tui/termion
+ cargo run --example demo --no-default-features -F tui-rs,examples-tui-termion
  ```
 
  or simply:
@@ -118,13 +118,25 @@
  ```
  cargo run --example demo
  ```
- 
+
+ Run demo with tui and crossterm:
+
+ ```
+ cargo run --example demo --no-default-features -F tui-rs,examples-tui-crossterm
+ ```
+
  Run demo with ratatui and termion:
 
  ```
- cargo run --example demo --no-default-features -F ratatui-support,ratatui/termion
+ cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-termion
  ```
- 
+
+ Run demo with ratatui and crossterm:
+
+ ```
+ cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-crossterm
+ ```
+
  ## `slog` support
 
  `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
@@ -184,4 +196,5 @@
  * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
  * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in (https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
  * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34) and [#37](https://github.com/gin66/tui-logger/issues/37)
+ * [purephantom](https://github.com/purephantom) for providing patch in #42 for ratatui update
 
