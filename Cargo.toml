@@ -33,6 +33,7 @@ env_logger = "0.10.0"
 default = ["tui","tui/termion"]
 tui-rs = ["tui"]
 slog-support = ["slog"]
-ratatui-support = ["ratatui","ratatui/termion"]
+ratatui-support = ["ratatui"]
 tracing-support = ["tracing", "tracing-subscriber"]
-
+examples-termion = ["ratatui/termion"]
+examples-crossterm = ["ratatui/crossterm"]

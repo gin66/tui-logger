@@ -15,13 +15,15 @@ use termion::{
 use ratatui::prelude::*;
 #[cfg(feature = "ratatui-support")]
 use ratatui::widgets::*;
-#[cfg(feature = "ratatui-support")]
-use ratatui::backend::TermionBackend;
+#[cfg(feature = "examples-termion")]
+use ratatui::backend::TermionBackend as SelectedBackend;
+#[cfg(feature = "examples-crossterm")]
+use ratatui::backend::CrosstermBackend as SelectedBackend;
 
 #[cfg(not(feature = "ratatui-support"))]
 use tui::backend::Backend;
 #[cfg(not(feature = "ratatui-support"))]
-use tui::backend::TermionBackend;
+use tui::backend::TermionBackend as SelectedBackend;
 #[cfg(not(feature = "ratatui-support"))]
 use tui::layout::{Constraint, Direction, Layout, Rect};
 #[cfg(not(feature = "ratatui-support"))]
@@ -73,7 +75,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
         let stdout = io::stdout().into_raw_mode().unwrap();
         let stdout = MouseTerminal::from(stdout);
         let stdout = AlternateScreen::from(stdout);
-        TermionBackend::new(stdout)
+        SelectedBackend::new(stdout)
     };
 
     let mut terminal = Terminal::new(backend).unwrap();

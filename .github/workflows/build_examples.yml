@@ -16,5 +16,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Build examples with tui
       run: cargo build --examples
-    - name: Build example with ratatui
-      run: cargo build --examples --no-default-features -F ratatui-support,ratatui/termion
+    - name: Build example with ratatui and termion
+      run: cargo build --examples --no-default-features -F ratatui-support,examples-termion 
+    - name: Build example with ratatui and crossterm
+      run: cargo build --examples --no-default-features -F ratatui-support,examples-crossterm 
