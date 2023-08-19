@@ -1,3 +1,6 @@
+0.9.5:
+- rework examples/demo to not use termion
+
 0.9.4:
 - fix breaking change in 0.9.3 as reported by issue #43
 

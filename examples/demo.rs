@@ -5,27 +5,38 @@ use std::{thread, time};
 use log::LevelFilter;
 use log::*;
 
+#[cfg(feature = "crossterm")]
+use crossterm::event::KeyCode as Key;
+#[cfg(feature = "crossterm")]
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+
+#[cfg(feature = "termion")]
 use termion::{
+    event::{Event, Key},
     input::{MouseTerminal, TermRead},
     raw::IntoRawMode,
     screen::AlternateScreen,
 };
 
+#[cfg(feature = "examples-ratatui-crossterm")]
+use ratatui::backend::CrosstermBackend as SelectedBackend;
+#[cfg(feature = "examples-ratatui-termion")]
+use ratatui::backend::TermionBackend as SelectedBackend;
 #[cfg(feature = "ratatui-support")]
 use ratatui::prelude::*;
 #[cfg(feature = "ratatui-support")]
 use ratatui::widgets::*;
-#[cfg(feature = "examples-ratatui-termion")]
-use ratatui::backend::TermionBackend as SelectedBackend;
-#[cfg(feature = "examples-ratatui-crossterm")]
-use ratatui::backend::CrosstermBackend as SelectedBackend;
 
 #[cfg(not(feature = "ratatui-support"))]
 use tui::backend::Backend;
-#[cfg(feature = "examples-tui-termion")]
-use tui::backend::TermionBackend as SelectedBackend;
 #[cfg(feature = "examples-tui-crossterm")]
 use tui::backend::CrosstermBackend as SelectedBackend;
+#[cfg(feature = "examples-tui-termion")]
+use tui::backend::TermionBackend as SelectedBackend;
 
 #[cfg(not(feature = "ratatui-support"))]
 use tui::layout::{Constraint, Direction, Layout, Rect};
@@ -49,7 +60,7 @@ struct App {
 
 #[derive(Debug)]
 enum AppEvent {
-    Termion(termion::event::Event),
+    UiEvent(Event),
     LoopCnt(Option<u16>),
 }
 
@@ -74,10 +85,20 @@ fn main() -> std::result::Result<(), std::io::Error> {
     set_default_level(LevelFilter::Trace);
     info!(target:"DEMO", "Start demo");
 
+    #[cfg(feature = "termion")]
     let backend = {
         let stdout = io::stdout().into_raw_mode().unwrap();
         let stdout = MouseTerminal::from(stdout);
         let stdout = AlternateScreen::from(stdout);
+        SelectedBackend::new(stdout)
+    };
+
+    #[cfg(feature = "crossterm")]
+    let backend = {
+        // setup terminal
+        enable_raw_mode()?;
+        let mut stdout = io::stdout();
+        execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
         SelectedBackend::new(stdout)
     };
 
@@ -90,11 +111,16 @@ fn main() -> std::result::Result<(), std::io::Error> {
     let tx_event = tx.clone();
     thread::spawn({
         let f = {
-            let stdin = io::stdin();
             move || {
-                for c in stdin.events() {
+                #[cfg(feature = "termion")]
+                for c in io::stdin().events() {
                     trace!(target:"DEMO", "Stdin event received {:?}", c);
-                    tx_event.send(AppEvent::Termion(c.unwrap())).unwrap();
+                    tx_event.send(AppEvent::UiEvent(c.unwrap())).unwrap();
+                }
+                #[cfg(feature = "crossterm")]
+                while let Ok(c) = event::read() {
+                    trace!(target:"DEMO", "Stdin event received {:?}", c);
+                    tx_event.send(AppEvent::UiEvent(c)).unwrap();
                 }
             }
         };
@@ -119,58 +145,60 @@ fn main() -> std::result::Result<(), std::io::Error> {
             None
         };
         match evt {
-            AppEvent::Termion(evt) => {
+            AppEvent::UiEvent(evt) => {
                 debug!(target: "New event", "{:?}",evt);
-                use termion::event::{Event, Key};
-                match evt {
-                    Event::Key(Key::Char('q')) => break,
-                    Event::Key(Key::Char('\t')) => {
-                        // tab
-                        let sel = app.selected_tab;
-                        let sel_tab = if sel + 1 < app.tabs.len() { sel + 1 } else { 0 };
-                        app.selected_tab = sel_tab;
-                    }
-                    evt => {
-                        if let Some(state) = opt_state {
-                            match evt {
-                                Event::Key(Key::Char(' ')) => {
-                                    state.transition(&TuiWidgetEvent::SpaceKey);
-                                }
-                                Event::Key(Key::Esc) => {
-                                    state.transition(&TuiWidgetEvent::EscapeKey);
-                                }
-                                Event::Key(Key::PageUp) => {
-                                    state.transition(&TuiWidgetEvent::PrevPageKey);
-                                }
-                                Event::Key(Key::PageDown) => {
-                                    state.transition(&TuiWidgetEvent::NextPageKey);
-                                }
-                                Event::Key(Key::Up) => {
-                                    state.transition(&TuiWidgetEvent::UpKey);
-                                }
-                                Event::Key(Key::Down) => {
-                                    state.transition(&TuiWidgetEvent::DownKey);
-                                }
-                                Event::Key(Key::Left) => {
-                                    state.transition(&TuiWidgetEvent::LeftKey);
-                                }
-                                Event::Key(Key::Right) => {
-                                    state.transition(&TuiWidgetEvent::RightKey);
-                                }
-                                Event::Key(Key::Char('+')) => {
-                                    state.transition(&TuiWidgetEvent::PlusKey);
-                                }
-                                Event::Key(Key::Char('-')) => {
-                                    state.transition(&TuiWidgetEvent::MinusKey);
-                                }
-                                Event::Key(Key::Char('h')) => {
-                                    state.transition(&TuiWidgetEvent::HideKey);
-                                }
-                                Event::Key(Key::Char('f')) => {
-                                    state.transition(&TuiWidgetEvent::FocusKey);
-                                }
-                                _ => (),
+                if let Event::Key(key) = evt {
+                    if let Some(state) = opt_state {
+                        #[cfg(feature = "crossterm")]
+                        let code = key.code;
+                        #[cfg(feature = "termion")]
+                        let code = key;
+
+                        match code {
+                            Key::Char('q') => break,
+                            Key::Char('\t') => {
+                                // tab
+                                let sel = app.selected_tab;
+                                let sel_tab = if sel + 1 < app.tabs.len() { sel + 1 } else { 0 };
+                                app.selected_tab = sel_tab;
                             }
+                            Key::Char(' ') => {
+                                state.transition(&TuiWidgetEvent::SpaceKey);
+                            }
+                            Key::Esc => {
+                                state.transition(&TuiWidgetEvent::EscapeKey);
+                            }
+                            Key::PageUp => {
+                                state.transition(&TuiWidgetEvent::PrevPageKey);
+                            }
+                            Key::PageDown => {
+                                state.transition(&TuiWidgetEvent::NextPageKey);
+                            }
+                            Key::Up => {
+                                state.transition(&TuiWidgetEvent::UpKey);
+                            }
+                            Key::Down => {
+                                state.transition(&TuiWidgetEvent::DownKey);
+                            }
+                            Key::Left => {
+                                state.transition(&TuiWidgetEvent::LeftKey);
+                            }
+                            Key::Right => {
+                                state.transition(&TuiWidgetEvent::RightKey);
+                            }
+                            Key::Char('+') => {
+                                state.transition(&TuiWidgetEvent::PlusKey);
+                            }
+                            Key::Char('-') => {
+                                state.transition(&TuiWidgetEvent::MinusKey);
+                            }
+                            Key::Char('h') => {
+                                state.transition(&TuiWidgetEvent::HideKey);
+                            }
+                            Key::Char('f') => {
+                                state.transition(&TuiWidgetEvent::FocusKey);
+                            }
+                            _ => (),
                         }
                     }
                 }
@@ -184,6 +212,16 @@ fn main() -> std::result::Result<(), std::io::Error> {
             let size = f.size();
             draw_frame(&mut f, size, &mut app);
         })?;
+    }
+    #[cfg(feature = "crossterm")]
+    {
+        // restore terminal
+        disable_raw_mode()?;
+        execute!(
+            terminal.backend_mut(),
+            LeaveAlternateScreen,
+            DisableMouseCapture
+        )?;
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();
