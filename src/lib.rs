@@ -858,7 +858,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     (3, "D", Level::Debug),
                     (4, "T", Level::Trace),
                 ] {
-                    let mut cell = buf.get_mut(la_left + j, la_top + i as u16);
+                    let cell = buf.get_mut(la_left + j, la_top + i as u16);
                     let cell_style = if *hot_level_filter >= *lev {
                         if *level_filter >= *lev {
                             if !focus_selected || i + offset == state.selected {
