@@ -195,6 +195,6 @@
  * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
  * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
  * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in (https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
- * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34) and [#37](https://github.com/gin66/tui-logger/issues/37)
+ * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34), [#37](https://github.com/gin66/tui-logger/issues/37) and [#46](https://github.com/gin66/tui-logger/issues/46)
  * [purephantom](https://github.com/purephantom) for providing patch in #42 for ratatui update
 

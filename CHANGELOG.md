@@ -1,3 +1,6 @@
+0.9.6:
+- update ratui to 0.23.0
+
 0.9.5:
 - rework examples/demo to not use termion
 
