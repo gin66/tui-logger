@@ -209,7 +209,7 @@ fn main() -> std::result::Result<(), std::io::Error> {
     Ok(())
 }
 
-fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
+fn draw_frame(t: &mut Frame, size: Rect, app: &mut App) {
     let tabs: Vec<Line> = vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()];
     let sel = app.selected_tab;
 
