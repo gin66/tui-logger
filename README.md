@@ -1,4 +1,4 @@
- # Logger with smart widget for the `tui` and `ratatui` crate
+ # Logger with smart widget for the `ratatui` crate
 
  ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
  [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_9_1)](https://deps.rs/repo/github/gin66/tui-logger)
@@ -151,10 +151,6 @@
  it receives to the `tui-logger` widget
 
  Enabled by feature "tracing-support"
-
- ## `ratatui` support
-
- Enabled by feature "ratatui-support" + disable default-features of tui-logger
 
  ## Custom filtering
  ```rust

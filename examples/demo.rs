@@ -26,28 +26,8 @@ use termion::{
 use ratatui::backend::CrosstermBackend as SelectedBackend;
 #[cfg(feature = "examples-ratatui-termion")]
 use ratatui::backend::TermionBackend as SelectedBackend;
-#[cfg(feature = "ratatui-support")]
 use ratatui::prelude::*;
-#[cfg(feature = "ratatui-support")]
 use ratatui::widgets::*;
-
-#[cfg(not(feature = "ratatui-support"))]
-use tui::backend::Backend;
-#[cfg(feature = "examples-tui-crossterm")]
-use tui::backend::CrosstermBackend as SelectedBackend;
-#[cfg(feature = "examples-tui-termion")]
-use tui::backend::TermionBackend as SelectedBackend;
-
-#[cfg(not(feature = "ratatui-support"))]
-use tui::layout::{Constraint, Direction, Layout, Rect};
-#[cfg(not(feature = "ratatui-support"))]
-use tui::style::{Color, Modifier, Style};
-#[cfg(not(feature = "ratatui-support"))]
-use tui::widgets::{Block, Borders, Gauge, Tabs};
-#[cfg(not(feature = "ratatui-support"))]
-use tui::Frame;
-#[cfg(not(feature = "ratatui-support"))]
-use tui::Terminal;
 
 use tui_logger::*;
 
@@ -230,9 +210,6 @@ fn main() -> std::result::Result<(), std::io::Error> {
 }
 
 fn draw_frame<B: Backend>(t: &mut Frame<B>, size: Rect, app: &mut App) {
-    #[cfg(not(feature = "ratatui-support"))]
-    let tabs: Vec<tui::text::Spans> = vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()];
-    #[cfg(feature = "ratatui-support")]
     let tabs: Vec<Line> = vec!["V1".into(), "V2".into(), "V3".into(), "V4".into()];
     let sel = app.selected_tab;
 

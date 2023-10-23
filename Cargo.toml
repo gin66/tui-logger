@@ -4,7 +4,7 @@ version = "0.9.6"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
 edition = "2021"
 license = "MIT"
-description = "Logger with smart widget for the `tui` crate"
+description = "Logger with smart widget for the `ratatui` crate"
 documentation = "https://docs.rs/tui-logger/latest/tui_logger/"
 repository = "https://github.com/gin66/tui-logger"
 readme = "README.md"
@@ -16,8 +16,7 @@ travis-ci = { repository = "gin66/tui-logger" }
 [dependencies]
 log = "0.4"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
-tui = { version = "0.19", default-features = false, package = "tui", optional = true }
-ratatui = { version = "0.23.0", default-features = false, package = "ratatui", optional = true }
+ratatui = { version = "0.23.0", default-features = false, package = "ratatui" }
 tracing = {version = "0.1.37", optional = true}
 tracing-subscriber = {version = "0.3", optional = true}
 lazy_static = "1.0"
@@ -25,7 +24,7 @@ fxhash = "0.2"
 parking_lot = "0.12"
 slog = { version = "2.7.0", optional = true }
 
-# Optional features for demo. Unfortunately cannot move to dep-dependencies
+# Optional features for demo. Unfortunately cannot move to dev-dependencies
 termion = {version = "1.5", optional = true }
 crossterm = {version = "0.27", optional = true }
 
@@ -33,14 +32,10 @@ crossterm = {version = "0.27", optional = true }
 env_logger = "0.10.0"
 
 [features]
-default = ["tui","tui/termion", "examples-tui-termion"]
-tui-rs = ["tui"]
+default = ["ratatui/termion", "examples-ratatui-termion"]
 slog-support = ["slog"]
-ratatui-support = ["ratatui"]
 tracing-support = ["tracing", "tracing-subscriber"]
 
 # This features are exclusively used by examples/demo.rs
-examples-tui-termion = ["termion", "tui/termion"]
-examples-tui-crossterm = ["crossterm", "tui/crossterm"]
 examples-ratatui-termion = ["termion", "ratatui/termion"]
 examples-ratatui-crossterm = ["crossterm", "ratatui/crossterm"]

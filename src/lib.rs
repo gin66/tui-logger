@@ -213,25 +213,12 @@ use std::io::Write;
 use std::mem;
 use std::sync::Arc;
 
-#[cfg(feature = "ratatui-support")]
 use ratatui::prelude::*;
-#[cfg(feature = "ratatui-support")]
 use ratatui::widgets::*;
 
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
-
-#[cfg(not(feature = "ratatui-support"))]
-use tui::buffer::Buffer;
-#[cfg(not(feature = "ratatui-support"))]
-use tui::layout::{Constraint, Direction, Layout, Rect};
-#[cfg(not(feature = "ratatui-support"))]
-use tui::style::{Modifier, Style};
-#[cfg(not(feature = "ratatui-support"))]
-use tui::text::Spans as Line;
-#[cfg(not(feature = "ratatui-support"))]
-use tui::widgets::{Block, BorderType, Borders, Widget};
 
 mod circular;
 #[cfg(feature = "slog-support")]
@@ -1454,13 +1441,8 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
         };
 
         let mut title_log = self.title_log.clone();
-        #[cfg(feature = "ratatui-support")]
         title_log
             .spans
-            .push(format!(" [log={:.1}/s]", entries_s).into());
-        #[cfg(not(feature = "ratatui-support"))]
-        title_log
-            .0
             .push(format!(" [log={:.1}/s]", entries_s).into());
 
         let hide_target = self.state.lock().hide_target;
