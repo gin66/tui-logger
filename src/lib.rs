@@ -111,31 +111,31 @@
 //!
 //! Run demo with tui and termion:
 //!
-//! ```
+//! ```ignore
 //! cargo run --example demo --no-default-features -F tui-rs,examples-tui-termion
 //! ```
 //!
 //! or simply:
 //!
-//! ```
+//! ```ignore
 //! cargo run --example demo
 //! ```
 //!
 //! Run demo with tui and crossterm:
 //!
-//! ```
+//! ```ignore
 //! cargo run --example demo --no-default-features -F tui-rs,examples-tui-crossterm
 //! ```
 //!
 //! Run demo with ratatui and termion:
 //!
-//! ```
+//! ```ignore
 //! cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-termion
 //! ```
 //!
 //! Run demo with ratatui and crossterm:
 //!
-//! ```
+//! ```ignore
 //! cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-crossterm
 //! ```
 //!
