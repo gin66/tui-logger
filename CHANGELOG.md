@@ -1,5 +1,9 @@
+0.10.0:
+- Remove support for tui legacy crate
+- Use `Cell::set_symbol()` as performance optimization from ratatui 
+
 0.9.6:
-- update ratui to 0.23.0
+- update ratatui to 0.23.0
 
 0.9.5:
 - rework examples/demo to not use termion

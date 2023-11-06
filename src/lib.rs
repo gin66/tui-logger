@@ -15,6 +15,15 @@
 //!
 //! [Documentation](https://docs.rs/tui-logger/latest/tui_logger/)
 //!
+//! ## Important note for `tui`
+//!
+//! The `tui` crate has been archived and `ratatui` has taken over. 
+//! In order to not need to support compatibility for an inactive create,
+//! the v0.9.x releases are the last to support tui. In case future bug fixes
+//! are needed, the branch `tui_legacy` has been created to track changes to 0.9.x releases.
+//!
+//! Starting with v0.10 `tui-logger` is `ratatui` only.
+//!
 //! ## Features
 //!
 //! - [X] Logger implementation for the `log` crate
@@ -196,9 +205,12 @@
 //! * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
 //! * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
 //! * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
-//! * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in (https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
-//! * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34) and [#37](https://github.com/gin66/tui-logger/issues/37)
-//! * [purephantom](https://github.com/purephantom) for providing patch in #42 for ratatui update
+//! * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in [#31](https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
+//! * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34), [#37](https://github.com/gin66/tui-logger/issues/37) and [#46](https://github.com/gin66/tui-logger/issues/46)
+//! * [purephantom](https://github.com/purephantom) for providing patch in [#42](https://github.com/gin66/tui-logger/issues/42) for ratatui update
+//! * [Badr Bouslikhin](https://github.com/badrbouslikhin) for providing patch in [#47](https://github.com/gin66/tui-logger/issues/47) for ratatui update
+//! * [ganthern](https://github.com/ganthern) for providing patch in [#49](https://github.com/gin66/tui-logger/issues/49) for tui support removal
+//! * [Linda_pp](https://github.com/rhysd) for providing patch in [#51](https://github.com/gin66/tui-logger/issues/51) for Cell:set_symbol
 //!
 #[macro_use]
 extern crate lazy_static;

@@ -1,4 +1,4 @@
- # Logger with smart widget for the `ratatui` crate
+ # Logger with smart widget for the `tui` and `ratatui` crate
 
  ![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
  [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_9_1)](https://deps.rs/repo/github/gin66/tui-logger)
@@ -12,6 +12,15 @@
  ## Documentation
 
  [Documentation](https://docs.rs/tui-logger/latest/tui_logger/)
+
+ ## Important note for `tui`
+
+ The `tui` crate has been archived and `ratatui` has taken over. 
+ In order to not need to support compatibility for an inactive create,
+ the v0.9.x releases are the last to support tui. In case future bug fixes
+ are needed, the branch `tui_legacy` has been created to track changes to 0.9.x releases.
+
+ Starting with v0.10 `tui-logger` is `ratatui` only.
 
  ## Features
 
@@ -109,31 +118,31 @@
 
  Run demo with tui and termion:
 
- ```
+ ```ignore
  cargo run --example demo --no-default-features -F tui-rs,examples-tui-termion
  ```
 
  or simply:
 
- ```
+ ```ignore
  cargo run --example demo
  ```
 
  Run demo with tui and crossterm:
 
- ```
+ ```ignore
  cargo run --example demo --no-default-features -F tui-rs,examples-tui-crossterm
  ```
 
  Run demo with ratatui and termion:
 
- ```
+ ```ignore
  cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-termion
  ```
 
  Run demo with ratatui and crossterm:
 
- ```
+ ```ignore
  cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-crossterm
  ```
 
@@ -151,6 +160,10 @@
  it receives to the `tui-logger` widget
 
  Enabled by feature "tracing-support"
+
+ ## `ratatui` support
+
+ Enabled by feature "ratatui-support" + disable default-features of tui-logger
 
  ## Custom filtering
  ```rust
@@ -190,7 +203,10 @@
  * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
  * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
  * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
- * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in (https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
+ * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in [#31](https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
  * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34), [#37](https://github.com/gin66/tui-logger/issues/37) and [#46](https://github.com/gin66/tui-logger/issues/46)
- * [purephantom](https://github.com/purephantom) for providing patch in #42 for ratatui update
+ * [purephantom](https://github.com/purephantom) for providing patch in [#42](https://github.com/gin66/tui-logger/issues/42) for ratatui update
+ * [Badr Bouslikhin](https://github.com/badrbouslikhin) for providing patch in [#47](https://github.com/gin66/tui-logger/issues/47) for ratatui update
+ * [ganthern](https://github.com/ganthern) for providing patch in [#49](https://github.com/gin66/tui-logger/issues/49) for tui support removal
+ * [Linda_pp](https://github.com/rhysd) for providing patch in [#51](https://github.com/gin66/tui-logger/issues/51) for Cell:set_symbol
 
