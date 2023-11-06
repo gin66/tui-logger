@@ -1,6 +1,7 @@
 0.10.0:
 - Remove support for tui legacy crate
-- Use `Cell::set_symbol()` as performance optimization from ratatui 
+- Use `Cell::set_symbol()` as performance optimization from ratatui
+- Require chrono >= 0.4.20 for avoid security vulnerability (https://rustsec.org/advisories/RUSTSEC-2020-0159.html)
 
 0.9.6:
 - update ratatui to 0.23.0
