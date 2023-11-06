@@ -118,19 +118,13 @@
 //! The demo does not support another terminal backend besides termion.
 //! During build the termion feature of tui needs to be enabled
 //!
-//! Run demo with tui and termion:
-//!
-//! ```ignore
-//! cargo run --example demo --no-default-features -F tui-rs,examples-tui-termion
-//! ```
-//!
-//! or simply:
+//! Run demo using termion 1.5:
 //!
 //! ```ignore
 //! cargo run --example demo
 //! ```
 //!
-//! Run demo with termion 1.5:
+//! Or more verbosely:
 //!
 //! ```ignore
 //! cargo run --example demo --no-default-features -F examples-termion
