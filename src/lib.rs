@@ -859,11 +859,11 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     } else if let Some(style_off) = self.style_off {
                         style_off
                     } else {
-                        cell.symbol = " ".to_string();
+                        cell.set_symbol(" ");
                         continue;
                     };
                     cell.set_style(cell_style);
-                    cell.symbol = sym.to_string();
+                    cell.set_symbol(sym);
                 }
                 buf.set_stringn(la_left + 5, la_top + i as u16, ":", la_width, self.style);
                 buf.set_stringn(
