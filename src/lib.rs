@@ -130,22 +130,16 @@
 //! cargo run --example demo
 //! ```
 //!
-//! Run demo with tui and crossterm:
+//! Run demo with termion 1.5:
 //!
 //! ```ignore
-//! cargo run --example demo --no-default-features -F tui-rs,examples-tui-crossterm
+//! cargo run --example demo --no-default-features -F examples-termion
 //! ```
 //!
-//! Run demo with ratatui and termion:
+//! Run demo with crossterm:
 //!
 //! ```ignore
-//! cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-termion
-//! ```
-//!
-//! Run demo with ratatui and crossterm:
-//!
-//! ```ignore
-//! cargo run --example demo --no-default-features -F ratatui-support,examples-ratatui-crossterm
+//! cargo run --example demo --no-default-features -F examples-crossterm
 //! ```
 //!
 //! ## `slog` support
@@ -162,10 +156,6 @@
 //! it receives to the `tui-logger` widget
 //!
 //! Enabled by feature "tracing-support"
-//!
-//! ## `ratatui` support
-//!
-//! Enabled by feature "ratatui-support" + disable default-features of tui-logger
 //!
 //! ## Custom filtering
 //! ```rust

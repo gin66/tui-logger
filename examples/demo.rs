@@ -22,9 +22,9 @@ use termion::{
     screen::AlternateScreen,
 };
 
-#[cfg(feature = "examples-ratatui-crossterm")]
+#[cfg(feature = "examples-crossterm")]
 use ratatui::backend::CrosstermBackend as SelectedBackend;
-#[cfg(feature = "examples-ratatui-termion")]
+#[cfg(feature = "examples-termion")]
 use ratatui::backend::TermionBackend as SelectedBackend;
 use ratatui::prelude::*;
 use ratatui::widgets::*;

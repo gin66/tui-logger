@@ -32,10 +32,10 @@ crossterm = {version = "0.27", optional = true }
 env_logger = "0.10.0"
 
 [features]
-default = ["ratatui/termion", "examples-ratatui-termion"]
+default = ["ratatui/termion", "examples-termion"]
 slog-support = ["slog"]
 tracing-support = ["tracing", "tracing-subscriber"]
 
 # This features are exclusively used by examples/demo.rs
-examples-ratatui-termion = ["termion", "ratatui/termion"]
-examples-ratatui-crossterm = ["crossterm", "ratatui/crossterm"]
+examples-termion = ["termion", "ratatui/termion"]
+examples-crossterm = ["crossterm", "ratatui/crossterm"]
