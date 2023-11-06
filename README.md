@@ -113,9 +113,6 @@
 
  ## Demo
 
- The demo does not support another terminal backend besides termion.
- During build the termion feature of tui needs to be enabled
-
  Run demo using termion 1.5:
 
  ```ignore
