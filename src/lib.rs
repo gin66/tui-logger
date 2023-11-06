@@ -18,7 +18,7 @@
 //! ## Important note for `tui`
 //!
 //! The `tui` crate has been archived and `ratatui` has taken over. 
-//! In order to avoid supporting compatibility for an inactive create,
+//! In order to avoid supporting compatibility for an inactive crate,
 //! the v0.9.x releases are the last to support `tui`. In case future bug fixes
 //! are needed, the branch `tui_legacy` has been created to track changes to 0.9.x releases.
 //!
