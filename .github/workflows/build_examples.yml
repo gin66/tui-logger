@@ -17,4 +17,4 @@ jobs:
     - name: Build examples with ratatui and termion
       run: cargo build --examples
     - name: Build example with ratatui and crossterm
-      run: cargo build --examples --no-default-features -F examples-ratatui-crossterm 
+      run: cargo build --examples --no-default-features -F examples-crossterm 
