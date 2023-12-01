@@ -191,3 +191,6 @@
  * [ganthern](https://github.com/ganthern) for providing patch in [#49](https://github.com/gin66/tui-logger/issues/49) for tui support removal
  * [Linda_pp](https://github.com/rhysd) for providing patch in [#51](https://github.com/gin66/tui-logger/issues/51) for Cell:set_symbol
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=gin66/tui-logger&type=Date)](https://star-history.com/#gin66/tui-logger&Date)
