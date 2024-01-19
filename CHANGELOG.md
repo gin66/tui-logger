@@ -1,3 +1,6 @@
+0.10.1:
+- update ratatui to ^0.25.0
+
 0.10.0:
 - Remove support for tui legacy crate
 - Use `Cell::set_symbol()` as performance optimization from ratatui
