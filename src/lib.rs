@@ -17,7 +17,7 @@
 //!
 //! ## Important note for `tui`
 //!
-//! The `tui` crate has been archived and `ratatui` has taken over. 
+//! The `tui` crate has been archived and `ratatui` has taken over.
 //! In order to avoid supporting compatibility for an inactive crate,
 //! the v0.9.x releases are the last to support `tui`. In case future bug fixes
 //! are needed, the branch `tui_legacy` has been created to track changes to 0.9.x releases.
@@ -115,22 +115,16 @@
 //!
 //! ## Demo
 //!
-//! Run demo using termion 1.5:
+//! Run demo using termion:
 //!
 //! ```ignore
-//! cargo run --example demo
-//! ```
-//!
-//! Or more verbosely:
-//!
-//! ```ignore
-//! cargo run --example demo --no-default-features -F examples-termion
+//! cargo run --example demo --features termion
 //! ```
 //!
 //! Run demo with crossterm:
 //!
 //! ```ignore
-//! cargo run --example demo --no-default-features -F examples-crossterm
+//! cargo run --example demo --features crossterm
 //! ```
 //!
 //! ## `slog` support
@@ -535,7 +529,7 @@ impl Drain {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum TuiWidgetEvent {
     SpaceKey,
     UpKey,
@@ -573,9 +567,9 @@ impl TuiWidgetInnerState {
     pub fn new() -> TuiWidgetInnerState {
         TuiWidgetInnerState::default()
     }
-    fn transition(&mut self, event: &TuiWidgetEvent) {
+    fn transition(&mut self, event: TuiWidgetEvent) {
         use TuiWidgetEvent::*;
-        match *event {
+        match event {
             SpaceKey => {
                 self.hide_off ^= true;
             }
@@ -652,7 +646,7 @@ impl TuiWidgetState {
         self.inner.lock().config.set(target, levelfilter);
         self
     }
-    pub fn transition(&mut self, event: &TuiWidgetEvent) {
+    pub fn transition(&mut self, event: TuiWidgetEvent) {
         self.inner.lock().transition(event);
     }
 }
@@ -877,7 +871,7 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
 
 /// The TuiLoggerWidget shows the logging messages in an endless scrolling view.
 /// It is controlled by a TuiWidgetState for selected events.
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Hash)]
 pub enum TuiLoggerLevelOutput {
     Abbreviated,
     Long,
