@@ -143,40 +143,40 @@ fn main() -> std::result::Result<(), std::io::Error> {
                                 app.selected_tab = sel_tab;
                             }
                             Key::Char(' ') => {
-                                state.transition(&TuiWidgetEvent::SpaceKey);
+                                state.transition(TuiWidgetEvent::SpaceKey);
                             }
                             Key::Esc => {
-                                state.transition(&TuiWidgetEvent::EscapeKey);
+                                state.transition(TuiWidgetEvent::EscapeKey);
                             }
                             Key::PageUp => {
-                                state.transition(&TuiWidgetEvent::PrevPageKey);
+                                state.transition(TuiWidgetEvent::PrevPageKey);
                             }
                             Key::PageDown => {
-                                state.transition(&TuiWidgetEvent::NextPageKey);
+                                state.transition(TuiWidgetEvent::NextPageKey);
                             }
                             Key::Up => {
-                                state.transition(&TuiWidgetEvent::UpKey);
+                                state.transition(TuiWidgetEvent::UpKey);
                             }
                             Key::Down => {
-                                state.transition(&TuiWidgetEvent::DownKey);
+                                state.transition(TuiWidgetEvent::DownKey);
                             }
                             Key::Left => {
-                                state.transition(&TuiWidgetEvent::LeftKey);
+                                state.transition(TuiWidgetEvent::LeftKey);
                             }
                             Key::Right => {
-                                state.transition(&TuiWidgetEvent::RightKey);
+                                state.transition(TuiWidgetEvent::RightKey);
                             }
                             Key::Char('+') => {
-                                state.transition(&TuiWidgetEvent::PlusKey);
+                                state.transition(TuiWidgetEvent::PlusKey);
                             }
                             Key::Char('-') => {
-                                state.transition(&TuiWidgetEvent::MinusKey);
+                                state.transition(TuiWidgetEvent::MinusKey);
                             }
                             Key::Char('h') => {
-                                state.transition(&TuiWidgetEvent::HideKey);
+                                state.transition(TuiWidgetEvent::HideKey);
                             }
                             Key::Char('f') => {
-                                state.transition(&TuiWidgetEvent::FocusKey);
+                                state.transition(TuiWidgetEvent::FocusKey);
                             }
                             _ => (),
                         }
