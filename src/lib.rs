@@ -115,22 +115,16 @@
 //!
 //! ## Demo
 //!
-//! Run demo using termion 1.5:
+//! Run demo using termion:
 //!
 //! ```ignore
-//! cargo run --example demo
-//! ```
-//!
-//! Or more verbosely:
-//!
-//! ```ignore
-//! cargo run --example demo --no-default-features -F examples-termion
+//! cargo run --example demo --features termion
 //! ```
 //!
 //! Run demo with crossterm:
 //!
 //! ```ignore
-//! cargo run --example demo --no-default-features -F examples-crossterm
+//! cargo run --example demo --features crossterm
 //! ```
 //!
 //! ## `slog` support

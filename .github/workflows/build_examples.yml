@@ -2,19 +2,18 @@ name: Build examples
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Build examples with ratatui and termion
-      run: cargo build --examples
-    - name: Build example with ratatui and crossterm
-      run: cargo build --examples --no-default-features -F examples-crossterm 
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build examples with ratatui and termion
+        run: cargo build --examples --features termion
+      - name: Build example with ratatui and crossterm
+        run: cargo build --examples --features crossterm
