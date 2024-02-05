@@ -186,7 +186,13 @@
 //! * [Badr Bouslikhin](https://github.com/badrbouslikhin) for providing patch in [#47](https://github.com/gin66/tui-logger/issues/47) for ratatui update
 //! * [ganthern](https://github.com/ganthern) for providing patch in [#49](https://github.com/gin66/tui-logger/issues/49) for tui support removal
 //! * [Linda_pp](https://github.com/rhysd) for providing patch in [#51](https://github.com/gin66/tui-logger/issues/51) for Cell:set_symbol
+//! * [Josh McKinney](https://github.com/joshka) for providing patch in
+//! [#56](https://github.com/gin66/tui-logger/issues/56) for Copy on TuiWidgetEvent and
+//! TuiLoggerWidget
 //!
+//!## Star History
+//!
+//![![Star History Chart](https://api.star-history.com/svg?repos=gin66/tui-logger&type=Date)](https://star-history.com/#gin66/tui-logger&Date)
 #[macro_use]
 extern crate lazy_static;
 

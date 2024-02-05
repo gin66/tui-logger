@@ -15,7 +15,7 @@
 
  ## Important note for `tui`
 
- The `tui` crate has been archived and `ratatui` has taken over. 
+ The `tui` crate has been archived and `ratatui` has taken over.
  In order to avoid supporting compatibility for an inactive crate,
  the v0.9.x releases are the last to support `tui`. In case future bug fixes
  are needed, the branch `tui_legacy` has been created to track changes to 0.9.x releases.
@@ -113,22 +113,16 @@
 
  ## Demo
 
- Run demo using termion 1.5:
+ Run demo using termion:
 
  ```ignore
- cargo run --example demo
- ```
-
- Or more verbosely:
-
- ```ignore
- cargo run --example demo --no-default-features -F examples-termion
+ cargo run --example demo --features termion
  ```
 
  Run demo with crossterm:
 
  ```ignore
- cargo run --example demo --no-default-features -F examples-crossterm
+ cargo run --example demo --features crossterm
  ```
 
  ## `slog` support
@@ -190,6 +184,9 @@
  * [Badr Bouslikhin](https://github.com/badrbouslikhin) for providing patch in [#47](https://github.com/gin66/tui-logger/issues/47) for ratatui update
  * [ganthern](https://github.com/ganthern) for providing patch in [#49](https://github.com/gin66/tui-logger/issues/49) for tui support removal
  * [Linda_pp](https://github.com/rhysd) for providing patch in [#51](https://github.com/gin66/tui-logger/issues/51) for Cell:set_symbol
+ * [Josh McKinney](https://github.com/joshka) for providing patch in
+ [#56](https://github.com/gin66/tui-logger/issues/56) for Copy on TuiWidgetEvent and
+ TuiLoggerWidget
 
 ## Star History
 
