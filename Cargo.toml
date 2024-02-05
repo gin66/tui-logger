@@ -1,6 +1,6 @@
 [package]
 name = "tui-logger"
-version = "0.10.1"
+version = "0.11.0"
 authors = ["Jochen Kiemes <jochen@kiemes.de>"]
 edition = "2021"
 license = "MIT"
@@ -16,7 +16,7 @@ travis-ci = { repository = "gin66/tui-logger" }
 [dependencies]
 log = "0.4"
 chrono = { version = "^0.4.20", default-features = false, features = ["clock"] }
-ratatui = { version = ">=0.25.0", default-features = false}
+ratatui = { version = "0.26", default-features = false}
 tracing = {version = "0.1.37", optional = true}
 tracing-subscriber = {version = "0.3", optional = true}
 lazy_static = "1.0"
@@ -26,7 +26,7 @@ slog = { version = "2.7.0", optional = true }
 
 [dev-dependencies]
 # the crate is compatible with ratatui >=0.25.0, but the demo uses features from 0.26.0
-ratatui = { version = "0.26.0", default-features = false}
+ratatui = { version = "0.26", default-features = false}
 anyhow = "1.0.79"
 env_logger = "0.11.1"
 termion = {version = "3.0.0" }

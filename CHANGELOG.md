@@ -1,3 +1,7 @@
+0.11.0:
+- BREAKING CHANGE: TuiWidgetEvent::transition() method now takes a TuiWidgetEvent by value instead of by reference.
+- update ratatui to 0.25
+
 0.10.1:
 - update ratatui to ^0.25.0
 
