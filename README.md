@@ -1,31 +1,31 @@
-<!-- cargo-rdme start -->
+[![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
 
-# Logger with smart widget for the `tui` and `ratatui` crate
+# tui-logger
 
-![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)
+## Logger with smart widget for the `tui` and `ratatui` crate
+
 [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_9_1)](https://deps.rs/repo/github/gin66/tui-logger)
 ![Build examples](https://github.com/gin66/tui-logger/workflows/Build%20examples/badge.svg?service=github)
 
 
-## Demo of the widget
+### Demo of the widget
 
 ![Demo](https://github.com/gin66/tui-logger/blob/master/doc/demo_v0.6.6.gif?raw=true)
 
-## Documentation
+### Documentation
 
 [Documentation](https://docs.rs/tui-logger/latest/tui_logger/)
 
-## Important note for `tui`
+### Important note for `tui`
 
 The `tui` crate has been archived and `ratatui` has taken over.
 In order to avoid supporting compatibility for an inactive crate,
 the v0.9.x releases are the last to support `tui`. In case future bug fixes
 are needed, the branch `tui_legacy` has been created to track changes to 0.9.x releases.
 
-
 Starting with v0.10 `tui-logger` is `ratatui` only.
 
-## Features
+### Features
 
 - [X] Logger implementation for the `log` crate
 - [X] Logger enable/disable detection via hash table (avoid string compare)
@@ -43,7 +43,7 @@ Starting with v0.10 `tui-logger` is `ratatui` only.
 - [ ] Avoid duplicating of target, module and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
 
-## Smart Widget
+### Smart Widget
 
 Smart widget consists of two widgets. Left is the target selector widget and
 on the right side the logging messages view scrolling up. The target selector widget
@@ -67,7 +67,7 @@ The two columns have the following meaning:
   + If any of EWIDT are not shown, then the respective log level is not captured
 - Target of the log events can be defined in the log e.g. `warn!(target: "demo", "Log message");`
 
-## Smart Widget Key Commands
+### Smart Widget Key Commands
 ```rust
 |  KEY     | ACTION
 |----------|-----------------------------------------------------------|
@@ -93,7 +93,7 @@ reference. This means, changing the filters in the EWIDT/focus from the target s
 should work as expected without jumps in the history. The page next/forward advances as
 per visibility of the events.
 
-## Basic usage to initialize logger-system:
+### Basic usage to initialize logger-system:
 ```rust
 #[macro_use]
 extern crate log;
@@ -114,7 +114,7 @@ fn main() {
 
 For use of the widget please check examples/demo.rs
 
-## Demo
+### Demo
 
 Run demo using termion:
 
@@ -128,14 +128,14 @@ Run demo with crossterm:
 cargo run --example demo --features crossterm
 ```
 
-## `slog` support
+### `slog` support
 
 `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
 it receives to the `tui-logger` widget.
 
 Enabled by feature "slog-support"
 
-## `tracing-subscriber` support
+### `tracing-subscriber` support
 
 `tui-logger` provides a TuiTracingSubscriberLayer which implements
 `tracing_subscriber::Layer` and will collect all events
@@ -143,7 +143,7 @@ it receives to the `tui-logger` widget
 
 Enabled by feature "tracing-support"
 
-## Custom filtering
+### Custom filtering
 ```rust
 #[macro_use]
 extern crate log;
@@ -163,12 +163,12 @@ fn main() {
 }
 ```
 
-## Applications using tui-logger
+### Applications using tui-logger
 
 * [wash](https://github.com/wasmCloud/wash)
 * [rocker](https://github.com/atlassian/rocker)
 
-## THANKS TO
+### THANKS TO
 
 * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
 * [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 and v0.6.0
@@ -191,8 +191,8 @@ fn main() {
 [#56](https://github.com/gin66/tui-logger/issues/56) for Copy on TuiWidgetEvent and
 TuiLoggerWidget
 
-## Star History
+### Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=gin66/tui-logger&type=Date)](https://star-history.com/#gin66/tui-logger&Date)
 
-<!-- cargo-rdme end -->
+License: MIT
