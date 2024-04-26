@@ -1,3 +1,8 @@
+0.11.1:
+- one line error report for demo example, if feature flag crossterm or termion not given
+- use cargo readme and test in github build
+- Fix of issue #60: panic on too small widget size
+
 0.11.0:
 - BREAKING CHANGE: TuiWidgetEvent::transition() method now takes a TuiWidgetEvent by value instead of by reference.
 - update ratatui to 0.25
