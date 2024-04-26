@@ -37,5 +37,13 @@ slog-support = ["slog"]
 tracing-support = ["tracing", "tracing-subscriber"]
 
 # only necessary for the demo, the crate does has no dependencies on these
-crossterm = ["ratatui/crossterm"]
-termion = ["ratatui/termion"]
+# 
+# feature_crossterm_or_termion_must_be_selected to generate one line error message
+# instead of many compile error messages, if neither crossterm nor termion are selected.
+feature_crossterm_or_termion_must_be_selected = []
+crossterm = ["ratatui/crossterm", "feature_crossterm_or_termion_must_be_selected"]
+termion = ["ratatui/termion", "feature_crossterm_or_termion_must_be_selected"]
+
+[[example]]
+name="demo"
+required-features=["feature_crossterm_or_termion_must_be_selected"]
