@@ -1128,14 +1128,14 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             }
             None => area,
         };
-        if list_area.width < 8 || list_area.height < 1 {
+        let indent = 9;
+        if list_area.width < indent + 4 || list_area.height < 1 {
             return;
         }
 
         let mut state = self.state.lock();
         let la_height = list_area.height as usize;
         let mut lines: Vec<(Option<Style>, u16, String)> = vec![];
-        let indent = 9;
         {
             state.opt_timestamp_next_page = None;
             let opt_timestamp_bottom = state.opt_timestamp_bottom;
@@ -1193,11 +1193,11 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         // lines is a vector with bottom line at index 0
         // wrapped_lines will be a vector with top line first
         let mut wrapped_lines = CircularBuffer::new(la_height);
+        let rem_width = la_width - indent as usize;
         while let Some((style, left, line)) = lines.pop() {
             if line.chars().count() > la_width {
                 wrapped_lines.push((style, left, line.chars().take(la_width).collect()));
                 let mut remain: String = line.chars().skip(la_width).collect();
-                let rem_width = la_width - indent as usize;
                 while remain.chars().count() > rem_width {
                     let remove: String = remain.chars().take(rem_width).collect();
                     wrapped_lines.push((style, indent, remove));

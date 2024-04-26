@@ -261,15 +261,16 @@ impl Widget for &mut App {
                 .percent(percent)
                 .render(progress_area, buf);
         }
-
-        Text::from(vec![
-            "Q: Quit | Tab: Switch state | ↑/↓: Select target | f: Focus target".into(),
-            "←/→: Display level | +/-: Filter level | Space: Toggle hidden targets".into(),
-            "h: Hide target selector | PageUp/Down: Scroll | Esc: Cancel scroll".into(),
-        ])
-        .style(Color::Gray)
-        .centered()
-        .render(help_area, buf);
+        if area.width > 40 {
+            Text::from(vec![
+                "Q: Quit | Tab: Switch state | ↑/↓: Select target | f: Focus target".into(),
+                "←/→: Display level | +/-: Filter level | Space: Toggle hidden targets".into(),
+                "h: Hide target selector | PageUp/Down: Scroll | Esc: Cancel scroll".into(),
+            ])
+            .style(Color::Gray)
+            .centered()
+            .render(help_area, buf);
+        }
     }
 }
 
