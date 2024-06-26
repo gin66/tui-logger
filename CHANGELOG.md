@@ -1,3 +1,6 @@
+0.11.2:
+- update ratatui to 0.27
+
 0.11.1:
 - one line error report for demo example, if feature flag crossterm or termion not given
 - use cargo readme and test in github build
