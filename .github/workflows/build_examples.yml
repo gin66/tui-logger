@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Build examples with ratatui and termion
         run: cargo build --examples --features termion
       - name: Build example with ratatui and crossterm
