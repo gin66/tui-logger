@@ -203,12 +203,16 @@ use std::io::Write;
 use std::mem;
 use std::sync::Arc;
 
-use ratatui::prelude::*;
-use ratatui::widgets::*;
-
 use chrono::{DateTime, Local};
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
+use ratatui::{
+    buffer::Buffer,
+    layout::{Constraint, Direction, Layout, Rect},
+    style::{Modifier, Style},
+    text::Line,
+    widgets::{Block, BorderType, Borders, Widget},
+};
 
 mod circular;
 #[cfg(feature = "slog-support")]

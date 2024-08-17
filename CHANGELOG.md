@@ -1,3 +1,6 @@
+0.11.3:
+- update ratatui to 0.28
+
 0.11.2:
 - update ratatui to 0.27
 
