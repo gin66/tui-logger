@@ -839,25 +839,26 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     (3, "D", Level::Debug),
                     (4, "T", Level::Trace),
                 ] {
-                    let cell = buf.get_mut(la_left + j, la_top + i as u16);
-                    let cell_style = if *hot_level_filter >= *lev {
-                        if *level_filter >= *lev {
-                            if !focus_selected || i + offset == state.selected {
-                                self.style_show
+                    if let Some(cell) = buf.cell_mut((la_left + j, la_top + i as u16)) {
+                        let cell_style = if *hot_level_filter >= *lev {
+                            if *level_filter >= *lev {
+                                if !focus_selected || i + offset == state.selected {
+                                    self.style_show
+                                } else {
+                                    self.style_hide
+                                }
                             } else {
                                 self.style_hide
                             }
+                        } else if let Some(style_off) = self.style_off {
+                            style_off
                         } else {
-                            self.style_hide
-                        }
-                    } else if let Some(style_off) = self.style_off {
-                        style_off
-                    } else {
-                        cell.set_symbol(" ");
-                        continue;
-                    };
-                    cell.set_style(cell_style);
-                    cell.set_symbol(sym);
+                            cell.set_symbol(" ");
+                            continue;
+                        };
+                        cell.set_style(cell_style);
+                        cell.set_symbol(sym);
+                    }
                 }
                 buf.set_stringn(la_left + 5, la_top + i as u16, ":", la_width, self.style);
                 buf.set_stringn(
