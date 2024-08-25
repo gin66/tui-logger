@@ -186,7 +186,8 @@
 //! * [Josh McKinney](https://github.com/joshka) for providing patch in
 //! [#56](https://github.com/gin66/tui-logger/issues/56) for Copy on TuiWidgetEvent and
 //! TuiLoggerWidget
-//! * [nick42d](https://github.com/nick42d) for providing patch in #63 for semver checks
+//! * [nick42d](https://github.com/nick42d) for providing patch in
+//! [#63](https://github.com/gin66/tui-logger/issues/63) for semver checks
 //! * [Tom Groenwoldt](https://github.com/tomgroenwoldt) for providing patch in [#65](https://github.com/gin66/tui-logger/issues/65) for ratatui update
 //!
 //!## Star History
