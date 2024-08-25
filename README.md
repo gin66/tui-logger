@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/gin66/tui-logger.svg?branch=master)](https://travis-ci.org/gin66/tui-logger)
-
 # tui-logger
 
 ## Logger with smart widget for the `tui` and `ratatui` crate
