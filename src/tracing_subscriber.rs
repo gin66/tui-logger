@@ -61,6 +61,17 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
 #[allow(clippy::needless_doctest_main)]
 ///  tracing-subscriber-compatible layer that feeds messages to `tui-logger`.
 ///
+///  ## How it works
+///  Under the hood, tui_logger still uses `log`. `tracing` events are mapped to
+///  `log` events internally (which are then fed to `tui-logger`).
+///
+///  ## Limitations
+///  The TuiTracingSubscriberLayer currently is locked set to have a default
+///  filter for events of `Info` state or higher. This is not able to be changed
+///  currently without adding a depency on the `log` crate, as the
+///  [init_logger()] function that sets the filter level takes `log`'s event types.
+///
+///  [init_logger()]: super::init_logger()
 ///  ## Basic usage:
 ///  ```
 ///  //use tui_logger;

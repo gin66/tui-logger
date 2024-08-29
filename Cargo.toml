@@ -41,6 +41,15 @@ feature_crossterm_or_termion_must_be_selected = []
 crossterm = ["ratatui/crossterm", "feature_crossterm_or_termion_must_be_selected"]
 termion = ["ratatui/termion", "feature_crossterm_or_termion_must_be_selected"]
 
+# Docs.rs-specific configuration required to enable documentation of
+# code requiring optional features.
+[package.metadata.docs.rs]
+# Document all features
+all-features = true
+# Defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]
+
 [[example]]
 name="demo"
 required-features=["feature_crossterm_or_termion_must_be_selected"]
+

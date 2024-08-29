@@ -126,14 +126,14 @@
 //!
 //! ## `slog` support
 //!
-//! `tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
+//! `tui-logger` provides a [`TuiSlogDrain`] which implements `slog::Drain` and will route all records
 //! it receives to the `tui-logger` widget.
 //!
 //! Enabled by feature "slog-support"
 //!
 //! ## `tracing-subscriber` support
 //!
-//! `tui-logger` provides a TuiTracingSubscriberLayer which implements
+//! `tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements
 //! `tracing_subscriber::Layer` and will collect all events
 //! it receives to the `tui-logger` widget
 //!
@@ -193,6 +193,8 @@
 //!## Star History
 //!
 //![![Star History Chart](https://api.star-history.com/svg?repos=gin66/tui-logger&type=Date)](https://star-history.com/#gin66/tui-logger&Date)
+// Enable docsrs doc_cfg - to display non-default feature documentation.
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #[macro_use]
 extern crate lazy_static;
 
@@ -219,14 +221,18 @@ use ratatui::{
 
 mod circular;
 #[cfg(feature = "slog-support")]
+#[cfg_attr(docsrs, doc(cfg(feature = "slog-support")))]
 mod slog;
 #[cfg(feature = "tracing-support")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
 mod tracing_subscriber;
 
 pub use crate::circular::CircularBuffer;
 #[cfg(feature = "slog-support")]
+#[cfg_attr(docsrs, doc(cfg(feature = "slog-support")))]
 pub use crate::slog::TuiSlogDrain;
 #[cfg(feature = "tracing-support")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
 pub use crate::tracing_subscriber::TuiTracingSubscriberLayer;
 
 struct ExtLogRecord {
@@ -444,11 +450,13 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
 }
 
 #[cfg(feature = "slog-support")]
+#[cfg_attr(docsrs, doc(cfg(feature = "slog-support")))]
 pub fn slog_drain() -> TuiSlogDrain {
     TuiSlogDrain
 }
 
 #[cfg(feature = "tracing-support")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
 pub fn tracing_subscriber_layer() -> TuiTracingSubscriberLayer {
     TuiTracingSubscriberLayer
 }
