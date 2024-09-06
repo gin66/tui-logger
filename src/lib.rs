@@ -781,7 +781,8 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
         let la_width = list_area.width as usize;
 
         {
-            let hot_targets = &TUI_LOGGER.inner.lock().targets;
+            let inner = &TUI_LOGGER.inner.lock();
+            let hot_targets = &inner.targets;
             let mut state = self.state.lock();
             let hide_off = state.hide_off;
             let offset = state.offset;
@@ -839,10 +840,11 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             state.offset = offset;
 
             let targets = &(&state.config);
+            let default_level = inner.default;
             for i in 0..list_height {
                 let t = &self.targets[i + offset];
-                let hot_level_filter = hot_targets.get(t).unwrap();
-                let level_filter = targets.get(t).unwrap();
+                let hot_level_filter = hot_targets.get(t).unwrap_or(default_level);
+                let level_filter = targets.get(t).unwrap_or(default_level);
                 for (j, sym, lev) in &[
                     (0, "E", Level::Error),
                     (1, "W", Level::Warn),
