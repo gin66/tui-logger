@@ -128,14 +128,14 @@ cargo run --example demo --features crossterm
 
 ### `slog` support
 
-`tui-logger` provides a TuiSlogDrain which implements `slog::Drain` and will route all records
+`tui-logger` provides a [`TuiSlogDrain`] which implements `slog::Drain` and will route all records
 it receives to the `tui-logger` widget.
 
 Enabled by feature "slog-support"
 
 ### `tracing-subscriber` support
 
-`tui-logger` provides a TuiTracingSubscriberLayer which implements
+`tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements
 `tracing_subscriber::Layer` and will collect all events
 it receives to the `tui-logger` widget
 
