@@ -244,8 +244,8 @@ struct ExtLogRecord {
     msg: String,
 }
 
-fn advance_levelfilter(levelfilter: &LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {
-    match *levelfilter {
+fn advance_levelfilter(levelfilter: LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {
+    match levelfilter {
         LevelFilter::Trace => (None, Some(LevelFilter::Debug)),
         LevelFilter::Debug => (Some(LevelFilter::Trace), Some(LevelFilter::Info)),
         LevelFilter::Info => (Some(LevelFilter::Debug), Some(LevelFilter::Warn)),
@@ -299,8 +299,8 @@ impl LevelConfig {
         self.config.keys()
     }
     /// Get the levelfilter for a given target.
-    pub fn get(&self, target: &str) -> Option<&LevelFilter> {
-        self.config.get(target)
+    pub fn get(&self, target: &str) -> Option<LevelFilter> {
+        self.config.get(target).cloned()
     }
     /// Retrieve an iterator through all entries of the table.
     pub fn iter(&self) -> Iter<String, LevelFilter> {
@@ -315,7 +315,7 @@ impl LevelConfig {
         if self.origin_generation != origin.generation {
             for (target, origin_levelfilter) in origin.iter() {
                 if let Some(levelfilter) = self.get(target) {
-                    if levelfilter <= origin_levelfilter {
+                    if levelfilter <= *origin_levelfilter {
                         continue;
                     }
                 }
@@ -851,8 +851,8 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
                     (4, "T", Level::Trace),
                 ] {
                     if let Some(cell) = buf.cell_mut((la_left + j, la_top + i as u16)) {
-                        let cell_style = if *hot_level_filter >= *lev {
-                            if *level_filter >= *lev {
+                        let cell_style = if hot_level_filter >= *lev {
+                            if level_filter >= *lev {
                                 if !focus_selected || i + offset == state.selected {
                                     self.style_show
                                 } else {
@@ -1160,7 +1160,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             let mut circular = CircularBuffer::new(10); // MAGIC constant
             for evt in tui_lock.events.rev_iter() {
                 if let Some(level) = state.config.get(&evt.target) {
-                    if *level < evt.level {
+                    if level < evt.level {
                         continue;
                     }
                 } else if let Some(level) = state.config.default_display_level {
