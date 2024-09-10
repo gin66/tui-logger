@@ -843,6 +843,15 @@ impl<'b> Widget for TuiLoggerTargetWidget<'b> {
             let default_level = inner.default;
             for i in 0..list_height {
                 let t = &self.targets[i + offset];
+                // Comment in relation to issue #69:
+                // Widgets maintain their own list of level filters per target.
+                // These lists are not forwarded to the TUI_LOGGER, but kept widget private.
+                // Example: This widget's private list contains a target named "not_yet",
+                // and the application hasn't logged an entry with target "not_yet".
+                // If displaying the target list, then "not_yet" will be only present in target,
+                // but not in hot_targets. In issue #69 the problem has been, that
+                // `hot_targets.get(t).unwrap()` has caused a panic. Which is to be expected.
+                // The remedy is to use unwrap_or with default_level.
                 let hot_level_filter = hot_targets.get(t).unwrap_or(default_level);
                 let level_filter = targets.get(t).unwrap_or(default_level);
                 for (j, sym, lev) in &[

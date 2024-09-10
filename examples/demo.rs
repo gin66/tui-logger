@@ -61,6 +61,9 @@ impl App {
             TuiWidgetState::new().set_default_display_level(LevelFilter::Info),
             TuiWidgetState::new().set_default_display_level(LevelFilter::Info),
         ];
+
+        // Adding this line had provoked the bug as described in issue #69
+        // let states = states.into_iter().map(|s| s.set_level_for_target("some::logger", LevelFilter::Off)).collect();
         let tab_names = vec!["State 1", "State 2", "State 3", "State 4"];
         App {
             mode: AppMode::Run,

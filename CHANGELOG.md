@@ -1,5 +1,5 @@
-pre-0.12.1:
-- possible fix for issue #69: avoid unwrap panic by using default level
+0.12.1:
+- fix for issue #69: avoid unwrap panic by using default level
 
 0.12.0:
 - update ratatui to 0.28
