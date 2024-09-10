@@ -161,10 +161,23 @@ fn main() {
 }
 ```
 
-### Applications using tui-logger
+### Internals
 
-* [wash](https://github.com/wasmCloud/wash)
-* [rocker](https://github.com/atlassian/rocker)
+For logging there are two circular buffers in use:
+* "hot" buffer, which is written to during any logging macro invocation
+* main buffer, which holds events to be displayed by the widgets.
+
+The size of the "hot" buffer is 1000 and can be modified by `set_hot_buffer_depth()`.
+The size of the main buffer is 10000 and can be modified by `set_buffer_depth()`.
+
+The copy from "hot" buffer to main buffer is performed by a call to `move_events()`.
+This is implicitly called on any of the TuiLoggerWidgets' `default()`. This means
+during rendering! Consequently, if no TuiWidget is rendered for a while,
+the main buffer will not be updated and the "hot" buffer will at some point of time
+overwrite older entries.
+
+To avoid this loss of log entries, the application may choose to create a cyclic task
+to manually call `move_events()`.
 
 ### THANKS TO
 

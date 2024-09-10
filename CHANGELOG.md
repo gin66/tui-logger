@@ -1,5 +1,6 @@
 0.12.1:
 - fix for issue #69: avoid unwrap panic by using default level
+- add `set_buffer_depth()` to modify circular buffer size
 
 0.12.0:
 - update ratatui to 0.28
