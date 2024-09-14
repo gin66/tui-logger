@@ -1,3 +1,8 @@
+0.13.0:
+- `move_events()` is not published anymore, but called by a cyclic internal task.
+  This task is called by timeout (10ms) unless the hot buffer is half full.
+- `init_logger()` returns now `Result<(), TuiLoggerError>`
+
 0.12.1:
 - fix for issue #69: avoid unwrap panic by using default level
 - add `set_buffer_depth()` to modify circular buffer size

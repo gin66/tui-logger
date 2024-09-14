@@ -72,6 +72,9 @@ impl<T> CircularBuffer<T> {
     pub fn is_empty(&self) -> bool {
         self.buffer.is_empty()
     }
+    pub fn capacity(&self) -> usize {
+        self.buffer.capacity()
+    }
     /// Push a new element into the buffer.
     /// Until the capacity is reached, elements are pushed.
     /// Afterwards the oldest elements will be overwritten.

@@ -168,14 +168,11 @@
 //! The size of the "hot" buffer is 1000 and can be modified by `set_hot_buffer_depth()`.
 //! The size of the main buffer is 10000 and can be modified by `set_buffer_depth()`.
 //!
-//! The copy from "hot" buffer to main buffer is performed by a call to `move_events()`.
-//! This is implicitly called on any of the TuiLoggerWidgets' `default()`. This means
-//! during rendering! Consequently, if no TuiWidget is rendered for a while, 
-//! the main buffer will not be updated and the "hot" buffer will at some point of time
-//! overwrite older entries.
+//! Reason for this scheme: The main buffer is locked for a while during widget updates.
+//! In order to block the log-macros, this scheme is in use.
 //!
-//! To avoid this loss of log entries, the application may choose to create a cyclic task
-//! to manually call `move_events()`.
+//! The copy from "hot" buffer to main buffer is performed by a call to `move_events()`,
+//! which is done in a cyclic task, which repeats every 10 ms, or when the hot buffer is half full.
 //!
 //! ## THANKS TO
 //!
@@ -220,9 +217,10 @@ use std::io;
 use std::io::Write;
 use std::mem;
 use std::sync::Arc;
+use std::thread;
 
 use chrono::{DateTime, Local};
-use log::{Level, LevelFilter, Log, Metadata, Record};
+use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 use parking_lot::Mutex;
 use ratatui::{
     buffer::Buffer,
@@ -356,6 +354,7 @@ struct HotSelect {
 }
 struct HotLog {
     events: CircularBuffer<ExtLogRecord>,
+    mover_thread: Option<thread::JoinHandle<()>>,
 }
 struct TuiLoggerInner {
     hot_depth: usize,
@@ -378,7 +377,8 @@ impl TuiLogger {
         }
         // Exchange new event buffer with the hot buffer
         let mut received_events = {
-            let new_circular = CircularBuffer::new(self.inner.lock().hot_depth);
+            let hot_depth = self.inner.lock().hot_depth;
+            let new_circular = CircularBuffer::new(hot_depth);
             let mut hl = self.hot_log.lock();
             mem::replace(&mut hl.events, new_circular)
         };
@@ -439,6 +439,7 @@ lazy_static! {
         };
         let hl = HotLog {
             events: CircularBuffer::new(1000),
+            mover_thread: None,
         };
         let tli = TuiLoggerInner {
             hot_depth: 1000,
@@ -456,10 +457,47 @@ lazy_static! {
     };
 }
 
+// Lots of boilerplate code, so that init_logger can return two error types...
+#[derive(Debug)]
+pub enum TuiLoggerError {
+    SetLoggerError(SetLoggerError),
+    ThreadError(std::io::Error),
+}
+impl std::error::Error for TuiLoggerError {
+    fn description(&self) -> &str{
+        match self {
+            TuiLoggerError::SetLoggerError(_) => "SetLoggerError",
+            TuiLoggerError::ThreadError(_) => "ThreadError",
+        }
+    }
+    fn cause(& self) -> Option<&dyn std::error::Error> {
+        match self {
+            TuiLoggerError::SetLoggerError(_) => None,
+            TuiLoggerError::ThreadError(err) => Some(err),
+        }
+    }
+}
+impl std::fmt::Display for TuiLoggerError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TuiLoggerError::SetLoggerError(err) => write!(f, "SetLoggerError({})", err),
+            TuiLoggerError::ThreadError(err) => write!(f, "ThreadError({})", err),
+        }
+    }
+}
+
 /// Init the logger and record with `log` crate.
-pub fn init_logger(max_level: LevelFilter) -> Result<(), log::SetLoggerError> {
+pub fn init_logger(max_level: LevelFilter) -> Result<(), TuiLoggerError> {
     log::set_max_level(max_level);
-    log::set_logger(&*TUI_LOGGER)
+    let join_handle = thread::Builder::new().name("tui-logger::move_events".into()).spawn(|| {
+        let duration = std::time::Duration::from_millis(10);
+        loop {
+            thread::park_timeout(duration);
+            TUI_LOGGER.move_events();
+        }
+    }).map_err(|err| {TuiLoggerError::ThreadError(err)})?;
+    TUI_LOGGER.hot_log.lock().mover_thread = Some(join_handle);
+    log::set_logger(&*TUI_LOGGER).map_err(|err| {TuiLoggerError::SetLoggerError(err)})
 }
 
 #[cfg(feature = "slog-support")]
@@ -484,12 +522,6 @@ pub fn set_hot_buffer_depth(depth: usize) {
 /// This will delete all existing messages in the circular buffer.
 pub fn set_buffer_depth(depth: usize) {
     TUI_LOGGER.inner.lock().events = CircularBuffer::new(depth);
-}
-
-/// Move events from hot circular buffer to the main one.
-/// If defined, log records will be written to file.
-pub fn move_events() {
-    TUI_LOGGER.move_events();
 }
 
 /// Define filename for logging.
@@ -527,7 +559,12 @@ impl TuiLogger {
             line: record.line().unwrap_or(0),
             msg: format!("{}", record.args()),
         };
-        self.hot_log.lock().events.push(log_entry);
+        let mut events_lock =self.hot_log.lock();
+        events_lock.events.push(log_entry);
+        let need_signal = (events_lock.events.total_elements()*2 % events_lock.events.capacity()) == 0 ;
+        if need_signal {
+            events_lock.mover_thread.as_ref().map(|jh| {thread::Thread::unpark(jh.thread())});
+        }
     }
 }
 
@@ -703,7 +740,7 @@ pub struct TuiLoggerTargetWidget<'b> {
 }
 impl<'b> Default for TuiLoggerTargetWidget<'b> {
     fn default() -> TuiLoggerTargetWidget<'b> {
-        TUI_LOGGER.move_events();
+        //TUI_LOGGER.move_events();
         TuiLoggerTargetWidget {
             block: None,
             style: Default::default(),
@@ -946,7 +983,7 @@ pub struct TuiLoggerWidget<'b> {
 }
 impl<'b> Default for TuiLoggerWidget<'b> {
     fn default() -> TuiLoggerWidget<'b> {
-        TUI_LOGGER.move_events();
+        //TUI_LOGGER.move_events();
         TuiLoggerWidget {
             block: None,
             style: Default::default(),
@@ -1303,7 +1340,7 @@ pub struct TuiLoggerSmartWidget<'a> {
 }
 impl<'a> Default for TuiLoggerSmartWidget<'a> {
     fn default() -> Self {
-        TUI_LOGGER.move_events();
+        //TUI_LOGGER.move_events();
         TuiLoggerSmartWidget {
             title_log: Line::from("Tui Log"),
             title_target: Line::from("Tui Target Selector"),

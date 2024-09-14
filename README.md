@@ -170,14 +170,11 @@ For logging there are two circular buffers in use:
 The size of the "hot" buffer is 1000 and can be modified by `set_hot_buffer_depth()`.
 The size of the main buffer is 10000 and can be modified by `set_buffer_depth()`.
 
-The copy from "hot" buffer to main buffer is performed by a call to `move_events()`.
-This is implicitly called on any of the TuiLoggerWidgets' `default()`. This means
-during rendering! Consequently, if no TuiWidget is rendered for a while,
-the main buffer will not be updated and the "hot" buffer will at some point of time
-overwrite older entries.
+Reason for this scheme: The main buffer is locked for a while during widget updates.
+In order to block the log-macros, this scheme is in use.
 
-To avoid this loss of log entries, the application may choose to create a cyclic task
-to manually call `move_events()`.
+The copy from "hot" buffer to main buffer is performed by a call to `move_events()`,
+which is done in a cyclic task, which repeats every 10 ms, or when the hot buffer is half full.
 
 ### THANKS TO
 
