@@ -561,7 +561,7 @@ impl TuiLogger {
         };
         let mut events_lock =self.hot_log.lock();
         events_lock.events.push(log_entry);
-        let need_signal = (events_lock.events.total_elements()*2 % events_lock.events.capacity()) == 0 ;
+        let need_signal = (events_lock.events.total_elements() % (events_lock.events.capacity()/2)) == 0 ;
         if need_signal {
             events_lock.mover_thread.as_ref().map(|jh| {thread::Thread::unpark(jh.thread())});
         }

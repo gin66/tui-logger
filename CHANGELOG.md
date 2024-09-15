@@ -1,3 +1,6 @@
+0.13.1:
+- fix missing `move_events()` on half full buffer in case hot buffer capacity was odd
+
 0.13.0:
 - `move_events()` is not published anymore, but called by a cyclic internal task.
   This task is called by timeout (10ms) unless the hot buffer is half full.

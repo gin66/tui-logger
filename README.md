@@ -171,10 +171,12 @@ The size of the "hot" buffer is 1000 and can be modified by `set_hot_buffer_dept
 The size of the main buffer is 10000 and can be modified by `set_buffer_depth()`.
 
 Reason for this scheme: The main buffer is locked for a while during widget updates.
-In order to block the log-macros, this scheme is in use.
+In order to avoid blocking the log-macros, this scheme is in use.
 
 The copy from "hot" buffer to main buffer is performed by a call to `move_events()`,
 which is done in a cyclic task, which repeats every 10 ms, or when the hot buffer is half full.
+
+In versions <0.13 log messages may have been lost, if the widget wasn't drawn.
 
 ### THANKS TO
 
