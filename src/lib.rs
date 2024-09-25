@@ -464,13 +464,13 @@ pub enum TuiLoggerError {
     ThreadError(std::io::Error),
 }
 impl std::error::Error for TuiLoggerError {
-    fn description(&self) -> &str{
+    fn description(&self) -> &str {
         match self {
             TuiLoggerError::SetLoggerError(_) => "SetLoggerError",
             TuiLoggerError::ThreadError(_) => "ThreadError",
         }
     }
-    fn cause(& self) -> Option<&dyn std::error::Error> {
+    fn cause(&self) -> Option<&dyn std::error::Error> {
         match self {
             TuiLoggerError::SetLoggerError(_) => None,
             TuiLoggerError::ThreadError(err) => Some(err),
@@ -488,16 +488,24 @@ impl std::fmt::Display for TuiLoggerError {
 
 /// Init the logger and record with `log` crate.
 pub fn init_logger(max_level: LevelFilter) -> Result<(), TuiLoggerError> {
-    log::set_max_level(max_level);
-    let join_handle = thread::Builder::new().name("tui-logger::move_events".into()).spawn(|| {
-        let duration = std::time::Duration::from_millis(10);
-        loop {
-            thread::park_timeout(duration);
-            TUI_LOGGER.move_events();
-        }
-    }).map_err(|err| {TuiLoggerError::ThreadError(err)})?;
+    let join_handle = thread::Builder::new()
+        .name("tui-logger::move_events".into())
+        .spawn(|| {
+            let duration = std::time::Duration::from_millis(10);
+            loop {
+                thread::park_timeout(duration);
+                TUI_LOGGER.move_events();
+            }
+        })
+        .map_err(|err| TuiLoggerError::ThreadError(err))?;
     TUI_LOGGER.hot_log.lock().mover_thread = Some(join_handle);
-    log::set_logger(&*TUI_LOGGER).map_err(|err| {TuiLoggerError::SetLoggerError(err)})
+    if cfg!(feature = "tracing-support") {
+        set_default_level(max_level);
+        Ok(())
+    } else {
+        log::set_max_level(max_level);
+        log::set_logger(&*TUI_LOGGER).map_err(|err| TuiLoggerError::SetLoggerError(err))
+    }
 }
 
 #[cfg(feature = "slog-support")]
@@ -559,11 +567,15 @@ impl TuiLogger {
             line: record.line().unwrap_or(0),
             msg: format!("{}", record.args()),
         };
-        let mut events_lock =self.hot_log.lock();
+        let mut events_lock = self.hot_log.lock();
         events_lock.events.push(log_entry);
-        let need_signal = (events_lock.events.total_elements() % (events_lock.events.capacity()/2)) == 0 ;
+        let need_signal =
+            (events_lock.events.total_elements() % (events_lock.events.capacity() / 2)) == 0;
         if need_signal {
-            events_lock.mover_thread.as_ref().map(|jh| {thread::Thread::unpark(jh.thread())});
+            events_lock
+                .mover_thread
+                .as_ref()
+                .map(|jh| thread::Thread::unpark(jh.thread()));
         }
     }
 }
