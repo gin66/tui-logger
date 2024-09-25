@@ -80,6 +80,7 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
 ///     tracing_subscriber::registry()
 ///          .with(tui_logger::tracing_subscriber_layer())
 ///          .init();
+///     tui_logger::init_logger(LevelFilter::Trace).unwrap();
 ///     info!(log, "Logging via tracing works!");
 ///  }
 pub struct TuiTracingSubscriberLayer;
