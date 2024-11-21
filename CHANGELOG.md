@@ -1,3 +1,9 @@
+0.14.0:
+- Update version of ratatui
+
+0.13.2:
+- fix tracing support
+
 0.13.1:
 - fix missing `move_events()` on half full buffer in case hot buffer capacity was odd
 
