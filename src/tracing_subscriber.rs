@@ -65,24 +65,22 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
 ///  Under the hood, tui_logger still uses `log`. `tracing` events are mapped to
 ///  `log` events internally (which are then fed to `tui-logger`).
 ///
-///  ## Limitations
-///  The TuiTracingSubscriberLayer currently is locked set to have a default
-///  filter for events of `Info` state or higher. This is not able to be changed
-///  currently without adding a depency on the `log` crate, as the
-///  [init_logger()] function that sets the filter level takes `log`'s event types.
+///  ## Usage note
+///  As per the example below, [init_logger()] must be called prior to logging events.
 ///
-///  [init_logger()]: super::init_logger()
-///  ## Basic usage:
+///  [init_logger()]: crate::init_logger()
+///  ## Basic usage
 ///  ```
-///  //use tui_logger;
+///  use tracing_subscriber::prelude::*;
 ///
 ///  fn main() {
 ///     tracing_subscriber::registry()
 ///          .with(tui_logger::tracing_subscriber_layer())
 ///          .init();
-///     tui_logger::init_logger(LevelFilter::Trace).unwrap();
-///     info!(log, "Logging via tracing works!");
+///     tui_logger::init_logger(tui_logger::LevelFilter::Trace).unwrap();
+///     tracing::info!("Logging via tracing works!");
 ///  }
+///  ```
 pub struct TuiTracingSubscriberLayer;
 
 impl<S> Layer<S> for TuiTracingSubscriberLayer

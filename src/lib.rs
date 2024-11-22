@@ -220,7 +220,7 @@ use std::sync::Arc;
 use std::thread;
 
 use chrono::{DateTime, Local};
-use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
+use log::{Level, Log, Metadata, Record, SetLoggerError};
 use parking_lot::Mutex;
 use ratatui::{
     buffer::Buffer,
@@ -245,6 +245,8 @@ pub use crate::slog::TuiSlogDrain;
 #[cfg(feature = "tracing-support")]
 #[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
 pub use crate::tracing_subscriber::TuiTracingSubscriberLayer;
+#[doc(no_inline)]
+pub use log::LevelFilter;
 
 struct ExtLogRecord {
     timestamp: DateTime<Local>,
@@ -486,7 +488,7 @@ impl std::fmt::Display for TuiLoggerError {
     }
 }
 
-/// Init the logger and record with `log` crate.
+/// Init the logger.
 pub fn init_logger(max_level: LevelFilter) -> Result<(), TuiLoggerError> {
     let join_handle = thread::Builder::new()
         .name("tui-logger::move_events".into())
