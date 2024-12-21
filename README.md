@@ -201,7 +201,7 @@ In versions <0.13 log messages may have been lost, if the widget wasn't drawn.
 [#56](https://github.com/gin66/tui-logger/issues/56) for Copy on TuiWidgetEvent and
 TuiLoggerWidget
 * [nick42d](https://github.com/nick42d) for providing patch in
-[#63](https://github.com/gin66/tui-logger/issues/63) for semver checks
+[#63](https://github.com/gin66/tui-logger/issues/63) for semver checks and [#74](https://github.com/gin66/tui-logger/pull/74) 
 * [Tom Groenwoldt](https://github.com/tomgroenwoldt) for providing patch in [#65](https://github.com/gin66/tui-logger/issues/65) for ratatui update
 * [Kevin](https://github.com/doesnotcompete) for providing patch in [#71](https://github.com/issues/71)
 * [urizennnn](https://github.com/urizennnn) for providing patch in [#72](https://github.com/issues/72)
