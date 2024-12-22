@@ -1,3 +1,6 @@
+0.14.1:
+- re-export log::LevelFilter
+
 0.14.0:
 - Update version of ratatui
 
