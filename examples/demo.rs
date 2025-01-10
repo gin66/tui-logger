@@ -39,6 +39,11 @@ enum AppEvent {
 fn main() -> anyhow::Result<()> {
     init_logger(LevelFilter::Trace)?;
     set_default_level(LevelFilter::Trace);
+    let file_options = TuiLoggerFile::new("/tmp/log.log")
+        .output_level(Some(TuiLoggerLevelOutput::Abbreviated))
+        .output_file(false)
+        .output_separator(':');
+    set_log_file(file_options);
     debug!(target:"App", "Logging initialized");
 
     let mut terminal = init_terminal()?;
