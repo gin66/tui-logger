@@ -2,12 +2,12 @@
 
 use super::TUI_LOGGER;
 use log::{self, Log, Record};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt;
 use tracing_subscriber::Layer;
 
 #[derive(Default)]
-struct ToStringVisitor<'a>(HashMap<&'a str, String>);
+struct ToStringVisitor<'a>(BTreeMap<&'a str, String>);
 
 impl fmt::Display for ToStringVisitor<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
