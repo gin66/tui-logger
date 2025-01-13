@@ -1178,7 +1178,7 @@ impl<'b> TuiLoggerWidget<'b> {
         let (col_style, lev_long, lev_abbr, with_loc) = match evt.level {
             log::Level::Error => (self.style_error, "ERROR", "E", true),
             log::Level::Warn => (self.style_warn, "WARN ", "W", true),
-            log::Level::Info => (self.style_info, "INFO ", "I", false),
+            log::Level::Info => (self.style_info, "INFO ", "I", true),
             log::Level::Debug => (self.style_debug, "DEBUG", "D", true),
             log::Level::Trace => (self.style_trace, "TRACE", "T", true),
         };
