@@ -11,9 +11,13 @@ struct ToStringVisitor<'a>(HashMap<&'a str, String>);
 
 impl fmt::Display for ToStringVisitor<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0
-            .iter()
-            .try_for_each(|(k, v)| -> fmt::Result { write!(f, " {}: {}", k, v) })
+        self.0.iter().try_for_each(|(k, v)| -> fmt::Result {
+            if *k == "message" {
+                write!(f, " {}", v)
+            } else {
+                write!(f, " {}: {}", k, v)
+            }
+        })
     }
 }
 
