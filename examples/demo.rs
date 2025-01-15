@@ -2,6 +2,7 @@ use std::{io, sync::mpsc, thread, time};
 
 use log::*;
 use ratatui::{prelude::*, widgets::*};
+use std::env;
 use tui_logger::*;
 
 /// Choose the backend depending on the selected feature (crossterm or termion). This is a mutually
@@ -39,11 +40,15 @@ enum AppEvent {
 fn main() -> anyhow::Result<()> {
     init_logger(LevelFilter::Trace)?;
     set_default_level(LevelFilter::Trace);
-    let file_options = TuiLoggerFile::new("/tmp/log.log")
+
+    let mut dir = env::temp_dir();
+    dir.push("tui-logger_demo.log");
+    let file_options = TuiLoggerFile::new(dir.to_str().unwrap())
         .output_level(Some(TuiLoggerLevelOutput::Abbreviated))
         .output_file(false)
         .output_separator(':');
     set_log_file(file_options);
+    debug!(target:"App", "Logging to {}", dir.to_str().unwrap());
     debug!(target:"App", "Logging initialized");
 
     let mut terminal = init_terminal()?;
