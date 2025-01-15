@@ -617,7 +617,7 @@ pub fn set_buffer_depth(depth: usize) {
     TUI_LOGGER.inner.lock().events = CircularBuffer::new(depth);
 }
 
-/// Define filename for logging.
+/// Define filename and log formmating options for file dumping.
 pub fn set_log_file(file_options: TuiLoggerFile) {
     TUI_LOGGER.inner.lock().dump = Some(file_options);
 }
