@@ -358,11 +358,65 @@ struct HotLog {
     events: CircularBuffer<ExtLogRecord>,
     mover_thread: Option<thread::JoinHandle<()>>,
 }
+
+/// This closely follows the options of [``TuiLoggerSmartWidget``] but is used of logging to a file.
+pub struct TuiLoggerFile {
+    dump: File,
+    format_separator: char,
+    timestamp_fmt: Option<String>,
+    format_output_target: bool,
+    format_output_file: bool,
+    format_output_line: bool,
+    format_output_level: Option<TuiLoggerLevelOutput>,
+}
+
+impl TuiLoggerFile {
+    pub fn new(fname: &str) -> Self {
+        TuiLoggerFile {
+            dump: OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(fname)
+                .expect("Failed to open dump File"),
+            format_separator: ':',
+            timestamp_fmt: Some("[%Y:%m:%d %H:%M:%S]".to_string()),
+            format_output_file: true,
+            format_output_line: true,
+            format_output_target: true,
+            format_output_level: Some(TuiLoggerLevelOutput::Long),
+        }
+    }
+    pub fn output_target(mut self, enabled: bool) -> Self {
+        self.format_output_target = enabled;
+        self
+    }
+    pub fn output_file(mut self, enabled: bool) -> Self {
+        self.format_output_file = enabled;
+        self
+    }
+    pub fn output_line(mut self, enabled: bool) -> Self {
+        self.format_output_line = enabled;
+        self
+    }
+    pub fn output_timestamp(mut self, fmt: Option<String>) -> Self {
+        self.timestamp_fmt = fmt;
+        self
+    }
+    pub fn output_separator(mut self, sep: char) -> Self {
+        self.format_separator = sep;
+        self
+    }
+    pub fn output_level(mut self, level: Option<TuiLoggerLevelOutput>) -> Self {
+        self.format_output_level = level;
+        self
+    }
+}
+
 struct TuiLoggerInner {
     hot_depth: usize,
     events: CircularBuffer<ExtLogRecord>,
+    dump: Option<TuiLoggerFile>,
     total_events: usize,
-    dump: Option<File>,
     default: LevelFilter,
     targets: LevelConfig,
 }
@@ -415,17 +469,46 @@ impl TuiLogger {
             if tli.targets.get(&log_entry.target).is_none() {
                 tli.targets.set(&log_entry.target, default_level);
             }
-            if let Some(ref mut file) = tli.dump {
-                if let Err(_e) = writeln!(
-                    file,
-                    "{}:{}:{}:{}:{}:{}",
-                    &log_entry.timestamp.format("[%Y:%m:%d %H:%M:%S]"),
-                    log_entry.level,
-                    log_entry.target,
-                    &log_entry.file,
-                    log_entry.line,
-                    &log_entry.msg
-                ) {
+            if let Some(ref mut file_options) = tli.dump {
+                let mut output = String::new();
+                let (lev_long, lev_abbr, with_loc) = match log_entry.level {
+                    log::Level::Error => ("ERROR", "E", true),
+                    log::Level::Warn => ("WARN ", "W", true),
+                    log::Level::Info => ("INFO ", "I", false),
+                    log::Level::Debug => ("DEBUG", "D", true),
+                    log::Level::Trace => ("TRACE", "T", true),
+                };
+                if let Some(fmt) = file_options.timestamp_fmt.as_ref() {
+                    output.push_str(&format!("{}", log_entry.timestamp.format(fmt)));
+                    output.push(file_options.format_separator);
+                }
+                match file_options.format_output_level {
+                    None => {}
+                    Some(TuiLoggerLevelOutput::Abbreviated) => {
+                        output.push_str(lev_abbr);
+                        output.push(file_options.format_separator);
+                    }
+                    Some(TuiLoggerLevelOutput::Long) => {
+                        output.push_str(lev_long);
+                        output.push(file_options.format_separator);
+                    }
+                }
+                if file_options.format_output_target {
+                    output.push_str(&log_entry.target);
+                    output.push(file_options.format_separator);
+                }
+                if with_loc {
+                    if file_options.format_output_file {
+                        output.push_str(&log_entry.file);
+                        output.push(file_options.format_separator);
+                    }
+                    if file_options.format_output_line {
+                        output.push_str(&format!("{}", log_entry.line));
+                        output.push(file_options.format_separator);
+                    }
+                }
+                output.push_str(&log_entry.msg);
+                if let Err(_e) = writeln!(file_options.dump, "{}", output) {
                     // TODO: What to do in case of write error ?
                 }
             }
@@ -534,15 +617,9 @@ pub fn set_buffer_depth(depth: usize) {
     TUI_LOGGER.inner.lock().events = CircularBuffer::new(depth);
 }
 
-/// Define filename for logging.
-pub fn set_log_file(fname: &str) -> io::Result<()> {
-    OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(fname)
-        .map(|file| {
-            TUI_LOGGER.inner.lock().dump = Some(file);
-        })
+/// Define filename and log formmating options for file dumping.
+pub fn set_log_file(file_options: TuiLoggerFile) {
+    TUI_LOGGER.inner.lock().dump = Some(file_options);
 }
 
 /// Set default levelfilter for unknown targets of the logger
