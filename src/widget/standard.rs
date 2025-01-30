@@ -1,3 +1,4 @@
+use crate::widget::logformatter::{LogFormatter, LogStandardFormatter};
 use parking_lot::Mutex;
 use std::sync::Arc;
 
@@ -8,12 +9,13 @@ use ratatui::{
     widgets::{Block, Widget},
 };
 
-use crate::{CircularBuffer, ExtLogRecord, TuiLoggerLevelOutput, TuiWidgetState, TUI_LOGGER};
+use crate::{CircularBuffer, TuiLoggerLevelOutput, TuiWidgetState, TUI_LOGGER};
 
 use super::inner::TuiWidgetInnerState;
 
 pub struct TuiLoggerWidget<'b> {
     block: Option<Block<'b>>,
+    logformatter: Option<Box<dyn LogFormatter>>,
     /// Base style of the widget
     style: Style,
     /// Level based style
@@ -35,6 +37,7 @@ impl<'b> Default for TuiLoggerWidget<'b> {
         //TUI_LOGGER.move_events();
         TuiLoggerWidget {
             block: None,
+            logformatter: None,
             style: Default::default(),
             style_error: None,
             style_warn: None,
@@ -54,6 +57,10 @@ impl<'b> Default for TuiLoggerWidget<'b> {
 impl<'b> TuiLoggerWidget<'b> {
     pub fn block(mut self, block: Block<'b>) -> Self {
         self.block = Some(block);
+        self
+    }
+    pub fn formatter(mut self, formatter: Box<dyn LogFormatter>) -> Self {
+        self.logformatter = Some(formatter);
         self
     }
     pub fn opt_style(mut self, style: Option<Style>) -> Self {
@@ -208,49 +215,29 @@ impl<'b> TuiLoggerWidget<'b> {
         self.state = state.inner.clone();
         self
     }
-    fn format_event(&self, evt: &ExtLogRecord) -> (String, Option<Style>) {
-        let mut output = String::new();
-        let (col_style, lev_long, lev_abbr, with_loc) = match evt.level {
-            log::Level::Error => (self.style_error, "ERROR", "E", true),
-            log::Level::Warn => (self.style_warn, "WARN ", "W", true),
-            log::Level::Info => (self.style_info, "INFO ", "I", true),
-            log::Level::Debug => (self.style_debug, "DEBUG", "D", true),
-            log::Level::Trace => (self.style_trace, "TRACE", "T", true),
-        };
-        if let Some(fmt) = self.format_timestamp.as_ref() {
-            output.push_str(&format!("{}", evt.timestamp.format(fmt)));
-            output.push(self.format_separator);
-        }
-        match &self.format_output_level {
-            None => {}
-            Some(TuiLoggerLevelOutput::Abbreviated) => {
-                output.push_str(lev_abbr);
-                output.push(self.format_separator);
-            }
-            Some(TuiLoggerLevelOutput::Long) => {
-                output.push_str(lev_long);
-                output.push(self.format_separator);
-            }
-        }
-        if self.format_output_target {
-            output.push_str(&evt.target);
-            output.push(self.format_separator);
-        }
-        if with_loc {
-            if self.format_output_file {
-                output.push_str(&evt.file);
-                output.push(self.format_separator);
-            }
-            if self.format_output_line {
-                output.push_str(&format!("{}", evt.line));
-                output.push(self.format_separator);
-            }
-        }
-        (output, col_style)
-    }
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
+        let formatter = match self.logformatter.take() {
+            Some(fmt) => fmt,
+            None => {
+                let fmt = LogStandardFormatter {
+                    style_error: self.style_error,
+                    style_warn: self.style_warn,
+                    style_debug: self.style_debug,
+                    style_trace: self.style_trace,
+                    style_info: self.style_info,
+                    format_separator: self.format_separator,
+                    format_timestamp: self.format_timestamp,
+                    format_output_level: self.format_output_level,
+                    format_output_target: self.format_output_target,
+                    format_output_file: self.format_output_file,
+                    format_output_line: self.format_output_line,
+                };
+                Box::new(fmt)
+            }
+        };
+
         buf.set_style(area, self.style);
         let list_area = match self.block.take() {
             Some(b) => {
@@ -302,7 +289,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 if !circular.is_empty() {
                     state.opt_timestamp_next_page = circular.take().first().cloned();
                 }
-                let (mut output, col_style) = self.format_event(evt);
+                let (mut output, col_style) = formatter.format(evt);
                 let mut sublines: Vec<&str> = evt.msg.lines().rev().collect();
                 output.push_str(sublines.pop().unwrap());
                 for subline in sublines {
