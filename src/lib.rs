@@ -250,9 +250,9 @@ pub use log::LevelFilter;
 
 pub mod widget;
 pub use widget::inner::TuiWidgetState;
+pub use widget::logformatter::LogFormatter;
 pub use widget::smart::TuiLoggerSmartWidget;
 pub use widget::standard::TuiLoggerWidget;
-pub use widget::logformatter::LogFormatter;
 
 pub mod file;
 pub use file::TuiLoggerFile;

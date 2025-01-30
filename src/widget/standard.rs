@@ -1,4 +1,5 @@
-use crate::widget::logformatter::{LogFormatter, LogStandardFormatter};
+use crate::widget::logformatter::LogFormatter;
+use crate::widget::standard_formatter::LogStandardFormatter;
 use parking_lot::Mutex;
 use std::sync::Arc;
 
@@ -222,6 +223,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             Some(fmt) => fmt,
             None => {
                 let fmt = LogStandardFormatter {
+                    style: self.style,
                     style_error: self.style_error,
                     style_warn: self.style_warn,
                     style_debug: self.style_debug,
@@ -247,14 +249,17 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             }
             None => area,
         };
-        let indent = 9;
-        if list_area.width < indent + 4 || list_area.height < 1 {
+        if list_area.width < formatter.min_width() || list_area.height < 1 {
             return;
         }
 
         let mut state = self.state.lock();
         let la_height = list_area.height as usize;
-        let mut lines: Vec<(Option<Style>, u16, String)> = vec![];
+        let la_left = list_area.left();
+        let la_top = list_area.top();
+        let la_width = list_area.width as usize;
+        //let mut lines: Vec<Line> = vec![];
+        let mut lines = CircularBuffer::new(la_height);
         {
             state.opt_timestamp_next_page = None;
             let opt_timestamp_bottom = state.opt_timestamp_bottom;
@@ -289,14 +294,11 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 if !circular.is_empty() {
                     state.opt_timestamp_next_page = circular.take().first().cloned();
                 }
-                let (mut output, col_style) = formatter.format(evt);
-                let mut sublines: Vec<&str> = evt.msg.lines().rev().collect();
-                output.push_str(sublines.pop().unwrap());
-                for subline in sublines {
-                    lines.push((col_style, indent, subline.to_string()));
+                let mut evt_lines = formatter.format(la_width, evt);
+                while let Some(line) = evt_lines.pop() {
+                    lines.push(line);
                 }
-                lines.push((col_style, 0, output));
-                if lines.len() == la_height {
+                if lines.len() >= la_height {
                     break;
                 }
                 if opt_timestamp_prev_page.is_none() && lines.len() >= la_height / 2 {
@@ -305,44 +307,25 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             }
             state.opt_timestamp_prev_page = opt_timestamp_prev_page.or(state.opt_timestamp_bottom);
         }
-        let la_left = list_area.left();
-        let la_top = list_area.top();
-        let la_width = list_area.width as usize;
 
-        // lines is a vector with bottom line at index 0
-        // wrapped_lines will be a vector with top line first
-        let mut wrapped_lines = CircularBuffer::new(la_height);
-        let rem_width = la_width - indent as usize;
-        while let Some((style, left, line)) = lines.pop() {
-            if line.chars().count() > la_width {
-                wrapped_lines.push((style, left, line.chars().take(la_width).collect()));
-                let mut remain: String = line.chars().skip(la_width).collect();
-                while remain.chars().count() > rem_width {
-                    let remove: String = remain.chars().take(rem_width).collect();
-                    wrapped_lines.push((style, indent, remove));
-                    remain = remain.chars().skip(rem_width).collect();
-                }
-                wrapped_lines.push((style, indent, remain.to_owned()));
-            } else {
-                wrapped_lines.push((style, left, line));
-            }
-        }
-
+        // This apparently ensures, that the log starts at top
         let offset: u16 = if state.opt_timestamp_bottom.is_none() {
             0
         } else {
-            let lines_cnt = wrapped_lines.len();
-            (la_height - lines_cnt) as u16
+            let lines_cnt = lines.len();
+            std::cmp::max(0, la_height - lines_cnt) as u16
         };
 
-        for (i, (sty, left, l)) in wrapped_lines.iter().enumerate() {
-            buf.set_stringn(
-                la_left + left,
-                la_top + i as u16 + offset,
-                l,
-                l.len(),
-                sty.unwrap_or(self.style),
-            );
+        for (i, line) in lines.iter().rev().take(la_height).enumerate() {
+            line.render(
+                Rect {
+                    x: la_left,
+                    y: la_top + i as u16 + offset,
+                    width: list_area.width,
+                    height: 1,
+                },
+                buf,
+            )
         }
     }
 }

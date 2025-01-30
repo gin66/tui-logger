@@ -93,6 +93,7 @@ impl App {
         thread::spawn(move || input_thread(event_tx));
         thread::spawn(move || progress_task(progress_tx).unwrap());
         thread::spawn(move || background_task());
+        thread::spawn(move || background_task2());
 
         self.run(terminal, rx)
     }
@@ -192,10 +193,18 @@ fn background_task() {
     loop {
         error!(target:"background-task", "an error");
         warn!(target:"background-task", "a warning");
-        info!(target:"background-task", "an info");
+        info!(target:"background-task", "a two line info\nsecond line");
         debug!(target:"background-task", "a debug");
         trace!(target:"background-task", "a trace");
         thread::sleep(time::Duration::from_millis(1000));
+    }
+}
+
+/// A background task for long line
+fn background_task2() {
+    loop {
+        info!(target:"background-task2", "This is a very long message, which should be wrapped on smaller screen by the standard formatter with an indentation of 9 characters.");
+        thread::sleep(time::Duration::from_millis(2000));
     }
 }
 
