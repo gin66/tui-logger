@@ -211,9 +211,6 @@ extern crate lazy_static;
 use std::collections::hash_map::Iter;
 use std::collections::hash_map::Keys;
 use std::collections::HashMap;
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::io;
 use std::io::Write;
 use std::mem;
 use std::sync::Arc;
@@ -224,10 +221,9 @@ use log::{Level, Log, Metadata, Record, SetLoggerError};
 use parking_lot::Mutex;
 use ratatui::{
     buffer::Buffer,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::Rect,
     style::{Modifier, Style},
-    text::Line,
-    widgets::{Block, BorderType, Borders, Widget},
+    widgets::{Block, Widget},
 };
 use widget::inner::TuiLoggerInner;
 use widget::inner::TuiWidgetInnerState;
@@ -258,7 +254,7 @@ pub use widget::standard::TuiLoggerWidget;
 pub mod file;
 pub use file::TuiLoggerFile;
 
-struct ExtLogRecord {
+pub struct ExtLogRecord {
     timestamp: DateTime<Local>,
     level: Level,
     target: String,
