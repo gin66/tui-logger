@@ -2,7 +2,7 @@ use crate::ExtLogRecord;
 use crate::Style;
 use crate::TuiLoggerLevelOutput;
 
-pub trait LogFormatter {
+pub trait LogFormatter: Send + Sync {
     fn format(&self, evt: &ExtLogRecord) -> (String, Option<Style>);
 }
 
