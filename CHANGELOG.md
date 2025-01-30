@@ -1,3 +1,32 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.14.2](https://github.com/gin66/tui-logger/compare/v0.14.1...v0.14.2) - 2025-01-30
+
+### Fixed
+
+- fix warnings
+
+### Other
+
+- split lib.rs into several files
+- Merge pull request [#77](https://github.com/gin66/tui-logger/pull/77) from tofubert/add_style_for_file
+- Merge pull request [#78](https://github.com/gin66/tui-logger/pull/78) from andrei-ng/fix-order-of-fields-tracing-feature
+- Merge pull request [#79](https://github.com/gin66/tui-logger/pull/79) from andrei-ng/skip-printing-message-key
+
+- use env::temp_dir for demo log file target
+- do not print the 'message' key in the formatter for tracing support
+- fix formatter for tracing events
+- make comment for file logging a bit better
+- give file logging format options
+- Update CHANGELOG.md
+
 0.14.1:
 - re-export log::LevelFilter
 

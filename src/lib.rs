@@ -174,8 +174,8 @@
 //! The copy from "hot" buffer to main buffer is performed by a call to `move_events()`,
 //! which is done in a cyclic task, which repeats every 10 ms, or when the hot buffer is half full.
 //!
-//! ## THANKS TO
-//!
+//! ## THANKS TO 
+//!i
 //! * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
 //! * [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 and v0.6.0
 //! * [Adam Sypniewski](https://github.com/ajsyp) for providing the patches to tui-rs v0.6.2
@@ -199,6 +199,8 @@
 //! * [nick42d](https://github.com/nick42d) for providing patch in
 //! [#63](https://github.com/gin66/tui-logger/issues/63) for semver checks
 //! * [Tom Groenwoldt](https://github.com/tomgroenwoldt) for providing patch in [#65](https://github.com/gin66/tui-logger/issues/65) for ratatui update
+//! * [Andrei](https://github.com/andrei-ng) for providing patches [#77](https://github.com/gin66/tui-logger/pull/77) and [#78](https://github.com/gin66/tui-logger/pull/78)
+//! * [tofu](https://github.com/tofubert) for providing patch [81](https://github.com/gin66/tui-logger/pull/81) for split lib.rs into several files
 //!
 //!## Star History
 //!
