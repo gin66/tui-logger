@@ -129,6 +129,12 @@ Run demo with crossterm:
 cargo run --example demo --features crossterm
 ```
 
+Run demo using termion and simple custom formatter in bottom right log widget:
+
+```rust
+cargo run --example demo --features termion,formatter
+```
+
 ### `slog` support
 
 `tui-logger` provides a [`TuiSlogDrain`] which implements `slog::Drain` and will route all records
@@ -166,16 +172,19 @@ fn main() {
 
 ### Custom formatting
 
-For experts only ! Configure with:
+For experts only ! Configure with along the lines:
 ```rust
-import tui_logger::widget::logformatter::LogFormatter;
+use tui_logger::LogFormatter;
+
+let formatter = MyLogFormatter();
 
 TuiLoggerWidget::default()
 .block(Block::bordered().title("Filtered TuiLoggerWidget"))
-.formatter(...your formatter with trait LogFormatter ...)
+.formatter(formatter)
 .state(&filter_state)
 .render(left, buf);
 ```
+The example demo can be invoked to use a custom formatter as example for the bottom right widget.
 
 <!-- cargo-rdme end -->
 

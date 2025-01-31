@@ -125,6 +125,12 @@
 //! cargo run --example demo --features crossterm
 //! ```
 //!
+//! Run demo using termion and simple custom formatter in bottom right log widget:
+//!
+//! ```ignore
+//! cargo run --example demo --features termion,formatter
+//! ```
+//!
 //! ## `slog` support
 //!
 //! `tui-logger` provides a [`TuiSlogDrain`] which implements `slog::Drain` and will route all records
@@ -174,6 +180,7 @@
 //! .state(&filter_state)
 //! .render(left, buf);
 //! ```
+//! The example demo can be invoked to use a custom formatter as example for the bottom right widget.
 //!
 // Enable docsrs doc_cfg - to display non-default feature documentation.
 #![cfg_attr(docsrs, feature(doc_cfg))]
