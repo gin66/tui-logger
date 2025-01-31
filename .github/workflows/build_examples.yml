@@ -20,4 +20,4 @@ jobs:
       - name: Build example with crossterm
         run: cargo build --examples --features crossterm
       - name: Build examples with termion and custom formatter
-        run: cargo build --examples --features termion, formatter
+        run: cargo build --examples --features termion,formatter
