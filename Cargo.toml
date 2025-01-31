@@ -40,6 +40,7 @@ tracing-support = ["tracing", "tracing-subscriber"]
 feature_crossterm_or_termion_must_be_selected = []
 crossterm = ["ratatui/crossterm", "feature_crossterm_or_termion_must_be_selected"]
 termion = ["ratatui/termion", "feature_crossterm_or_termion_must_be_selected"]
+formatter = []
 
 # Docs.rs-specific configuration required to enable documentation of
 # code requiring optional features.
@@ -52,4 +53,3 @@ rustdoc-args = ["--cfg", "docsrs"]
 [[example]]
 name="demo"
 required-features=["feature_crossterm_or_termion_must_be_selected"]
-

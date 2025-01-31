@@ -1,6 +1,6 @@
+use crate::widget::logformatter::LogFormatter;
 use parking_lot::Mutex;
 use std::sync::Arc;
-use crate::widget::logformatter::LogFormatter;
 
 use log::LevelFilter;
 use ratatui::{

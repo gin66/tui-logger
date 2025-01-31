@@ -162,9 +162,9 @@
 //!
 //! ## Custom formatting
 //!
-//! For experts only ! Configure with:
+//! For experts only ! Configure with along the lines:
 //! ```ignore
-//! use tui_logger::{LogFormatter, LogPlainFormatter};
+//! use tui_logger::LogFormatter;
 //!
 //! let formatter = MyLogFormatter();
 //!
@@ -228,12 +228,12 @@ pub mod file;
 pub use file::TuiLoggerFile;
 
 pub struct ExtLogRecord {
-    timestamp: DateTime<Local>,
-    level: Level,
-    target: String,
-    file: String,
-    line: u32,
-    msg: String,
+    pub timestamp: DateTime<Local>,
+    pub level: Level,
+    pub target: String,
+    pub file: String,
+    pub line: u32,
+    pub msg: String,
 }
 
 fn advance_levelfilter(levelfilter: LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {

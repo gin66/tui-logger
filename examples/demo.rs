@@ -37,6 +37,44 @@ enum AppEvent {
     CounterChanged(Option<u16>),
 }
 
+//// Example for simple customized formatter
+struct MyLogFormatter {}
+impl LogFormatter for MyLogFormatter {
+    fn min_width(&self) -> u16 {
+        4
+    }
+    fn format(&self, _width: usize, evt: &ExtLogRecord) -> Vec<Line> {
+        let mut lines = vec![];
+        match evt.level {
+            log::Level::Error => {
+                let st = Style::new().red().bold();
+                let sp = Span::styled("======", st);
+                let mayday = Span::from(" MAYDAY MAYDAY ".to_string());
+                let sp2 = Span::styled("======", st);
+                lines.push(Line::from(vec![sp, mayday, sp2]).alignment(Alignment::Center));
+                lines.push(
+                    Line::from(format!("{}: {}", evt.level, evt.msg)).alignment(Alignment::Center),
+                );
+            }
+            _ => {
+                lines.push(Line::from(format!("{}: {}", evt.level, evt.msg)));
+            }
+        };
+
+        match evt.level {
+            log::Level::Error => {
+                let st = Style::new().blue().bold();
+                let sp = Span::styled("======", st);
+                let mayday = Span::from(" MAYDAY SEEN ? ".to_string());
+                let sp2 = Span::styled("======", st);
+                lines.push(Line::from(vec![sp, mayday, sp2]).alignment(Alignment::Center));
+            }
+            _ => {}
+        };
+        lines
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     init_logger(LevelFilter::Trace)?;
     set_default_level(LevelFilter::Trace);
@@ -253,6 +291,11 @@ impl Widget for &mut App {
             .set_default_display_level(LevelFilter::Off)
             .set_level_for_target("App", LevelFilter::Debug)
             .set_level_for_target("background-task", LevelFilter::Info);
+        let mut formatter: Option<Box<dyn LogFormatter>> = None;
+        if cfg!(feature = "formatter") {
+            formatter = Some(Box::new(MyLogFormatter {}));
+        }
+
         TuiLoggerWidget::default()
             .block(Block::bordered().title("Filtered TuiLoggerWidget"))
             .output_separator('|')
@@ -267,6 +310,7 @@ impl Widget for &mut App {
 
         TuiLoggerWidget::default()
             .block(Block::bordered().title("Unfiltered TuiLoggerWidget"))
+            .opt_formatter(formatter)
             .output_separator('|')
             .output_timestamp(Some("%F %H:%M:%S%.3f".to_string()))
             .output_level(Some(TuiLoggerLevelOutput::Long))

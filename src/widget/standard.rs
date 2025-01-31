@@ -298,7 +298,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 if !circular.is_empty() {
                     state.opt_timestamp_next_page = circular.take().first().cloned();
                 }
-                let mut evt_lines = formatter.format(la_width ,evt);
+                let mut evt_lines = formatter.format(la_width, evt);
                 while let Some(line) = evt_lines.pop() {
                     lines.push(line);
                 }

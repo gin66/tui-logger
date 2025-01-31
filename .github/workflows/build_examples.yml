@@ -15,7 +15,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Check rust version
         run: rustup show
-      - name: Build examples with ratatui and termion
+      - name: Build examples with termion
         run: cargo build --examples --features termion
-      - name: Build example with ratatui and crossterm
+      - name: Build example with crossterm
         run: cargo build --examples --features crossterm
+      - name: Build examples with termion and custom formatter
+        run: cargo build --examples --features termion, formatter
