@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.4](https://github.com/gin66/tui-logger/compare/v0.14.3...v0.14.4) - 2025-01-31
+
+### Fixed
+
+- fix cargo test
+
+### Other
+
+- update Readme for custom formatter example in demo
+- example demo extended to use custom formatter in one of the widgets
+- run cargo test in github actions
+
 ## [0.14.3](https://github.com/gin66/tui-logger/compare/v0.14.2...v0.14.3) - 2025-01-31
 
 ### Other
