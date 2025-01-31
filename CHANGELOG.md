@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.3](https://github.com/gin66/tui-logger/compare/v0.14.2...v0.14.3) - 2025-01-31
+
+### Other
+
+- work on Readme and add formatter() to smartwidget
+- standard formatter appears to work as before, but using Line/Span
+- assure LogFormatter Send+Sync
+- implement formatter trait as discussed in [#77](https://github.com/gin66/tui-logger/pull/77) and [#82](https://github.com/gin66/tui-logger/pull/82)
+
 ## [0.14.2](https://github.com/gin66/tui-logger/compare/v0.14.1...v0.14.2) - 2025-01-30
 
 ### Fixed
