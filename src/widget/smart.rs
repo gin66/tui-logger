@@ -1,5 +1,6 @@
 use parking_lot::Mutex;
 use std::sync::Arc;
+use crate::widget::logformatter::LogFormatter;
 
 use log::LevelFilter;
 use ratatui::{
@@ -25,6 +26,7 @@ pub struct TuiLoggerSmartWidget<'a> {
     border_style: Style,
     border_type: BorderType,
     highlight_style: Option<Style>,
+    logformatter: Option<Box<dyn LogFormatter>>,
     style_error: Option<Style>,
     style_warn: Option<Style>,
     style_debug: Option<Style>,
@@ -51,6 +53,7 @@ impl<'a> Default for TuiLoggerSmartWidget<'a> {
             border_style: Style::default(),
             border_type: BorderType::Plain,
             highlight_style: None,
+            logformatter: None,
             style_error: None,
             style_warn: None,
             style_debug: None,
@@ -292,6 +295,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                         .border_type(self.border_type)
                         .borders(Borders::ALL),
                 )
+                .opt_formatter(self.logformatter)
                 .opt_style(self.style)
                 .opt_style_error(self.style_error)
                 .opt_style_warn(self.style_warn)

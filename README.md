@@ -1,5 +1,7 @@
 # tui-logger
 
+<!-- cargo-rdme start -->
+
 ## Logger with smart widget for the `tui` and `ratatui` crate
 
 [![dependency status](https://deps.rs/repo/github/gin66/tui-logger/status.svg?service=github&nocache=0_9_1)](https://deps.rs/repo/github/gin66/tui-logger)
@@ -37,6 +39,7 @@ Starting with v0.10 `tui-logger` is `ratatui` only.
 - [x] Title of target and log pane can be configured
 - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 - [X] `tracing` support
+- [X] Support to use custom formatter for log events
 - [ ] Allow configuration of target dependent loglevel specifically for file logging
 - [ ] Avoid duplicating of target, module and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
@@ -160,6 +163,21 @@ fn main() {
     // code....
 }
 ```
+
+### Custom formatting
+
+For experts only ! Configure with:
+```rust
+import tui_logger::widget::logformatter::LogFormatter;
+
+TuiLoggerWidget::default()
+.block(Block::bordered().title("Filtered TuiLoggerWidget"))
+.formatter(...your formatter with trait LogFormatter ...)
+.state(&filter_state)
+.render(left, buf);
+```
+
+<!-- cargo-rdme end -->
 
 ### Internals
 

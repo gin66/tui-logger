@@ -35,6 +35,7 @@
 //! - [x] Title of target and log pane can be configured
 //! - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 //! - [X] `tracing` support
+//! - [X] Support to use custom formatter for log events
 //! - [ ] Allow configuration of target dependent loglevel specifically for file logging
 //! - [ ] Avoid duplicating of target, module and filename in every log record
 //! - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
@@ -159,52 +160,19 @@
 //! }
 //! ```
 //!
-//! ## Internals
+//! ## Custom formatting
 //!
-//! For logging there are two circular buffers in use:
-//! * "hot" buffer, which is written to during any logging macro invocation
-//! * main buffer, which holds events to be displayed by the widgets.
+//! For experts only ! Configure with:
+//! ```rust
+//! import tui_logger::widget::logformatter::LogFormatter;
 //!
-//! The size of the "hot" buffer is 1000 and can be modified by `set_hot_buffer_depth()`.
-//! The size of the main buffer is 10000 and can be modified by `set_buffer_depth()`.
+//! TuiLoggerWidget::default()
+//! .block(Block::bordered().title("Filtered TuiLoggerWidget"))
+//! .formatter(...your formatter with trait LogFormatter ...)
+//! .state(&filter_state)
+//! .render(left, buf);
+//! ```
 //!
-//! Reason for this scheme: The main buffer is locked for a while during widget updates.
-//! In order to block the log-macros, this scheme is in use.
-//!
-//! The copy from "hot" buffer to main buffer is performed by a call to `move_events()`,
-//! which is done in a cyclic task, which repeats every 10 ms, or when the hot buffer is half full.
-//!
-//! ## THANKS TO
-//!i
-//! * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
-//! * [Antoine Büsch](https://github.com/abusch) for providing the patches to tui-rs v0.3.0 and v0.6.0
-//! * [Adam Sypniewski](https://github.com/ajsyp) for providing the patches to tui-rs v0.6.2
-//! * [James aka jklong](https://github.com/jklong) for providing the patch to tui-rs v0.7
-//! * [icy-ux](https://github.com/icy-ux) for adding slog support and example
-//! * [alvinhochun](https://github.com/alvinhochun) for updating to tui 0.10 and crossterm support
-//! * [brooksmtownsend](https://github.com/brooksmtownsend) Patch to remove verbose timestamp info
-//! * [Kibouo](https://github.com/Kibouo) Patch to change Rc/Refcell to thread-safe counterparts
-//! * [Afonso Bordado](https://github.com/afonso360) for providing the patch to tui-rs v0.17
-//! * [Benjamin Kampmann](https://github.com/gnunicorn) for providing patch to tui-rs v0.18
-//! * [Paul Sanders](https://github.com/pms1969) for providing patch in [issue #30](https://github.com/gin66/tui-logger/issues/30)
-//! * [Ákos Hadnagy](https://github.com/ahadnagy) for providing patch in [#31](https://github.com/gin66/tui-logger/issues/31) for tracing-subscriber support
-//! * [Orhun Parmaksız](https://github.com/orhun) for providing patches in [#33](https://github.com/gin66/tui-logger/issues/33), [#34](https://github.com/gin66/tui-logger/issues/34), [#37](https://github.com/gin66/tui-logger/issues/37) and [#46](https://github.com/gin66/tui-logger/issues/46)
-//! * [purephantom](https://github.com/purephantom) for providing patch in [#42](https://github.com/gin66/tui-logger/issues/42) for ratatui update
-//! * [Badr Bouslikhin](https://github.com/badrbouslikhin) for providing patch in [#47](https://github.com/gin66/tui-logger/issues/47) for ratatui update
-//! * [ganthern](https://github.com/ganthern) for providing patch in [#49](https://github.com/gin66/tui-logger/issues/49) for tui support removal
-//! * [Linda_pp](https://github.com/rhysd) for providing patch in [#51](https://github.com/gin66/tui-logger/issues/51) for Cell:set_symbol
-//! * [Josh McKinney](https://github.com/joshka) for providing patch in
-//! [#56](https://github.com/gin66/tui-logger/issues/56) for Copy on TuiWidgetEvent and
-//! TuiLoggerWidget
-//! * [nick42d](https://github.com/nick42d) for providing patch in
-//! [#63](https://github.com/gin66/tui-logger/issues/63) for semver checks
-//! * [Tom Groenwoldt](https://github.com/tomgroenwoldt) for providing patch in [#65](https://github.com/gin66/tui-logger/issues/65) for ratatui update
-//! * [Andrei](https://github.com/andrei-ng) for providing patches [#77](https://github.com/gin66/tui-logger/pull/77) and [#78](https://github.com/gin66/tui-logger/pull/78)
-//! * [tofu](https://github.com/tofubert) for providing patch [81](https://github.com/gin66/tui-logger/pull/81) for split lib.rs into several files
-//!
-//!## Star History
-//!
-//![![Star History Chart](https://api.star-history.com/svg?repos=gin66/tui-logger&type=Date)](https://star-history.com/#gin66/tui-logger&Date)
 // Enable docsrs doc_cfg - to display non-default feature documentation.
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #[macro_use]
