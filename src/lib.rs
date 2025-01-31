@@ -163,12 +163,14 @@
 //! ## Custom formatting
 //!
 //! For experts only ! Configure with:
-//! ```rust
-//! import tui_logger::widget::logformatter::LogFormatter;
+//! ```ignore
+//! use tui_logger::{LogFormatter, LogPlainFormatter};
+//!
+//! let formatter = MyLogFormatter();
 //!
 //! TuiLoggerWidget::default()
 //! .block(Block::bordered().title("Filtered TuiLoggerWidget"))
-//! .formatter(...your formatter with trait LogFormatter ...)
+//! .formatter(formatter)
 //! .state(&filter_state)
 //! .render(left, buf);
 //! ```
