@@ -6,7 +6,7 @@
 //!
 //! ## Demo of the widget
 //!
-//! ![Demo](https://github.com/gin66/tui-logger/blob/master/doc/demo_v0.6.6.gif?raw=true)
+//! ![Demo](https://github.com/gin66/tui-logger/blob/master/doc/demo_v0.14.4.gif?raw=true)
 //!
 //! ## Documentation
 //!
