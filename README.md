@@ -205,6 +205,33 @@ which is done in a cyclic task, which repeats every 10 ms, or when the hot buffe
 
 In versions <0.13 log messages may have been lost, if the widget wasn't drawn.
 
+```mermaid
+flowchart LR
+    Logging["Logging Macros"] --> HotBuffer["Hot Buffer\n(1000 entries)"]
+    
+    MoveEvents["move_events()"]
+    HotBuffer --> MoveEvents
+    MoveEvents --> MainBuffer["Main Buffer\n(10000 entries)"]
+    
+    MainBuffer --- Widget1["Widget 1"]
+    MainBuffer --- Widget2["Widget 2"]
+    MainBuffer --- Widget3["Widget N"]
+    
+    Config1["set_hot_buffer_depth()"] -.-> HotBuffer
+    Config2["set_buffer_depth()"] -.-> MainBuffer
+    
+    subgraph Triggers["Triggers"]
+        direction TB
+        T1["Every 10ms"]
+        T2["Hot buffer 50% full"]
+    end
+    
+    Triggers -.-> MoveEvents
+    
+    note["Note: Main buffer locks\nduring widget updates"]
+    note -.-> MainBuffer
+```
+
 ### THANKS TO
 
 * [Florian Dehau](https://github.com/fdehau) for his great crate [tui-rs](https://github.com/fdehau/tui-rs)
