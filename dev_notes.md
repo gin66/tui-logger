@@ -12,7 +12,7 @@ Execute along the lines of:
 3. wait for github runners are completed
 4. `cargo publish`
 
-## Update demo.gif
+# Update demo.gif
 
 In `doc` folder run `vhs demo.tape`.
 Then rename `demo.gif` to current version and update Readme - currently via lib.rs
