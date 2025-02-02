@@ -207,15 +207,15 @@ In versions <0.13 log messages may have been lost, if the widget wasn't drawn.
 
 ```mermaid
 flowchart LR
-    Logging["Logging Macros"] --> HotBuffer["Hot Buffer\n(1000 entries)"]
+    Logging["Logging Macros"] --> Capture["CAPTURE Filter"] --> HotBuffer["Hot Buffer (1000 entries)"]
     
     MoveEvents["move_events()"]
     HotBuffer --> MoveEvents
-    MoveEvents --> MainBuffer["Main Buffer\n(10000 entries)"]
+    MoveEvents --> MainBuffer["Main Buffer (10000 entries)"]
     
-    MainBuffer --- Widget1["Widget 1"]
-    MainBuffer --- Widget2["Widget 2"]
-    MainBuffer --- Widget3["Widget N"]
+    MainBuffer --- Show1["SHOW Filter"] --- Widget1["Widget 1"]
+    MainBuffer --- Show2["SHOW Filter"] --- Widget2["Widget 2"]
+    MainBuffer --- ShowN["SHOW Filter"] --- Widget3["Widget N"]
     
     Config1["set_hot_buffer_depth()"] -.-> HotBuffer
     Config2["set_buffer_depth()"] -.-> MainBuffer
@@ -228,7 +228,7 @@ flowchart LR
     
     Triggers -.-> MoveEvents
     
-    note["Note: Main buffer locks\nduring widget updates"]
+    note["Note: Main buffer locks during widget updates"]
     note -.-> MainBuffer
 ```
 
