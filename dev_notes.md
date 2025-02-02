@@ -17,6 +17,8 @@ Execute along the lines of:
 In `doc` folder run `vhs demo.tape`.
 Then rename `demo.gif` to current version and update Readme - currently via lib.rs
 
+There is another `demo-short.tape`, which is used for the demo in ratatui webside.
+
 # Needed tools on macos
 
 ```sh
