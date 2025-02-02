@@ -168,7 +168,7 @@
 //!
 //! ## Custom formatting
 //!
-//! For experts only ! Configure with along the lines:
+//! For experts only ! Configure along the lines:
 //! ```ignore
 //! use tui_logger::LogFormatter;
 //!
