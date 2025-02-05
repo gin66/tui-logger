@@ -37,7 +37,7 @@ impl TuiWidgetState {
         self.inner.lock().config.set(target, levelfilter);
         self
     }
-    pub fn transition(&mut self, event: TuiWidgetEvent) {
+    pub fn transition(&self, event: TuiWidgetEvent) {
         self.inner.lock().transition(event);
     }
 }
