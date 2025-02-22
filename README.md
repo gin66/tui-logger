@@ -259,6 +259,7 @@ TuiLoggerWidget
 * [Tom Groenwoldt](https://github.com/tomgroenwoldt) for providing patch in [#65](https://github.com/gin66/tui-logger/issues/65) for ratatui update
 * [Kevin](https://github.com/doesnotcompete) for providing patch in [#71](https://github.com/issues/71)
 * [urizennnn](https://github.com/urizennnn) for providing patch in [#72](https://github.com/issues/72)
+* [Earthgames](https://github.com/Earthgames) for providing patch in [#84](https://github.com/issues/84) to fix panic for unicode characters
 
 ### Star History
 
