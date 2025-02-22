@@ -132,6 +132,7 @@ impl App {
         thread::spawn(move || progress_task(progress_tx).unwrap());
         thread::spawn(move || background_task());
         thread::spawn(move || background_task2());
+        thread::spawn(move || heart_task());
 
         self.run(terminal, rx)
     }
@@ -243,6 +244,16 @@ fn background_task2() {
     loop {
         info!(target:"background-task2", "This is a very long message, which should be wrapped on smaller screen by the standard formatter with an indentation of 9 characters.");
         thread::sleep(time::Duration::from_millis(2000));
+    }
+}
+
+/// A background task for utf8 example
+fn heart_task() {
+    let mut line = "♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥".to_string();
+    loop {
+        info!(target:"heart-task", "{}", line);
+        line = format!(".{}", line);
+        thread::sleep(time::Duration::from_millis(1500));
     }
 }
 
