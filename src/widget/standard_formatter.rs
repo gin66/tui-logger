@@ -5,6 +5,7 @@ use crate::TuiLoggerLevelOutput;
 use ratatui::text::{Line, Span};
 use std::borrow::Cow;
 use unicode_segmentation::UnicodeSegmentation;
+use unicode_width::UnicodeWidthStr;
 
 pub struct LogStandardFormatter {
     /// Base style of the widget
@@ -24,6 +25,22 @@ pub struct LogStandardFormatter {
 }
 
 impl LogStandardFormatter {
+    fn append_line(&self, lines: &mut Vec<Line>, style: Style, need_indent: bool, space: &str, subline: &mut Vec<&str>) {
+        	let mut spans: Vec<Span> = Vec::new();
+                if need_indent {
+                    // need indent
+                    spans.push(Span {
+                        style,
+                        content: Cow::Owned(space.to_string()),
+                    });
+                }
+                spans.push(Span {
+                    style,
+                    content: Cow::Owned(subline.drain(..).map(|x| x.to_string()).collect()),
+                });
+                let line = Line::from(spans);
+                lines.push(line);
+    }
     fn append_wrapped_line(
         &self,
         style: Style,
@@ -33,36 +50,32 @@ impl LogStandardFormatter {
         width: usize,
         with_indent: bool,
     ) {
-        let mut p = 0;
         let mut wrap_len = width;
         if with_indent {
             wrap_len -= indent;
         }
         let space = " ".repeat(indent);
-        let line_chars = line.graphemes(true).collect::<Vec<_>>();
-        while p < line_chars.len() {
-            let linelen = std::cmp::min(wrap_len, line_chars.len() - p);
-            let subline = &line_chars[p..p + linelen];
-
-            let mut spans: Vec<Span> = Vec::new();
-            if wrap_len < width {
-                // need indent
-                spans.push(Span {
-                    style,
-                    content: Cow::Owned(space.to_string()),
-                });
+        let line_chars = line.graphemes(true);
+        let lc_with_length = line_chars.map(|ch| (UnicodeWidthStr::width(ch), ch));
+        // unicode characters may have different printable lenghts.
+        // A loop is needed to fill up the current line till the limit
+        let mut p = 0;
+        let mut subline: Vec<&str> = vec![];
+        let mut need_indent = false;
+        for (w, ch) in lc_with_length {
+            if p + w > wrap_len {
+                self.append_line(lines, style, need_indent, &space, &mut subline);
+                p = 0;
+                // following lines need to be indented
+                wrap_len = width - indent;
+                need_indent = true;
             }
-            spans.push(Span {
-                style,
-                content: Cow::Owned(subline.iter().map(|x| x.to_string()).collect()),
-            });
-            let line = Line::from(spans);
-            lines.push(line);
-
-            p += linelen;
-            // following lines need to be indented
-            wrap_len = width - indent;
+            subline.push(ch);
+            p += w;
         }
+        if p > 0 {
+	   self.append_line(lines, style, need_indent, &space, &mut subline);
+	}
     }
 }
 
