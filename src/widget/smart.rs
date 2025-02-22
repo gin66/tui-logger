@@ -1,6 +1,7 @@
 use crate::widget::logformatter::LogFormatter;
 use parking_lot::Mutex;
 use std::sync::Arc;
+use unicode_segmentation::UnicodeSegmentation;
 
 use log::LevelFilter;
 use ratatui::{
@@ -261,7 +262,7 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                         if hide_off && levelfilter == &LevelFilter::Off {
                             continue;
                         }
-                        width = width.max(t.len())
+                        width = width.max(t.graphemes(true).count())
                     }
                 }
             }
