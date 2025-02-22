@@ -40,19 +40,27 @@ impl LogStandardFormatter {
         let space = " ".repeat(indent);
         while p < line.len() {
             let linelen = std::cmp::min(wrap_len, line.len() - p);
-            let subline = &line[p..p + linelen];
+            let subline = line
+                .chars()
+                .skip(p)
+                .take(linelen)
+                .map(|char| {
+                    let mut buf = [0; 4];
+                    char.encode_utf8(&mut buf).to_string()
+                })
+                .collect::<String>();
 
             let mut spans: Vec<Span> = Vec::new();
             if wrap_len < width {
                 // need indent
                 spans.push(Span {
-                    style: style,
+                    style,
                     content: Cow::Owned(space.to_string()),
                 });
             }
             spans.push(Span {
-                style: style,
-                content: Cow::Owned(subline.to_string()),
+                style,
+                content: Cow::Owned(subline),
             });
             let line = Line::from(spans);
             lines.push(line);
