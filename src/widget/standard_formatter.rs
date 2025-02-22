@@ -4,6 +4,7 @@ use crate::Style;
 use crate::TuiLoggerLevelOutput;
 use ratatui::text::{Line, Span};
 use std::borrow::Cow;
+use unicode_segmentation::UnicodeSegmentation;
 
 pub struct LogStandardFormatter {
     /// Base style of the widget
@@ -38,21 +39,22 @@ impl LogStandardFormatter {
             wrap_len -= indent;
         }
         let space = " ".repeat(indent);
-        while p < line.len() {
-            let linelen = std::cmp::min(wrap_len, line.len() - p);
-            let subline = &line[p..p + linelen];
+        let line_chars = line.graphemes(true).collect::<Vec<_>>();
+        while p < line_chars.len() {
+            let linelen = std::cmp::min(wrap_len, line_chars.len() - p);
+            let subline = &line_chars[p..p + linelen];
 
             let mut spans: Vec<Span> = Vec::new();
             if wrap_len < width {
                 // need indent
                 spans.push(Span {
-                    style: style,
+                    style,
                     content: Cow::Owned(space.to_string()),
                 });
             }
             spans.push(Span {
-                style: style,
-                content: Cow::Owned(subline.to_string()),
+                style,
+                content: Cow::Owned(subline.iter().map(|x| x.to_string()).collect()),
             });
             let line = Line::from(spans);
             lines.push(line);
