@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.5](https://github.com/gin66/tui-logger/compare/v0.14.4...v0.14.5) - 2025-02-22
+
+### Other
+
+- update Changelog and Readme
+- Made target width also use unicode_segmentation
+- Use unicode-segmentation for splitting chars
+- Split lines safely
+- change &mut to & reference in TuiWidgetState.transition as [#83](https://github.com/gin66/tui-logger/pull/83)
+- Update mermaid diagram in README.md
+- Update lib.rs for readme change
+- Update README.md
+- Update README.md with mermaid diagram
+- rename dev_notes.md
+- cleanup files in doc
+- udpate readme
+- new demo of the widget using vhs
+- rename cargo test workflow
+- remove stray space in github action
+
 ## [0.14.4](https://github.com/gin66/tui-logger/compare/v0.14.3...v0.14.4) - 2025-01-31
 
 ### Fixed
