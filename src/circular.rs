@@ -75,6 +75,36 @@ impl<T> CircularBuffer<T> {
     pub fn capacity(&self) -> usize {
         self.buffer.capacity()
     }
+    /// Next free index of the buffer
+    pub fn first_index(&self) -> Option<usize> {
+        if self.next_write_pos == 0 {
+            None
+        }
+        else if self.next_write_pos < self.buffer.capacity() {
+            Some(0)
+        }
+        else {
+            Some(self.next_write_pos-self.buffer.capacity())
+        }
+    }
+    pub fn last_index(&self) -> Option<usize> {
+        if self.next_write_pos == 0 {
+            None
+        }
+        else {
+            Some(self.next_write_pos-1)
+        }
+    }
+    pub fn element_at_index(&self, index: usize) -> Option<&T> {
+        let max_depth = self.buffer.capacity();
+        if index >= self.next_write_pos {
+            return None;
+        }
+        if index + max_depth < self.next_write_pos {
+            return None;
+        }
+        Some(&self.buffer[index % max_depth])
+    }
     /// Push a new element into the buffer.
     /// Until the capacity is reached, elements are pushed.
     /// Afterwards the oldest elements will be overwritten.
@@ -157,6 +187,8 @@ mod tests {
         {
             let mut cb_iter = cb.iter();
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), None);
+            assert_eq!(cb.last_index(), None);
         }
 
         // Push in a value
@@ -165,6 +197,8 @@ mod tests {
             let mut cb_iter = cb.iter();
             assert_eq!(cb_iter.next(), Some(&1));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(0));
+            assert_eq!(cb.last_index(), Some(0));
         }
 
         // Push in a value
@@ -174,6 +208,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&1));
             assert_eq!(cb_iter.next(), Some(&2));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(0));
+            assert_eq!(cb.last_index(), Some(1));
         }
 
         // Push in a value
@@ -184,6 +220,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&2));
             assert_eq!(cb_iter.next(), Some(&3));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(0));
+            assert_eq!(cb.last_index(), Some(2));
         }
 
         // Push in a value
@@ -195,6 +233,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&3));
             assert_eq!(cb_iter.next(), Some(&4));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(0));
+            assert_eq!(cb.last_index(), Some(3));
         }
 
         // Push in a value
@@ -207,6 +247,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&4));
             assert_eq!(cb_iter.next(), Some(&5));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(0));
+            assert_eq!(cb.last_index(), Some(4));
         }
 
         // Push in a value
@@ -219,6 +261,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&5));
             assert_eq!(cb_iter.next(), Some(&6));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(1));
+            assert_eq!(cb.last_index(), Some(5));
         }
 
         // Push in a value
@@ -231,6 +275,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&6));
             assert_eq!(cb_iter.next(), Some(&7));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(2));
+            assert_eq!(cb.last_index(), Some(6));
         }
 
         // Push in a value
@@ -243,6 +289,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&7));
             assert_eq!(cb_iter.next(), Some(&8));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(3));
+            assert_eq!(cb.last_index(), Some(7));
         }
 
         // Push in a value
@@ -255,6 +303,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&8));
             assert_eq!(cb_iter.next(), Some(&9));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(4));
+            assert_eq!(cb.last_index(), Some(8));
         }
 
         // Push in a value
@@ -267,6 +317,8 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&9));
             assert_eq!(cb_iter.next(), Some(&10));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(5));
+            assert_eq!(cb.last_index(), Some(9));
         }
 
         // Push in a value
@@ -279,6 +331,12 @@ mod tests {
             assert_eq!(cb_iter.next(), Some(&10));
             assert_eq!(cb_iter.next(), Some(&11));
             assert_eq!(cb_iter.next(), None);
+            assert_eq!(cb.first_index(), Some(6));
+            assert_eq!(cb.last_index(), Some(10));
+            assert_eq!(cb.element_at_index(5), None);
+            assert_eq!(cb.element_at_index(6), Some(&7));
+            assert_eq!(cb.element_at_index(10), Some(&11));
+            assert_eq!(cb.element_at_index(11), None);
         }
     }
     #[test]
