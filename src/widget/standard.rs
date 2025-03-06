@@ -305,7 +305,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 if lines.len() >= la_height {
                     break;
                 }
-                if opt_timestamp_prev_page.is_none() && lines.len() >= la_height / 2 {
+                if lines.len() >= la_height / 2 {
                     opt_timestamp_prev_page = Some(evt.timestamp);
                 }
             }

@@ -561,6 +561,11 @@ pub fn set_level_for_target(target: &str, levelfilter: LevelFilter) {
     hs.hashtable.insert(h, levelfilter);
 }
 
+// Move events from the hot log to the main log
+pub fn move_events() {
+    TUI_LOGGER.move_events();
+}
+
 impl TuiLogger {
     fn raw_log(&self, record: &Record) {
         let log_entry = ExtLogRecord {
