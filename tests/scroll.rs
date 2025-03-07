@@ -1,5 +1,6 @@
 // src/lib.rs
-use tui_logger::*;
+use log::*;
+use ratatui::text::{Line, Span};
 use ratatui::{
     backend::TestBackend,
     buffer::Buffer,
@@ -7,13 +8,11 @@ use ratatui::{
     style::{Style, Stylize},
     Terminal,
 };
-use log::*;
-use std::{thread, time};
 use std::borrow::Cow;
-use ratatui::text::{Line, Span};
+use std::{thread, time};
+use tui_logger::*;
 
-pub struct TestFormatter {
-}
+pub struct TestFormatter {}
 impl LogFormatter for TestFormatter {
     fn min_width(&self) -> u16 {
         1
@@ -44,6 +43,8 @@ mod tests {
 
         let state = TuiWidgetState::new();
 
+        info!("0");
+        thread::sleep(time::Duration::from_millis(10));
         info!("1");
         thread::sleep(time::Duration::from_millis(10));
         info!("2");
@@ -63,7 +64,7 @@ mod tests {
         terminal
             .draw(|f| {
                 let tui_logger_widget = TuiLoggerWidget::default()
-                    .formatter(Box::new(TestFormatter{}))
+                    .formatter(Box::new(TestFormatter {}))
                     .state(&state);
                 f.render_widget(
                     tui_logger_widget,
@@ -76,7 +77,7 @@ mod tests {
                 );
             })
             .unwrap();
-        let mut expected = Buffer::with_lines(["Hello 4   ","Hello 5   ","Hello 6   ",]);
+        let mut expected = Buffer::with_lines(["Hello 4   ", "Hello 5   ", "Hello 6   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
@@ -86,7 +87,7 @@ mod tests {
         terminal
             .draw(|f| {
                 let tui_logger_widget = TuiLoggerWidget::default()
-                    .formatter(Box::new(TestFormatter{}))
+                    .formatter(Box::new(TestFormatter {}))
                     .state(&state);
                 f.render_widget(
                     tui_logger_widget,
@@ -99,7 +100,7 @@ mod tests {
                 );
             })
             .unwrap();
-        expected = Buffer::with_lines(["Hello 3   ","Hello 4   ","Hello 5   ",]);
+        expected = Buffer::with_lines(["Hello 3   ", "Hello 4   ", "Hello 5   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
@@ -109,7 +110,7 @@ mod tests {
         terminal
             .draw(|f| {
                 let tui_logger_widget = TuiLoggerWidget::default()
-                    .formatter(Box::new(TestFormatter{}))
+                    .formatter(Box::new(TestFormatter {}))
                     .state(&state);
                 f.render_widget(
                     tui_logger_widget,
@@ -122,7 +123,7 @@ mod tests {
                 );
             })
             .unwrap();
-        expected = Buffer::with_lines(["Hello 2   ","Hello 3   ","Hello 4   ",]);
+        expected = Buffer::with_lines(["Hello 2   ", "Hello 3   ", "Hello 4   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
@@ -132,7 +133,7 @@ mod tests {
         terminal
             .draw(|f| {
                 let tui_logger_widget = TuiLoggerWidget::default()
-                    .formatter(Box::new(TestFormatter{}))
+                    .formatter(Box::new(TestFormatter {}))
                     .state(&state);
                 f.render_widget(
                     tui_logger_widget,
@@ -145,7 +146,7 @@ mod tests {
                 );
             })
             .unwrap();
-        expected = Buffer::with_lines(["Hello 1   ","Hello 2   ","Hello 3   ",]);
+        expected = Buffer::with_lines(["Hello 1   ", "Hello 2   ", "Hello 3   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
@@ -155,7 +156,7 @@ mod tests {
         terminal
             .draw(|f| {
                 let tui_logger_widget = TuiLoggerWidget::default()
-                    .formatter(Box::new(TestFormatter{}))
+                    .formatter(Box::new(TestFormatter {}))
                     .state(&state);
                 f.render_widget(
                     tui_logger_widget,
@@ -168,17 +169,63 @@ mod tests {
                 );
             })
             .unwrap();
-        expected = Buffer::with_lines(["Hello 4   ","Hello 5   ","Hello 6   ",]);
+        expected = Buffer::with_lines(["Hello 2   ", "Hello 3   ", "Hello 4   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
+        println!("Scroll down");
+        state.transition(TuiWidgetEvent::NextPageKey);
+
+        terminal
+            .draw(|f| {
+                let tui_logger_widget = TuiLoggerWidget::default()
+                    .formatter(Box::new(TestFormatter {}))
+                    .state(&state);
+                f.render_widget(
+                    tui_logger_widget,
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        width: 10,
+                        height: 3,
+                    },
+                );
+            })
+            .unwrap();
+        expected = Buffer::with_lines(["Hello 3   ", "Hello 4   ", "Hello 5   "]);
+        expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
+        terminal.backend().assert_buffer(&expected);
+
+        println!("Scroll down");
+        state.transition(TuiWidgetEvent::NextPageKey);
+
+        terminal
+            .draw(|f| {
+                let tui_logger_widget = TuiLoggerWidget::default()
+                    .formatter(Box::new(TestFormatter {}))
+                    .state(&state);
+                f.render_widget(
+                    tui_logger_widget,
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        width: 10,
+                        height: 3,
+                    },
+                );
+            })
+            .unwrap();
+        expected = Buffer::with_lines(["Hello 4   ", "Hello 5   ", "Hello 6   "]);
+        expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
+        terminal.backend().assert_buffer(&expected);
+ 
         println!("Scroll down at bottom");
         state.transition(TuiWidgetEvent::NextPageKey);
 
         terminal
             .draw(|f| {
                 let tui_logger_widget = TuiLoggerWidget::default()
-                    .formatter(Box::new(TestFormatter{}))
+                    .formatter(Box::new(TestFormatter {}))
                     .state(&state);
                 f.render_widget(
                     tui_logger_widget,
@@ -191,7 +238,7 @@ mod tests {
                 );
             })
             .unwrap();
-        expected = Buffer::with_lines(["Hello 4   ","Hello 5   ","Hello 6   ",]);
+        expected = Buffer::with_lines(["Hello 4   ", "Hello 5   ", "Hello 6   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
     }

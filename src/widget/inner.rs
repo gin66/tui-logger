@@ -1,8 +1,7 @@
-use parking_lot::Mutex;
 use std::sync::Arc;
 
-use chrono::{DateTime, Local};
 use log::LevelFilter;
+use parking_lot::Mutex;
 
 use crate::{
     set_level_for_target, CircularBuffer, ExtLogRecord, LevelConfig, TuiLoggerFile, TuiWidgetEvent,
@@ -15,6 +14,12 @@ pub struct TuiLoggerInner {
     pub total_events: usize,
     pub default: LevelFilter,
     pub targets: LevelConfig,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct LinePointer {
+    pub event_index: usize, // into event buffer
+    pub subline: usize,
 }
 
 /// This struct contains the shared state of a TuiLoggerWidget and a TuiLoggerTargetWidget.
@@ -47,9 +52,9 @@ pub struct TuiWidgetInnerState {
     pub config: LevelConfig,
     pub nr_items: usize,
     pub selected: usize,
-    pub opt_timestamp_bottom: Option<DateTime<Local>>,
-    pub opt_timestamp_next_page: Option<DateTime<Local>>,
-    pub opt_timestamp_prev_page: Option<DateTime<Local>>,
+    pub opt_line_pointer_center: Option<LinePointer>,
+    pub opt_line_pointer_next_page: Option<LinePointer>,
+    pub opt_line_pointer_prev_page: Option<LinePointer>,
     pub opt_selected_target: Option<String>,
     pub opt_selected_visibility_more: Option<LevelFilter>,
     pub opt_selected_visibility_less: Option<LevelFilter>,
@@ -116,9 +121,9 @@ impl TuiWidgetInnerState {
                     }
                 }
             }
-            PrevPageKey => self.opt_timestamp_bottom = self.opt_timestamp_prev_page,
-            NextPageKey => self.opt_timestamp_bottom = self.opt_timestamp_next_page,
-            EscapeKey => self.opt_timestamp_bottom = None,
+            PrevPageKey => self.opt_line_pointer_center = self.opt_line_pointer_prev_page,
+            NextPageKey => self.opt_line_pointer_center = self.opt_line_pointer_next_page,
+            EscapeKey => self.opt_line_pointer_center = None,
         }
     }
 }

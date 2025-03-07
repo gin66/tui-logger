@@ -1,5 +1,6 @@
 // src/lib.rs
-use tui_logger::*;
+use log::*;
+use ratatui::text::{Line, Span};
 use ratatui::{
     backend::TestBackend,
     buffer::Buffer,
@@ -7,12 +8,10 @@ use ratatui::{
     style::{Style, Stylize},
     Terminal,
 };
-use log::*;
 use std::borrow::Cow;
-use ratatui::text::{Line, Span};
+use tui_logger::*;
 
-pub struct TestFormatter {
-}
+pub struct TestFormatter {}
 impl LogFormatter for TestFormatter {
     fn min_width(&self) -> u16 {
         1
@@ -47,8 +46,8 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
         terminal
             .draw(|f| {
-                let tui_logger_widget = TuiLoggerWidget::default()
-                    .formatter(Box::new(TestFormatter{}));
+                let tui_logger_widget =
+                    TuiLoggerWidget::default().formatter(Box::new(TestFormatter {}));
                 f.render_widget(
                     tui_logger_widget,
                     Rect {

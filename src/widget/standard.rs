@@ -7,10 +7,12 @@ use ratatui::{
     buffer::Buffer,
     layout::Rect,
     style::Style,
+    text::Line,
     widgets::{Block, Widget},
 };
 
-use crate::{CircularBuffer, TuiLoggerLevelOutput, TuiWidgetState, TUI_LOGGER};
+use crate::widget::inner::LinePointer;
+use crate::{CircularBuffer, ExtLogRecord, TuiLoggerLevelOutput, TuiWidgetState, TUI_LOGGER};
 
 use super::inner::TuiWidgetInnerState;
 
@@ -220,6 +222,65 @@ impl<'b> TuiLoggerWidget<'b> {
         self.state = state.inner.clone();
         self
     }
+    fn next_event<'a>(
+        &self,
+        events: &'a CircularBuffer<ExtLogRecord>,
+        mut index: usize,
+        ignore_current: bool,
+        increment: bool,
+        state: &TuiWidgetInnerState,
+    ) -> Option<(Option<usize>, usize, &'a ExtLogRecord)> {
+        // The result is an optional next_index, the event index and the event
+        if ignore_current {
+            index = if increment {
+                index + 1
+            } else {
+                if index == 0 {
+                    return None;
+                }
+                index - 1
+            };
+        }
+        while let Some(evt) = events.element_at_index(index) {
+            let mut skip = false;
+            if let Some(level) = state
+                .config
+                .get(&evt.target)
+                .or(state.config.default_display_level)
+            {
+                if level < evt.level {
+                    skip = true;
+                }
+            }
+            if !skip && state.focus_selected {
+                if let Some(target) = state.opt_selected_target.as_ref() {
+                    if target != &evt.target {
+                        skip = true;
+                    }
+                }
+            }
+            if skip {
+                index = if increment {
+                    index + 1
+                } else {
+                    if index == 0 {
+                        break;
+                    }
+                    index - 1
+                };
+            } else {
+                if increment {
+                    return Some((Some(index + 1), index, evt));
+                } else {
+                    if index == 0 {
+                        return Some((None, index, evt));
+                    }
+                    return Some((Some(index - 1), index, evt));
+                };
+            }
+        }
+        None
+    }
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
@@ -234,7 +295,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                     style_trace: self.style_trace,
                     style_info: self.style_info,
                     format_separator: self.format_separator,
-                    format_timestamp: self.format_timestamp,
+                    format_timestamp: self.format_timestamp.clone(),
                     format_output_level: self.format_output_level,
                     format_output_target: self.format_output_target,
                     format_output_file: self.format_output_file,
@@ -262,66 +323,201 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
         let la_left = list_area.left();
         let la_top = list_area.top();
         let la_width = list_area.width as usize;
-        //let mut lines: Vec<Line> = vec![];
-        let mut lines = CircularBuffer::new(la_height);
+        let mut rev_lines: Vec<(LinePointer, Line)> = vec![];
+        let mut can_scroll_up = true;
+        let mut can_scroll_down = state.opt_line_pointer_center.is_some();
         {
-            state.opt_timestamp_next_page = None;
-            let opt_timestamp_bottom = state.opt_timestamp_bottom;
-            let mut opt_timestamp_prev_page = None;
-            let mut tui_lock = TUI_LOGGER.inner.lock();
-            let mut circular = CircularBuffer::new(10); // MAGIC constant
-            for evt in tui_lock.events.rev_iter() {
-                if let Some(level) = state.config.get(&evt.target) {
-                    if level < evt.level {
-                        continue;
+            enum Pos {
+                Top,
+                Bottom,
+                Center(usize),
+            }
+            let tui_lock = TUI_LOGGER.inner.lock();
+            // If scrolling, the opt_line_pointer_center is set.
+            // Otherwise we are following the bottom of the events
+            let opt_pos_event_index = if let Some(lp) = state.opt_line_pointer_center {
+                tui_lock.events.first_index().map(|first_index| {
+                    if first_index <= lp.event_index {
+                        (Pos::Center(lp.subline), lp.event_index)
+                    } else {
+                        (Pos::Top, first_index)
                     }
-                } else if let Some(level) = state.config.default_display_level {
-                    if level < evt.level {
-                        continue;
+                })
+            } else {
+                tui_lock
+                    .events
+                    .last_index()
+                    .map(|last_index| (Pos::Bottom, last_index))
+            };
+            if let Some((pos, mut event_index)) = opt_pos_event_index {
+                // There are events to be shown
+                match pos {
+                    Pos::Center(subline) => {
+                        println!("CENTER {}", event_index);
+                        if let Some((_, evt_index, evt)) =
+                            self.next_event(&tui_lock.events, event_index, false, true, &state)
+                        {
+                            let mut lines: Vec<(usize, Vec<Line>, usize)> = Vec::new();
+                            let evt_lines = formatter.format(la_width, evt);
+                            let mut from_line: isize = (la_height / 2) as isize - subline as isize;
+                            let mut to_line = la_height / 2 + (evt_lines.len() - 1) - subline;
+                            let n = evt_lines.len();
+                            lines.push((evt_index, evt_lines, n));
+                            println!("Center is {}", evt_index);
+
+                            let mut cont = true;
+                            while cont {
+                                println!("from_line {}, to_line {}", from_line, to_line);
+                                cont = false;
+                                if from_line > 0 {
+                                    if let Some((_, evt_index, evt)) = self.next_event(
+                                        &tui_lock.events,
+                                        lines.first().as_ref().unwrap().0,
+                                        true,
+                                        false,
+                                        &state,
+                                    ) {
+                                        let mut evt_lines = formatter.format(la_width, evt);
+                                        from_line -= evt_lines.len() as isize;
+                                        let n = evt_lines.len();
+                                        lines.insert(0, (evt_index, evt_lines, n));
+                                        cont = true;
+                                    }
+                                    else {
+                                        // no more events, so adjust start
+                                        println!("no more events adjust start");
+                                        to_line = to_line - from_line as usize;
+                                        from_line = 0;
+                                    }
+                                }
+                                if to_line < la_height-1 {
+                                    if let Some((_, evt_index, evt)) = self.next_event(
+                                        &tui_lock.events,
+                                        event_index,
+                                        true,
+                                        true,
+                                        &state,
+                                    ) {
+                                        let mut evt_lines = formatter.format(la_width, evt);
+                                        to_line += evt_lines.len();
+                                        let n = evt_lines.len();
+                                        lines.push((evt_index, evt_lines, n));
+                                        cont = true;
+                                    }
+                                    else {
+                                        println!("no more events at end");
+                                        // no more events
+                                        if !cont {
+                                            // no more lines can be added at start
+                                            break;
+                                        }
+                                        // no more events, so adjust end
+                                        from_line = from_line + (la_height - 1 - to_line) as isize;
+                                        to_line = la_height - 1;
+                                    }
+                                }
+                            }
+                            println!("finished: from_line {}, to_line {}", from_line, to_line);
+                            while from_line < 0 {
+                                lines[0].1.remove(0);
+                                from_line += 1;
+                            }
+                            while to_line >= la_height {
+                                let n = lines.len() - 1;
+                                lines[n].1.pop();
+                                to_line -= 1;
+                            }
+                            while let Some((evt_index, evt_lines, mut n)) = lines.pop() {
+                                for line in evt_lines {
+                                    n -= 1;
+                                    let line_ptr = LinePointer {
+                                        event_index: evt_index,
+                                        subline: n,
+                                    };
+                                    rev_lines.push((line_ptr, line));
+                                }
+                            }
+                        }
                     }
-                }
-                if state.focus_selected {
-                    if let Some(target) = state.opt_selected_target.as_ref() {
-                        if target != &evt.target {
-                            continue;
+                    Pos::Top => {
+                        can_scroll_up = false;
+                    }
+                    Pos::Bottom => {
+                        // Fill up with lines until the top is reached aka sufficient lines in the buffer or no more events
+                        'outer: while let Some((opt_next_index, evt_index, evt)) =
+                            self.next_event(&tui_lock.events, event_index, false, false, &state)
+                        {
+                            let mut evt_lines = formatter.format(la_width, evt);
+                            while let Some(line) = evt_lines.pop() {
+                                let line_ptr = LinePointer {
+                                    event_index: evt_index,
+                                    subline: evt_lines.len(),
+                                };
+                                rev_lines.push((line_ptr, line));
+                                if rev_lines.len() >= la_height {
+                                    break 'outer;
+                                }
+                            }
+                            if let Some(next_index) = opt_next_index {
+                                event_index = next_index;
+                            } else {
+                                break;
+                            }
                         }
                     }
                 }
-                // Here all filters have been applied,
-                // So check, if user is paging through history
-                if let Some(timestamp) = opt_timestamp_bottom.as_ref() {
-                    if *timestamp < evt.timestamp {
-                        circular.push(evt.timestamp);
-                        continue;
-                    }
-                }
-                if !circular.is_empty() {
-                    state.opt_timestamp_next_page = circular.take().first().cloned();
-                }
-                let mut evt_lines = formatter.format(la_width, evt);
-                while let Some(line) = evt_lines.pop() {
-                    lines.push(line);
-                }
-                if lines.len() >= la_height {
-                    break;
-                }
-                if lines.len() >= la_height / 2 {
-                    opt_timestamp_prev_page = Some(evt.timestamp);
-                }
+            } else {
+                can_scroll_down = false;
+                can_scroll_up = false;
             }
-            state.opt_timestamp_prev_page = opt_timestamp_prev_page.or(state.opt_timestamp_bottom);
+        }
+
+        state.opt_line_pointer_next_page = if can_scroll_down {
+            rev_lines.first().map(|l| l.0)
+        } else {
+            None
+        };
+        state.opt_line_pointer_prev_page = if can_scroll_up {
+            rev_lines.last().map(|l| l.0)
+        } else {
+            None
+        };
+
+        if true {
+            println!("Line pointers in buffer:");
+            for l in rev_lines.iter().rev() {
+                println!("event_index {}, subline {}", l.0.event_index, l.0.subline);
+            }
+            if state.opt_line_pointer_center.is_some() {
+                println!(
+                    "Linepointer center: {:?}",
+                    state.opt_line_pointer_center.unwrap()
+                );
+            }
+            if state.opt_line_pointer_next_page.is_some() {
+                println!(
+                    "Linepointer next: {:?}",
+                    state.opt_line_pointer_next_page.unwrap()
+                );
+            }
+            if state.opt_line_pointer_prev_page.is_some() {
+                println!(
+                    "Linepointer prev: {:?}",
+                    state.opt_line_pointer_prev_page.unwrap()
+                );
+            }
         }
 
         // This apparently ensures, that the log starts at top
-        let offset: u16 = if state.opt_timestamp_bottom.is_none() {
+        let offset: u16 = if state.opt_line_pointer_center.is_none() {
             0
         } else {
-            let lines_cnt = lines.len();
+            let lines_cnt = rev_lines.len();
             std::cmp::max(0, la_height - lines_cnt) as u16
         };
 
-        for (i, line) in lines.iter().rev().take(la_height).enumerate() {
-            line.render(
+        for (i, line) in rev_lines.into_iter().rev().take(la_height).enumerate() {
+            line.1.render(
                 Rect {
                     x: la_left,
                     y: la_top + i as u16 + offset,

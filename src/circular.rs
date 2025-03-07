@@ -79,20 +79,17 @@ impl<T> CircularBuffer<T> {
     pub fn first_index(&self) -> Option<usize> {
         if self.next_write_pos == 0 {
             None
-        }
-        else if self.next_write_pos < self.buffer.capacity() {
+        } else if self.next_write_pos < self.buffer.capacity() {
             Some(0)
-        }
-        else {
-            Some(self.next_write_pos-self.buffer.capacity())
+        } else {
+            Some(self.next_write_pos - self.buffer.capacity())
         }
     }
     pub fn last_index(&self) -> Option<usize> {
         if self.next_write_pos == 0 {
             None
-        }
-        else {
-            Some(self.next_write_pos-1)
+        } else {
+            Some(self.next_write_pos - 1)
         }
     }
     pub fn element_at_index(&self, index: usize) -> Option<&T> {
