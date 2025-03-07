@@ -437,12 +437,19 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                 }
                                 to_line = to_line - from_line as usize;
                                 from_line = 0;
+                                if render_debug {
+                                    println!("=> from_line {}, to_line {}", from_line, to_line);
+                                }
                             }
                         }
                         if to_line < la_height - 1 {
-                            if let Some((_, evt_index, evt)) =
-                                self.next_event(&tui_lock.events, event_index, true, true, &state)
-                            {
+                            if let Some((_, evt_index, evt)) = self.next_event(
+                                &tui_lock.events,
+                                lines.last().as_ref().unwrap().0,
+                                true,
+                                true,
+                                &state,
+                            ) {
                                 let evt_lines = formatter.format(la_width, evt);
                                 to_line += evt_lines.len();
                                 let n = evt_lines.len();

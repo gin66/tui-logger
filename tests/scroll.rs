@@ -150,6 +150,75 @@ mod tests {
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
+        println!("Scroll up");
+        state.transition(TuiWidgetEvent::PrevPageKey);
+
+        terminal
+            .draw(|f| {
+                let tui_logger_widget = TuiLoggerWidget::default()
+                    .formatter(Box::new(TestFormatter {}))
+                    .state(&state);
+                f.render_widget(
+                    tui_logger_widget,
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        width: 10,
+                        height: 3,
+                    },
+                );
+            })
+            .unwrap();
+        expected = Buffer::with_lines(["Hello 0   ", "Hello 1   ", "Hello 2   "]);
+        expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
+        terminal.backend().assert_buffer(&expected);
+
+        println!("Scroll up at top");
+        state.transition(TuiWidgetEvent::PrevPageKey);
+
+        terminal
+            .draw(|f| {
+                let tui_logger_widget = TuiLoggerWidget::default()
+                    .formatter(Box::new(TestFormatter {}))
+                    .state(&state);
+                f.render_widget(
+                    tui_logger_widget,
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        width: 10,
+                        height: 3,
+                    },
+                );
+            })
+            .unwrap();
+        expected = Buffer::with_lines(["Hello 0   ", "Hello 1   ", "Hello 2   "]);
+        expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
+        terminal.backend().assert_buffer(&expected);
+
+        println!("Scroll down");
+        state.transition(TuiWidgetEvent::NextPageKey);
+
+        terminal
+            .draw(|f| {
+                let tui_logger_widget = TuiLoggerWidget::default()
+                    .formatter(Box::new(TestFormatter {}))
+                    .state(&state);
+                f.render_widget(
+                    tui_logger_widget,
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        width: 10,
+                        height: 3,
+                    },
+                );
+            })
+            .unwrap();
+        expected = Buffer::with_lines(["Hello 1   ", "Hello 2   ", "Hello 3   "]);
+        expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
+        terminal.backend().assert_buffer(&expected);
+
         println!("Scroll down");
         state.transition(TuiWidgetEvent::NextPageKey);
 
