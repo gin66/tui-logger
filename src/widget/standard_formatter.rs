@@ -8,19 +8,19 @@ use unicode_segmentation::UnicodeSegmentation;
 
 pub struct LogStandardFormatter {
     /// Base style of the widget
-    pub style: Style,
+    pub(crate) style: Style,
     /// Level based style
-    pub style_error: Option<Style>,
-    pub style_warn: Option<Style>,
-    pub style_debug: Option<Style>,
-    pub style_trace: Option<Style>,
-    pub style_info: Option<Style>,
-    pub format_separator: char,
-    pub format_timestamp: Option<String>,
-    pub format_output_level: Option<TuiLoggerLevelOutput>,
-    pub format_output_target: bool,
-    pub format_output_file: bool,
-    pub format_output_line: bool,
+    pub(crate) style_error: Option<Style>,
+    pub(crate) style_warn: Option<Style>,
+    pub(crate) style_debug: Option<Style>,
+    pub(crate) style_trace: Option<Style>,
+    pub(crate) style_info: Option<Style>,
+    pub(crate) format_separator: char,
+    pub(crate) format_timestamp: Option<String>,
+    pub(crate) format_output_level: Option<TuiLoggerLevelOutput>,
+    pub(crate) format_output_target: bool,
+    pub(crate) format_output_file: bool,
+    pub(crate) format_output_line: bool,
 }
 
 impl LogStandardFormatter {

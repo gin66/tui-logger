@@ -7,7 +7,7 @@ use crate::{
     set_level_for_target, CircularBuffer, ExtLogRecord, LevelConfig, TuiLoggerFile, TuiWidgetEvent,
 };
 
-pub struct TuiLoggerInner {
+pub(crate) struct TuiLoggerInner {
     pub hot_depth: usize,
     pub events: CircularBuffer<ExtLogRecord>,
     pub dump: Option<TuiLoggerFile>,
@@ -17,7 +17,7 @@ pub struct TuiLoggerInner {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct LinePointer {
+pub(crate) struct LinePointer {
     pub event_index: usize, // into event buffer
     pub subline: usize,
 }
@@ -25,7 +25,7 @@ pub struct LinePointer {
 /// This struct contains the shared state of a TuiLoggerWidget and a TuiLoggerTargetWidget.
 #[derive(Default)]
 pub struct TuiWidgetState {
-    pub inner: Arc<Mutex<TuiWidgetInnerState>>,
+    inner: Arc<Mutex<TuiWidgetInnerState>>,
 }
 impl TuiWidgetState {
     /// Create a new TuiWidgetState
@@ -45,25 +45,28 @@ impl TuiWidgetState {
     pub fn transition(&self, event: TuiWidgetEvent) {
         self.inner.lock().transition(event);
     }
+    pub fn clone_state(&self) -> Arc<Mutex<TuiWidgetInnerState>> {
+        self.inner.clone()
+    }
 }
 
 #[derive(Default)]
 pub struct TuiWidgetInnerState {
-    pub config: LevelConfig,
-    pub nr_items: usize,
-    pub selected: usize,
-    pub opt_line_pointer_center: Option<LinePointer>,
-    pub opt_line_pointer_next_page: Option<LinePointer>,
-    pub opt_line_pointer_prev_page: Option<LinePointer>,
-    pub opt_selected_target: Option<String>,
-    pub opt_selected_visibility_more: Option<LevelFilter>,
-    pub opt_selected_visibility_less: Option<LevelFilter>,
-    pub opt_selected_recording_more: Option<LevelFilter>,
-    pub opt_selected_recording_less: Option<LevelFilter>,
-    pub offset: usize,
-    pub hide_off: bool,
-    pub hide_target: bool,
-    pub focus_selected: bool,
+    pub(crate) config: LevelConfig,
+    pub(crate) nr_items: usize,
+    pub(crate) selected: usize,
+    pub(crate) opt_line_pointer_center: Option<LinePointer>,
+    pub(crate) opt_line_pointer_next_page: Option<LinePointer>,
+    pub(crate) opt_line_pointer_prev_page: Option<LinePointer>,
+    pub(crate) opt_selected_target: Option<String>,
+    pub(crate) opt_selected_visibility_more: Option<LevelFilter>,
+    pub(crate) opt_selected_visibility_less: Option<LevelFilter>,
+    pub(crate) opt_selected_recording_more: Option<LevelFilter>,
+    pub(crate) opt_selected_recording_less: Option<LevelFilter>,
+    pub(crate) offset: usize,
+    pub(crate) hide_off: bool,
+    pub(crate) hide_target: bool,
+    pub(crate) focus_selected: bool,
 }
 impl TuiWidgetInnerState {
     pub fn new() -> TuiWidgetInnerState {

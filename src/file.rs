@@ -4,13 +4,13 @@ use crate::TuiLoggerLevelOutput;
 
 /// This closely follows the options of [``TuiLoggerSmartWidget``] but is used of logging to a file.
 pub struct TuiLoggerFile {
-    pub dump: File,
-    pub format_separator: char,
-    pub timestamp_fmt: Option<String>,
-    pub format_output_target: bool,
-    pub format_output_file: bool,
-    pub format_output_line: bool,
-    pub format_output_level: Option<TuiLoggerLevelOutput>,
+    pub(crate) dump: File,
+    pub(crate) format_separator: char,
+    pub(crate) timestamp_fmt: Option<String>,
+    pub(crate) format_output_target: bool,
+    pub(crate) format_output_file: bool,
+    pub(crate) format_output_line: bool,
+    pub(crate) format_output_level: Option<TuiLoggerLevelOutput>,
 }
 
 impl TuiLoggerFile {

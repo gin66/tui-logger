@@ -185,7 +185,7 @@ impl<'a> TuiLoggerSmartWidget<'a> {
         self
     }
     pub fn state(mut self, state: &TuiWidgetState) -> Self {
-        self.state = state.inner.clone();
+        self.state = state.clone_state();
         self
     }
 }

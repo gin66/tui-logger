@@ -219,7 +219,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self
     }
     pub fn state(mut self, state: &TuiWidgetState) -> Self {
-        self.state = state.inner.clone();
+        self.state = state.clone_state();
         self
     }
     fn next_event<'a>(

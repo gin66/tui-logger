@@ -728,7 +728,7 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         self
     }
     pub fn state(mut self, state: &TuiWidgetState) -> TuiLoggerTargetWidget<'b> {
-        self.state = state.inner.clone();
+        self.state = state.clone_state();
         self
     }
 }
