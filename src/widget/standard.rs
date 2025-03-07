@@ -412,6 +412,8 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                 }
                 if !lines.is_empty() {
                     let mut cont = true;
+                    let mut at_top = false;
+                    let mut at_bottom = false;
                     while cont {
                         if render_debug {
                             println!("from_line {}, to_line {}", from_line, to_line);
@@ -432,6 +434,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                 cont = true;
                             } else {
                                 // no more events, so adjust start
+                                at_top = true;
                                 if render_debug {
                                     println!("no more events adjust start");
                                 }
@@ -456,18 +459,17 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                 lines.push((evt_index, evt_lines, n));
                                 cont = true;
                             } else {
+                                at_bottom = true;
                                 can_scroll_down = false;
                                 if render_debug {
                                     println!("no more events at end");
                                 }
                                 // no more events
-//                                if !cont {
-//                                    // no more lines can be added at start
-//                                    println!("done");
-//                                    break;
-//                                }
                                 if to_line != la_height - 1{
                                     cont = true;
+                                }
+                                else if !cont {
+                                   break; 
                                 }
                                 // no more events, so adjust end
                                 from_line = from_line + (la_height - 1 - to_line) as isize;
@@ -477,6 +479,15 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                 }
                             }
                         }
+                        if at_top && at_bottom {
+                            break;
+                        }
+                    }
+                    if at_top {
+                        can_scroll_up = false;
+                    }
+                    if at_bottom {
+                        can_scroll_down = false;
                     }
                     if render_debug {
                         println!("finished: from_line {}, to_line {}", from_line, to_line);
