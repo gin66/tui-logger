@@ -218,7 +218,7 @@ mod tests {
         expected = Buffer::with_lines(["Hello 4   ", "Hello 5   ", "Hello 6   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
- 
+
         println!("Scroll down at bottom");
         state.transition(TuiWidgetEvent::NextPageKey);
 

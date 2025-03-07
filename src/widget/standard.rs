@@ -284,6 +284,8 @@ impl<'b> TuiLoggerWidget<'b> {
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
+        let render_debug = false;
+
         let formatter = match self.logformatter.take() {
             Some(fmt) => fmt,
             None => {
@@ -349,120 +351,139 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                     .last_index()
                     .map(|last_index| (Pos::Bottom, last_index))
             };
-            if let Some((pos, mut event_index)) = opt_pos_event_index {
+            if let Some((pos, event_index)) = opt_pos_event_index {
                 // There are events to be shown
+                let mut lines: Vec<(usize, Vec<Line>, usize)> = Vec::new();
+                let mut from_line: isize = 0;
+                let mut to_line = 0;
                 match pos {
                     Pos::Center(subline) => {
-                        println!("CENTER {}", event_index);
+                        if render_debug {
+                            println!("CENTER {}", event_index);
+                        }
                         if let Some((_, evt_index, evt)) =
                             self.next_event(&tui_lock.events, event_index, false, true, &state)
                         {
-                            let mut lines: Vec<(usize, Vec<Line>, usize)> = Vec::new();
                             let evt_lines = formatter.format(la_width, evt);
-                            let mut from_line: isize = (la_height / 2) as isize - subline as isize;
-                            let mut to_line = la_height / 2 + (evt_lines.len() - 1) - subline;
+                            from_line = (la_height / 2) as isize - subline as isize;
+                            to_line = la_height / 2 + (evt_lines.len() - 1) - subline;
                             let n = evt_lines.len();
                             lines.push((evt_index, evt_lines, n));
-                            println!("Center is {}", evt_index);
-
-                            let mut cont = true;
-                            while cont {
-                                println!("from_line {}, to_line {}", from_line, to_line);
-                                cont = false;
-                                if from_line > 0 {
-                                    if let Some((_, evt_index, evt)) = self.next_event(
-                                        &tui_lock.events,
-                                        lines.first().as_ref().unwrap().0,
-                                        true,
-                                        false,
-                                        &state,
-                                    ) {
-                                        let mut evt_lines = formatter.format(la_width, evt);
-                                        from_line -= evt_lines.len() as isize;
-                                        let n = evt_lines.len();
-                                        lines.insert(0, (evt_index, evt_lines, n));
-                                        cont = true;
-                                    }
-                                    else {
-                                        // no more events, so adjust start
-                                        println!("no more events adjust start");
-                                        to_line = to_line - from_line as usize;
-                                        from_line = 0;
-                                    }
-                                }
-                                if to_line < la_height-1 {
-                                    if let Some((_, evt_index, evt)) = self.next_event(
-                                        &tui_lock.events,
-                                        event_index,
-                                        true,
-                                        true,
-                                        &state,
-                                    ) {
-                                        let mut evt_lines = formatter.format(la_width, evt);
-                                        to_line += evt_lines.len();
-                                        let n = evt_lines.len();
-                                        lines.push((evt_index, evt_lines, n));
-                                        cont = true;
-                                    }
-                                    else {
-                                        println!("no more events at end");
-                                        // no more events
-                                        if !cont {
-                                            // no more lines can be added at start
-                                            break;
-                                        }
-                                        // no more events, so adjust end
-                                        from_line = from_line + (la_height - 1 - to_line) as isize;
-                                        to_line = la_height - 1;
-                                    }
-                                }
-                            }
-                            println!("finished: from_line {}, to_line {}", from_line, to_line);
-                            while from_line < 0 {
-                                lines[0].1.remove(0);
-                                from_line += 1;
-                            }
-                            while to_line >= la_height {
-                                let n = lines.len() - 1;
-                                lines[n].1.pop();
-                                to_line -= 1;
-                            }
-                            while let Some((evt_index, evt_lines, mut n)) = lines.pop() {
-                                for line in evt_lines {
-                                    n -= 1;
-                                    let line_ptr = LinePointer {
-                                        event_index: evt_index,
-                                        subline: n,
-                                    };
-                                    rev_lines.push((line_ptr, line));
-                                }
+                            if render_debug {
+                                println!("Center is {}", evt_index);
                             }
                         }
                     }
                     Pos::Top => {
                         can_scroll_up = false;
+                        if render_debug {
+                            println!("TOP");
+                        }
+                        if let Some((_, evt_index, evt)) =
+                            self.next_event(&tui_lock.events, event_index, false, true, &state)
+                        {
+                            let evt_lines = formatter.format(la_width, evt);
+                            from_line = 0;
+                            to_line = evt_lines.len() - 1;
+                            let n = evt_lines.len();
+                            lines.push((evt_index, evt_lines, n));
+                            if render_debug {
+                                println!("Top is {}", evt_index);
+                            }
+                        }
                     }
                     Pos::Bottom => {
-                        // Fill up with lines until the top is reached aka sufficient lines in the buffer or no more events
-                        'outer: while let Some((opt_next_index, evt_index, evt)) =
+                        if render_debug {
+                            println!("TOP");
+                        }
+                        if let Some((_, evt_index, evt)) =
                             self.next_event(&tui_lock.events, event_index, false, false, &state)
                         {
-                            let mut evt_lines = formatter.format(la_width, evt);
-                            while let Some(line) = evt_lines.pop() {
-                                let line_ptr = LinePointer {
-                                    event_index: evt_index,
-                                    subline: evt_lines.len(),
-                                };
-                                rev_lines.push((line_ptr, line));
-                                if rev_lines.len() >= la_height {
-                                    break 'outer;
-                                }
+                            let evt_lines = formatter.format(la_width, evt);
+                            to_line = la_height - 1;
+                            from_line = to_line as isize - (evt_lines.len() - 1) as isize;
+                            let n = evt_lines.len();
+                            lines.push((evt_index, evt_lines, n));
+                            if render_debug {
+                                println!("Bottom is {}", evt_index);
                             }
-                            if let Some(next_index) = opt_next_index {
-                                event_index = next_index;
+                        }
+                    }
+                }
+                if !lines.is_empty() {
+                    let mut cont = true;
+                    while cont {
+                        if render_debug {
+                            println!("from_line {}, to_line {}", from_line, to_line);
+                        }
+                        cont = false;
+                        if from_line > 0 {
+                            if let Some((_, evt_index, evt)) = self.next_event(
+                                &tui_lock.events,
+                                lines.first().as_ref().unwrap().0,
+                                true,
+                                false,
+                                &state,
+                            ) {
+                                let evt_lines = formatter.format(la_width, evt);
+                                from_line -= evt_lines.len() as isize;
+                                let n = evt_lines.len();
+                                lines.insert(0, (evt_index, evt_lines, n));
+                                cont = true;
                             } else {
-                                break;
+                                // no more events, so adjust start
+                                if render_debug {
+                                    println!("no more events adjust start");
+                                }
+                                to_line = to_line - from_line as usize;
+                                from_line = 0;
                             }
+                        }
+                        if to_line < la_height - 1 {
+                            if let Some((_, evt_index, evt)) =
+                                self.next_event(&tui_lock.events, event_index, true, true, &state)
+                            {
+                                let evt_lines = formatter.format(la_width, evt);
+                                to_line += evt_lines.len();
+                                let n = evt_lines.len();
+                                lines.push((evt_index, evt_lines, n));
+                                cont = true;
+                            } else {
+                                can_scroll_down = false;
+                                if render_debug {
+                                    println!("no more events at end");
+                                }
+                                // no more events
+                                if !cont {
+                                    // no more lines can be added at start
+                                    break;
+                                }
+                                // no more events, so adjust end
+                                from_line = from_line + (la_height - 1 - to_line) as isize;
+                                to_line = la_height - 1;
+                            }
+                        }
+                    }
+                    if render_debug {
+                        println!("finished: from_line {}, to_line {}", from_line, to_line);
+                    }
+                    while from_line < 0 {
+                        lines[0].1.remove(0);
+                        from_line += 1;
+                    }
+                    while to_line >= la_height {
+                        let n = lines.len() - 1;
+                        lines[n].1.pop();
+                        to_line -= 1;
+                    }
+                    while let Some((evt_index, evt_lines, mut n)) = lines.pop() {
+                        for line in evt_lines {
+                            n -= 1;
+                            let line_ptr = LinePointer {
+                                event_index: evt_index,
+                                subline: n,
+                            };
+                            rev_lines.push((line_ptr, line));
                         }
                     }
                 }
@@ -483,7 +504,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
             None
         };
 
-        if true {
+        if render_debug {
             println!("Line pointers in buffer:");
             for l in rev_lines.iter().rev() {
                 println!("event_index {}, subline {}", l.0.event_index, l.0.subline);
