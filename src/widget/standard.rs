@@ -284,7 +284,7 @@ impl<'b> TuiLoggerWidget<'b> {
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
-        let render_debug = false;
+        let render_debug = true;
 
         let formatter = match self.logformatter.take() {
             Some(fmt) => fmt,
@@ -461,36 +461,41 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                     println!("no more events at end");
                                 }
                                 // no more events
-                                if !cont {
-                                    // no more lines can be added at start
-                                    break;
+//                                if !cont {
+//                                    // no more lines can be added at start
+//                                    println!("done");
+//                                    break;
+//                                }
+                                if to_line != la_height - 1{
+                                    cont = true;
                                 }
                                 // no more events, so adjust end
                                 from_line = from_line + (la_height - 1 - to_line) as isize;
                                 to_line = la_height - 1;
+                                if render_debug {
+                                    println!("=> from_line {}, to_line {}", from_line, to_line);
+                                }
                             }
                         }
                     }
                     if render_debug {
                         println!("finished: from_line {}, to_line {}", from_line, to_line);
                     }
-                    while from_line < 0 {
-                        lines[0].1.remove(0);
-                        from_line += 1;
-                    }
-                    while to_line >= la_height {
-                        let n = lines.len() - 1;
-                        lines[n].1.pop();
-                        to_line -= 1;
-                    }
+                    let mut curr: isize = to_line as isize;
                     while let Some((evt_index, evt_lines, mut n)) = lines.pop() {
-                        for line in evt_lines {
+                        for line in evt_lines.into_iter().rev() {
                             n -= 1;
-                            let line_ptr = LinePointer {
-                                event_index: evt_index,
-                                subline: n,
-                            };
-                            rev_lines.push((line_ptr, line));
+                            if curr < 0 {
+                                break;
+                            }
+                            if curr < la_height as isize {
+                                let line_ptr = LinePointer {
+                                    event_index: evt_index,
+                                    subline: n,
+                                };
+                                rev_lines.push((line_ptr, line));
+                            }
+                            curr -= 1;
                         }
                     }
                 }
