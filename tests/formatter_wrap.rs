@@ -1,14 +1,11 @@
 // src/lib.rs
 use log::*;
-use ratatui::text::{Line, Span};
 use ratatui::{
     backend::TestBackend,
     buffer::Buffer,
     layout::Rect,
-    style::{Style, Stylize},
     Terminal,
 };
-use std::borrow::Cow;
 use tui_logger::*;
 
 #[cfg(test)]
@@ -41,9 +38,9 @@ mod tests {
                 );
             })
             .unwrap();
-        let mut expected = Buffer::with_lines([
+        let expected = Buffer::with_lines([
             "INFO :formatter_wrap::tests:tests/format",
-            "         ter_wrap.rs:23:Message         ",
+            "         ter_wrap.rs:20:Message         ",
             "                                        ",
         ]);
         //expected.set_style(Rect::new(0, 0, 40, 2), Style::new().reversed());

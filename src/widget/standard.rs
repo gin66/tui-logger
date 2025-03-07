@@ -284,7 +284,7 @@ impl<'b> TuiLoggerWidget<'b> {
 }
 impl<'b> Widget for TuiLoggerWidget<'b> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
-        let render_debug = true;
+        let render_debug = false;
 
         let formatter = match self.logformatter.take() {
             Some(fmt) => fmt,
