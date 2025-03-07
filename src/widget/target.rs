@@ -11,7 +11,7 @@ use crate::TuiWidgetState;
 use crate::TuiWidgetInnerState;
 use crate::Block;
 use crate::Style;
-use crate::Mutex;
+use parking_lot::Mutex;
 use crate::Modifier;
 
 /// This is the definition for the TuiLoggerTargetWidget,

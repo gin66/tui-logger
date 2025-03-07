@@ -35,7 +35,7 @@ impl TuiWidgetState {
         }
     }
     pub fn set_default_display_level(self, levelfilter: LevelFilter) -> TuiWidgetState {
-        self.inner.lock().config.default_display_level = Some(levelfilter);
+        self.inner.lock().config.set_default_display_level(levelfilter);
         self
     }
     pub fn set_level_for_target(self, target: &str, levelfilter: LevelFilter) -> TuiWidgetState {

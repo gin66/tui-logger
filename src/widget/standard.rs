@@ -246,7 +246,7 @@ impl<'b> TuiLoggerWidget<'b> {
             if let Some(level) = state
                 .config
                 .get(&evt.target)
-                .or(state.config.default_display_level)
+                .or(state.config.get_default_display_level())
             {
                 if level < evt.level {
                     skip = true;
