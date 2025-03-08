@@ -1,11 +1,6 @@
 // src/lib.rs
 use log::*;
-use ratatui::{
-    backend::TestBackend,
-    buffer::Buffer,
-    layout::Rect,
-    Terminal,
-};
+use ratatui::{backend::TestBackend, buffer::Buffer, layout::Rect, Terminal};
 use tui_logger::*;
 
 #[cfg(test)]
@@ -13,7 +8,7 @@ mod tests {
     use super::*; // Import the functions from the parent module
 
     #[test]
-    fn test_simple() {
+    fn test_formatter() {
         init_logger(LevelFilter::Trace).unwrap();
         set_default_level(LevelFilter::Trace);
 
@@ -24,9 +19,7 @@ mod tests {
         let mut terminal = Terminal::new(backend).unwrap();
         terminal
             .draw(|f| {
-                let tui_logger_widget =
-                    TuiLoggerWidget::default()
-                    .output_timestamp(None);
+                let tui_logger_widget = TuiLoggerWidget::default().output_timestamp(None);
                 f.render_widget(
                     tui_logger_widget,
                     Rect {
@@ -40,7 +33,7 @@ mod tests {
             .unwrap();
         let expected = Buffer::with_lines([
             "INFO :formatter_wrap::tests:tests/format",
-            "         ter_wrap.rs:20:Message         ",
+            "         ter_wrap.rs:15:Message         ",
             "                                        ",
         ]);
         //expected.set_style(Rect::new(0, 0, 40, 2), Style::new().reversed());

@@ -12,7 +12,9 @@ use ratatui::{
     widgets::{Block, BorderType, Borders, Widget},
 };
 
-use crate::{TuiLoggerLevelOutput, TuiLoggerTargetWidget, TuiWidgetState, TUI_LOGGER};
+use crate::logger::TuiLoggerLevelOutput;
+use crate::logger::TUI_LOGGER;
+use crate::{TuiLoggerTargetWidget, TuiWidgetState};
 
 use super::{inner::TuiWidgetInnerState, standard::TuiLoggerWidget};
 

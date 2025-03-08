@@ -1,6 +1,6 @@
 use std::fs::{File, OpenOptions};
 
-use crate::TuiLoggerLevelOutput;
+use crate::logger::logger::TuiLoggerLevelOutput;
 
 /// This closely follows the options of [``TuiLoggerSmartWidget``] but is used of logging to a file.
 pub struct TuiLoggerFile {

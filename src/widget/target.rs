@@ -1,18 +1,19 @@
 use std::sync::Arc;
 
-use crate::Level;
 use crate::advance_levelfilter;
-use crate::LevelFilter;
-use crate::TUI_LOGGER;
-use crate::Buffer;
-use crate::Rect;
-use crate::Widget;
-use crate::TuiWidgetState;
-use crate::TuiWidgetInnerState;
+use crate::logger::TuiLoggerLevelOutput;
+use crate::logger::TUI_LOGGER;
+use crate::widget::inner::TuiWidgetInnerState;
 use crate::Block;
-use crate::Style;
-use parking_lot::Mutex;
+use crate::Buffer;
+use crate::Level;
+use crate::LevelFilter;
 use crate::Modifier;
+use crate::Rect;
+use crate::Style;
+use crate::TuiWidgetState;
+use crate::Widget;
+use parking_lot::Mutex;
 
 /// This is the definition for the TuiLoggerTargetWidget,
 /// which allows configuration of the logger system and selection of log messages.
@@ -97,7 +98,10 @@ impl<'b> TuiLoggerTargetWidget<'b> {
         self.highlight_style = style;
         self
     }
-    pub(crate) fn inner_state(mut self, state: Arc<Mutex<TuiWidgetInnerState>>) -> TuiLoggerTargetWidget<'b> {
+    pub(crate) fn inner_state(
+        mut self,
+        state: Arc<Mutex<TuiWidgetInnerState>>,
+    ) -> TuiLoggerTargetWidget<'b> {
         self.state = state;
         self
     }

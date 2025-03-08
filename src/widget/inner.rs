@@ -3,18 +3,7 @@ use std::sync::Arc;
 use log::LevelFilter;
 use parking_lot::Mutex;
 
-use crate::{
-    set_level_for_target, CircularBuffer, ExtLogRecord, LevelConfig, TuiLoggerFile, TuiWidgetEvent,
-};
-
-pub(crate) struct TuiLoggerInner {
-    pub hot_depth: usize,
-    pub events: CircularBuffer<ExtLogRecord>,
-    pub dump: Option<TuiLoggerFile>,
-    pub total_events: usize,
-    pub default: LevelFilter,
-    pub targets: LevelConfig,
-}
+use crate::{set_level_for_target, LevelConfig, TuiWidgetEvent};
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct LinePointer {
@@ -35,7 +24,10 @@ impl TuiWidgetState {
         }
     }
     pub fn set_default_display_level(self, levelfilter: LevelFilter) -> TuiWidgetState {
-        self.inner.lock().config.set_default_display_level(levelfilter);
+        self.inner
+            .lock()
+            .config
+            .set_default_display_level(levelfilter);
         self
     }
     pub fn set_level_for_target(self, target: &str, levelfilter: LevelFilter) -> TuiWidgetState {

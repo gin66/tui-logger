@@ -21,7 +21,7 @@ impl LogFormatter for TestFormatter {
         let mut lines = Vec::new();
         let style = Style::new().reversed();
         let msg = evt.msg.lines().rev().collect::<Vec<&str>>().join(" ");
-        
+
         let mut spans: Vec<Span> = Vec::new();
         spans.push(Span {
             style,
@@ -29,7 +29,7 @@ impl LogFormatter for TestFormatter {
         });
         let line = Line::from(spans);
         lines.push(line);
-        
+
         let mut spans: Vec<Span> = Vec::new();
         spans.push(Span {
             style,
@@ -37,7 +37,7 @@ impl LogFormatter for TestFormatter {
         });
         let line = Line::from(spans);
         lines.push(line);
-        
+
         let mut spans: Vec<Span> = Vec::new();
         spans.push(Span {
             style,

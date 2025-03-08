@@ -523,7 +523,6 @@ mod tests {
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
-
         println!("Scroll down");
         state.transition(TuiWidgetEvent::NextPageKey);
 
@@ -570,7 +569,6 @@ mod tests {
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
 
-
         println!("Scroll down");
         state.transition(TuiWidgetEvent::NextPageKey);
 
@@ -616,7 +614,6 @@ mod tests {
         expected = Buffer::with_lines([" wrap 5   ", "Hello 6   ", " wrap 6   "]);
         expected.set_style(Rect::new(0, 0, 7, 3), Style::new().reversed());
         terminal.backend().assert_buffer(&expected);
-
 
         println!("Scroll down at bottom");
         state.transition(TuiWidgetEvent::NextPageKey);

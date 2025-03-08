@@ -465,11 +465,10 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                     println!("no more events at end");
                                 }
                                 // no more events
-                                if to_line != la_height - 1{
+                                if to_line != la_height - 1 {
                                     cont = true;
-                                }
-                                else if !cont {
-                                   break; 
+                                } else if !cont {
+                                    break;
                                 }
                                 // no more events, so adjust end
                                 from_line = from_line + (la_height - 1 - to_line) as isize;
