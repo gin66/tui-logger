@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use crate::advance_levelfilter;
-use crate::logger::TuiLoggerLevelOutput;
 use crate::logger::TUI_LOGGER;
 use crate::widget::inner::TuiWidgetInnerState;
 use crate::Block;

@@ -1,4 +1,4 @@
-use crate::logger::logger::TuiLoggerLevelOutput;
+use crate::logger::TuiLoggerLevelOutput;
 use crate::widget::logformatter::LogFormatter;
 use crate::ExtLogRecord;
 use crate::Style;

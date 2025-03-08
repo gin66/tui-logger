@@ -1,2 +1,4 @@
-pub mod logger;
+mod logger;
+pub mod api;
+
 pub use logger::*;

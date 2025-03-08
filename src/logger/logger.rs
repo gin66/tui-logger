@@ -30,7 +30,7 @@ pub struct ExtLogRecord {
     pub line: u32,
     pub msg: String,
 }
-pub(crate) struct TuiLoggerInner {
+pub struct TuiLoggerInner {
     pub hot_depth: usize,
     pub events: CircularBuffer<ExtLogRecord>,
     pub dump: Option<TuiLoggerFile>,
