@@ -5,6 +5,11 @@ use log::{self, Log, Record};
 use slog::{self, Drain, KV};
 use std::{fmt, io};
 
+#[cfg_attr(docsrs, doc(cfg(feature = "slog-support")))]
+pub fn slog_drain() -> TuiSlogDrain {
+    TuiSlogDrain
+}
+
 /// Key-Separator-Value serializer
 // Copied from `slog-stdlog`
 struct Ksv<W: io::Write> {

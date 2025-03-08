@@ -1,8 +1,8 @@
 use crate::logger::TuiLoggerLevelOutput;
 use crate::widget::logformatter::LogFormatter;
 use crate::ExtLogRecord;
-use crate::Style;
 use ratatui::text::{Line, Span};
+use ratatui::style::Style;
 use std::borrow::Cow;
 use unicode_segmentation::UnicodeSegmentation;
 

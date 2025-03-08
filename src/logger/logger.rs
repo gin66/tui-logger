@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::mem;
 use std::thread;
+
 /// The TuiLoggerWidget shows the logging messages in an endless scrolling view.
 /// It is controlled by a TuiWidgetState for selected events.
 #[derive(Debug, Clone, Copy, PartialEq, Hash)]

@@ -2,6 +2,7 @@ use std::thread;
 
 use log::LevelFilter;
 use log::SetLoggerError;
+use log::Record;
 use crate::TuiLoggerFile;
 use crate::CircularBuffer;
 
@@ -92,4 +93,19 @@ pub fn set_level_for_target(target: &str, levelfilter: LevelFilter) {
 // Move events from the hot log to the main log
 pub fn move_events() {
     TUI_LOGGER.move_events();
+}
+
+/// A simple `Drain` to log any event directly.
+#[derive(Default)]
+pub struct Drain;
+
+impl Drain {
+    /// Create a new Drain
+    pub fn new() -> Self {
+        Drain
+    }
+    /// Log the given record to the main tui-logger
+    pub fn log(&self, record: &Record) {
+        TUI_LOGGER.raw_log(record)
+    }
 }

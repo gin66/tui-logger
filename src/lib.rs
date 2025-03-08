@@ -187,102 +187,41 @@
 #[macro_use]
 extern crate lazy_static;
 
-use log::{Level, Record};
-use ratatui::{
-    buffer::Buffer,
-    layout::Rect,
-    style::{Modifier, Style},
-    widgets::{Block, Widget},
-};
-//use widget::inner::TuiLoggerInner;
-//use widget::inner::TuiWidgetInnerState;
-
 mod circular;
+pub use crate::circular::CircularBuffer;
+
 #[cfg(feature = "slog-support")]
 #[cfg_attr(docsrs, doc(cfg(feature = "slog-support")))]
 mod slog;
-#[cfg(feature = "tracing-support")]
-#[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
-mod tracing_subscriber;
-
-pub use crate::circular::CircularBuffer;
 #[cfg(feature = "slog-support")]
 #[cfg_attr(docsrs, doc(cfg(feature = "slog-support")))]
 pub use crate::slog::TuiSlogDrain;
+
+#[cfg(feature = "tracing-support")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
+mod tracing_subscriber;
 #[cfg(feature = "tracing-support")]
 #[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
 pub use crate::tracing_subscriber::TuiTracingSubscriberLayer;
 #[doc(no_inline)]
 pub use log::LevelFilter;
 
-pub mod widget;
+mod widget;
 pub use widget::inner::TuiWidgetState;
 pub use widget::logformatter::LogFormatter;
 pub use widget::smart::TuiLoggerSmartWidget;
 pub use widget::standard::TuiLoggerWidget;
 pub use widget::target::TuiLoggerTargetWidget;
+pub use widget::inner::TuiWidgetEvent;
 
 mod config;
 pub use config::LevelConfig;
 
-pub mod file;
+mod file;
 pub use file::TuiLoggerFile;
 
 mod logger;
 use crate::logger::*;
+pub use crate::logger::TuiLoggerLevelOutput;
 pub use crate::logger::ExtLogRecord;
 pub use crate::logger::api::*;
-
-fn advance_levelfilter(levelfilter: LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {
-    match levelfilter {
-        LevelFilter::Trace => (None, Some(LevelFilter::Debug)),
-        LevelFilter::Debug => (Some(LevelFilter::Trace), Some(LevelFilter::Info)),
-        LevelFilter::Info => (Some(LevelFilter::Debug), Some(LevelFilter::Warn)),
-        LevelFilter::Warn => (Some(LevelFilter::Info), Some(LevelFilter::Error)),
-        LevelFilter::Error => (Some(LevelFilter::Warn), Some(LevelFilter::Off)),
-        LevelFilter::Off => (Some(LevelFilter::Error), None),
-    }
-}
-
-#[cfg(feature = "slog-support")]
-#[cfg_attr(docsrs, doc(cfg(feature = "slog-support")))]
-pub fn slog_drain() -> TuiSlogDrain {
-    TuiSlogDrain
-}
-
-#[cfg(feature = "tracing-support")]
-#[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
-pub fn tracing_subscriber_layer() -> TuiTracingSubscriberLayer {
-    TuiTracingSubscriberLayer
-}
-
-/// A simple `Drain` to log any event directly.
-#[derive(Default)]
-pub struct Drain;
-
-impl Drain {
-    /// Create a new Drain
-    pub fn new() -> Self {
-        Drain
-    }
-    /// Log the given record to the main tui-logger
-    pub fn log(&self, record: &Record) {
-        TUI_LOGGER.raw_log(record)
-    }
-}
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum TuiWidgetEvent {
-    SpaceKey,
-    UpKey,
-    DownKey,
-    LeftKey,
-    RightKey,
-    PlusKey,
-    MinusKey,
-    HideKey,
-    FocusKey,
-    PrevPageKey,
-    NextPageKey,
-    EscapeKey,
-}

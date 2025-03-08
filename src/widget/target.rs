@@ -1,18 +1,29 @@
 use std::sync::Arc;
 
-use crate::advance_levelfilter;
+use ratatui::{
+    buffer::Buffer,
+    layout::Rect,
+    style::{Style, Modifier},
+    widgets::{Block, Widget},
+};
+use parking_lot::Mutex;
+
 use crate::logger::TUI_LOGGER;
 use crate::widget::inner::TuiWidgetInnerState;
-use crate::Block;
-use crate::Buffer;
-use crate::Level;
-use crate::LevelFilter;
-use crate::Modifier;
-use crate::Rect;
-use crate::Style;
+use log::Level;
+use log::LevelFilter;
 use crate::TuiWidgetState;
-use crate::Widget;
-use parking_lot::Mutex;
+
+fn advance_levelfilter(levelfilter: LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {
+    match levelfilter {
+        LevelFilter::Trace => (None, Some(LevelFilter::Debug)),
+        LevelFilter::Debug => (Some(LevelFilter::Trace), Some(LevelFilter::Info)),
+        LevelFilter::Info => (Some(LevelFilter::Debug), Some(LevelFilter::Warn)),
+        LevelFilter::Warn => (Some(LevelFilter::Info), Some(LevelFilter::Error)),
+        LevelFilter::Error => (Some(LevelFilter::Warn), Some(LevelFilter::Off)),
+        LevelFilter::Off => (Some(LevelFilter::Error), None),
+    }
+}
 
 /// This is the definition for the TuiLoggerTargetWidget,
 /// which allows configuration of the logger system and selection of log messages.

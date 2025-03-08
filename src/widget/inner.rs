@@ -3,7 +3,7 @@ use std::sync::Arc;
 use log::LevelFilter;
 use parking_lot::Mutex;
 
-use crate::{set_level_for_target, LevelConfig, TuiWidgetEvent};
+use crate::{set_level_for_target, LevelConfig};
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct LinePointer {
@@ -40,6 +40,22 @@ impl TuiWidgetState {
     pub fn clone_state(&self) -> Arc<Mutex<TuiWidgetInnerState>> {
         self.inner.clone()
     }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum TuiWidgetEvent {
+    SpaceKey,
+    UpKey,
+    DownKey,
+    LeftKey,
+    RightKey,
+    PlusKey,
+    MinusKey,
+    HideKey,
+    FocusKey,
+    PrevPageKey,
+    NextPageKey,
+    EscapeKey,
 }
 
 #[derive(Default)]
