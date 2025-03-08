@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0](https://github.com/gin66/tui-logger/compare/v0.14.5...v0.15.0) - 2025-03-08
+
+### Fixed
+
+- fix bug with page up at top
+
+### Other
+
+- lib.rs factoring complete
+- refactor TuiLoggerError out of lib.rs
+- refactor TuiLogger API out of lib.rs
+- refactor TuiLogger out of lib.rs
+- refactor LevelConfig out of lib.rs
+- refactor TuiLoggerTargetWidget out of lib.rs
+- reduce visibility of internal structures
+- add test case for log message being larger than widget
+- turn off debugging
+- add test case with standard formatter
+- add test with wrapped lines
+- disable println in lib code with render_debug switch
+- intermediate version with debug prints
+- circular buffer allows absolute indexing
+- test cases for standard widget display and scroll
+
 ## [0.14.5](https://github.com/gin66/tui-logger/compare/v0.14.4...v0.14.5) - 2025-02-22
 
 ### Other
