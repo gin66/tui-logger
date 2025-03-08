@@ -37,7 +37,6 @@ pub struct TuiLoggerWidget<'b> {
 }
 impl<'b> Default for TuiLoggerWidget<'b> {
     fn default() -> TuiLoggerWidget<'b> {
-        //TUI_LOGGER.move_events();
         TuiLoggerWidget {
             block: None,
             logformatter: None,

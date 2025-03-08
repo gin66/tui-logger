@@ -187,9 +187,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::thread;
-
-use log::{Level, Record, SetLoggerError};
+use log::{Level, Record};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -243,57 +241,6 @@ fn advance_levelfilter(levelfilter: LevelFilter) -> (Option<LevelFilter>, Option
         LevelFilter::Warn => (Some(LevelFilter::Info), Some(LevelFilter::Error)),
         LevelFilter::Error => (Some(LevelFilter::Warn), Some(LevelFilter::Off)),
         LevelFilter::Off => (Some(LevelFilter::Error), None),
-    }
-}
-
-// Lots of boilerplate code, so that init_logger can return two error types...
-#[derive(Debug)]
-pub enum TuiLoggerError {
-    SetLoggerError(SetLoggerError),
-    ThreadError(std::io::Error),
-}
-impl std::error::Error for TuiLoggerError {
-    fn description(&self) -> &str {
-        match self {
-            TuiLoggerError::SetLoggerError(_) => "SetLoggerError",
-            TuiLoggerError::ThreadError(_) => "ThreadError",
-        }
-    }
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        match self {
-            TuiLoggerError::SetLoggerError(_) => None,
-            TuiLoggerError::ThreadError(err) => Some(err),
-        }
-    }
-}
-impl std::fmt::Display for TuiLoggerError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TuiLoggerError::SetLoggerError(err) => write!(f, "SetLoggerError({})", err),
-            TuiLoggerError::ThreadError(err) => write!(f, "ThreadError({})", err),
-        }
-    }
-}
-
-/// Init the logger.
-pub fn init_logger(max_level: LevelFilter) -> Result<(), TuiLoggerError> {
-    let join_handle = thread::Builder::new()
-        .name("tui-logger::move_events".into())
-        .spawn(|| {
-            let duration = std::time::Duration::from_millis(10);
-            loop {
-                thread::park_timeout(duration);
-                TUI_LOGGER.move_events();
-            }
-        })
-        .map_err(|err| TuiLoggerError::ThreadError(err))?;
-    TUI_LOGGER.hot_log.lock().mover_thread = Some(join_handle);
-    if cfg!(feature = "tracing-support") {
-        set_default_level(max_level);
-        Ok(())
-    } else {
-        log::set_max_level(max_level);
-        log::set_logger(&*TUI_LOGGER).map_err(|err| TuiLoggerError::SetLoggerError(err))
     }
 }
 

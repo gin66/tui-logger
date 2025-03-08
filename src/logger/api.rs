@@ -1,8 +1,62 @@
+use std::thread;
+
 use log::LevelFilter;
+use log::SetLoggerError;
 use crate::TuiLoggerFile;
 use crate::CircularBuffer;
 
 use crate::TUI_LOGGER;
+
+// Lots of boilerplate code, so that init_logger can return two error types...
+#[derive(Debug)]
+pub enum TuiLoggerError {
+    SetLoggerError(SetLoggerError),
+    ThreadError(std::io::Error),
+}
+impl std::error::Error for TuiLoggerError {
+    fn description(&self) -> &str {
+        match self {
+            TuiLoggerError::SetLoggerError(_) => "SetLoggerError",
+            TuiLoggerError::ThreadError(_) => "ThreadError",
+        }
+    }
+    fn cause(&self) -> Option<&dyn std::error::Error> {
+        match self {
+            TuiLoggerError::SetLoggerError(_) => None,
+            TuiLoggerError::ThreadError(err) => Some(err),
+        }
+    }
+}
+impl std::fmt::Display for TuiLoggerError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TuiLoggerError::SetLoggerError(err) => write!(f, "SetLoggerError({})", err),
+            TuiLoggerError::ThreadError(err) => write!(f, "ThreadError({})", err),
+        }
+    }
+}
+
+/// Init the logger.
+pub fn init_logger(max_level: LevelFilter) -> Result<(), TuiLoggerError> {
+    let join_handle = thread::Builder::new()
+        .name("tui-logger::move_events".into())
+        .spawn(|| {
+            let duration = std::time::Duration::from_millis(10);
+            loop {
+                thread::park_timeout(duration);
+                TUI_LOGGER.move_events();
+            }
+        })
+        .map_err(|err| TuiLoggerError::ThreadError(err))?;
+    TUI_LOGGER.hot_log.lock().mover_thread = Some(join_handle);
+    if cfg!(feature = "tracing-support") {
+        set_default_level(max_level);
+        Ok(())
+    } else {
+        log::set_max_level(max_level);
+        log::set_logger(&*TUI_LOGGER).map_err(|err| TuiLoggerError::SetLoggerError(err))
+    }
+}
 
 /// Set the depth of the hot buffer in order to avoid message loss.
 /// This is effective only after a call to move_events()

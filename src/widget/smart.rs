@@ -48,7 +48,6 @@ pub struct TuiLoggerSmartWidget<'a> {
 }
 impl<'a> Default for TuiLoggerSmartWidget<'a> {
     fn default() -> Self {
-        //TUI_LOGGER.move_events();
         TuiLoggerSmartWidget {
             title_log: Line::from("Tui Log"),
             title_target: Line::from("Tui Target Selector"),

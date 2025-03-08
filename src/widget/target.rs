@@ -29,7 +29,6 @@ pub struct TuiLoggerTargetWidget<'b> {
 }
 impl<'b> Default for TuiLoggerTargetWidget<'b> {
     fn default() -> TuiLoggerTargetWidget<'b> {
-        //TUI_LOGGER.move_events();
         TuiLoggerTargetWidget {
             block: None,
             style: Default::default(),
