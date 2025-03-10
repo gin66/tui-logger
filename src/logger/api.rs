@@ -1,10 +1,10 @@
 use std::thread;
 
-use log::LevelFilter;
-use log::SetLoggerError;
-use log::Record;
-use crate::TuiLoggerFile;
 use crate::CircularBuffer;
+use crate::TuiLoggerFile;
+use log::LevelFilter;
+use log::Record;
+use log::SetLoggerError;
 
 use crate::TUI_LOGGER;
 

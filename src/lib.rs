@@ -207,12 +207,12 @@ pub use crate::tracing_subscriber::TuiTracingSubscriberLayer;
 pub use log::LevelFilter;
 
 mod widget;
+pub use widget::inner::TuiWidgetEvent;
 pub use widget::inner::TuiWidgetState;
 pub use widget::logformatter::LogFormatter;
 pub use widget::smart::TuiLoggerSmartWidget;
 pub use widget::standard::TuiLoggerWidget;
 pub use widget::target::TuiLoggerTargetWidget;
-pub use widget::inner::TuiWidgetEvent;
 
 mod config;
 pub use config::LevelConfig;
@@ -221,7 +221,7 @@ mod file;
 pub use file::TuiLoggerFile;
 
 mod logger;
-use crate::logger::*;
-pub use crate::logger::TuiLoggerLevelOutput;
-pub use crate::logger::ExtLogRecord;
 pub use crate::logger::api::*;
+pub use crate::logger::ExtLogRecord;
+pub use crate::logger::TuiLoggerLevelOutput;
+use crate::logger::*;

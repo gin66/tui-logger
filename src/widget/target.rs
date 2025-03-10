@@ -1,18 +1,18 @@
 use std::sync::Arc;
 
+use parking_lot::Mutex;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::{Style, Modifier},
+    style::{Modifier, Style},
     widgets::{Block, Widget},
 };
-use parking_lot::Mutex;
 
 use crate::logger::TUI_LOGGER;
 use crate::widget::inner::TuiWidgetInnerState;
+use crate::TuiWidgetState;
 use log::Level;
 use log::LevelFilter;
-use crate::TuiWidgetState;
 
 fn advance_levelfilter(levelfilter: LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {
     match levelfilter {

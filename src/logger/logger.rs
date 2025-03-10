@@ -24,27 +24,92 @@ pub struct HotLog {
     pub mover_thread: Option<thread::JoinHandle<()>>,
 }
 
+enum StringOrStatic {
+    StaticString(&'static str),
+    IsString(String),
+    Empty,
+}
+impl StringOrStatic {
+    fn as_str(&self) -> &str {
+        match self {
+            Self::StaticString(s) => s,
+            Self::IsString(s) => &s,
+            Self::Empty => "?",
+        }
+    }
+}
+
 pub struct ExtLogRecord {
     pub timestamp: DateTime<Local>,
     pub level: Level,
     target: String,
-    file: String,
+    file: StringOrStatic,
+    module_path: StringOrStatic,
     pub line: u32,
     msg: String,
 }
 impl ExtLogRecord {
     #[inline]
     pub fn target(&self) -> &str {
-       &self.target
-    } 
+        &self.target
+    }
     #[inline]
     pub fn file(&self) -> &str {
-       &self.file
-    } 
+        self.file.as_str()
+    }
+    #[inline]
+    pub fn module_path(&self) -> &str {
+        self.module_path.as_str()
+    }
     #[inline]
     pub fn msg(&self) -> &str {
-       &self.msg
-    } 
+        &self.msg
+    }
+    fn from(record: &Record) -> Self {
+        let file: StringOrStatic = record
+            .file_static()
+            .map(|s| StringOrStatic::StaticString(s))
+            .or_else(|| {
+                record
+                    .file()
+                    .map(|s| StringOrStatic::IsString(s.to_string()))
+            })
+            .unwrap_or_else(|| StringOrStatic::Empty);
+        let module_path: StringOrStatic = record
+            .module_path_static()
+            .map(|s| StringOrStatic::StaticString(s))
+            .or_else(|| {
+                record
+                    .module_path()
+                    .map(|s| StringOrStatic::IsString(s.to_string()))
+            })
+            .unwrap_or_else(|| StringOrStatic::Empty);
+        ExtLogRecord {
+            timestamp: chrono::Local::now(),
+            level: record.level(),
+            target: record.target().to_string(),
+            file,
+            module_path,
+            line: record.line().unwrap_or(0),
+            msg: format!("{}", record.args()),
+        }
+    }
+    fn overrun(timestamp: DateTime<Local>, total: usize, elements: usize) -> Self {
+        ExtLogRecord {
+            timestamp,
+            level: Level::Warn,
+            target: "TuiLogger".to_string(),
+            file: StringOrStatic::Empty,
+            module_path: StringOrStatic::Empty,
+            line: 0,
+            msg: format!(
+                "There have been {} events lost, {} recorded out of {}",
+                total - elements,
+                elements,
+                total
+            ),
+        }
+    }
 }
 pub struct TuiLoggerInner {
     pub hot_depth: usize,
@@ -83,19 +148,8 @@ impl TuiLogger {
         }
         if total > elements {
             // Too many events received, so some have been lost
-            let new_log_entry = ExtLogRecord {
-                timestamp: reversed[reversed.len() - 1].timestamp,
-                level: Level::Warn,
-                target: "TuiLogger".to_string(),
-                file: "?".to_string(),
-                line: 0,
-                msg: format!(
-                    "There have been {} events lost, {} recorded out of {}",
-                    total - elements,
-                    elements,
-                    total
-                ),
-            };
+            let new_log_entry =
+                ExtLogRecord::overrun(reversed[reversed.len() - 1].timestamp, total, elements);
             reversed.push(new_log_entry);
         }
         let default_level = tli.default;
@@ -133,7 +187,7 @@ impl TuiLogger {
                 }
                 if with_loc {
                     if file_options.format_output_file {
-                        output.push_str(&log_entry.file);
+                        output.push_str(log_entry.file.as_str());
                         output.push(file_options.format_separator);
                     }
                     if file_options.format_output_line {
@@ -198,14 +252,7 @@ impl Log for TuiLogger {
 
 impl TuiLogger {
     pub fn raw_log(&self, record: &Record) {
-        let log_entry = ExtLogRecord {
-            timestamp: chrono::Local::now(),
-            level: record.level(),
-            target: record.target().to_string(),
-            file: record.file().unwrap_or("?").to_string(),
-            line: record.line().unwrap_or(0),
-            msg: format!("{}", record.args()),
-        };
+        let log_entry = ExtLogRecord::from(record);
         let mut events_lock = self.hot_log.lock();
         events_lock.events.push(log_entry);
         let need_signal =
