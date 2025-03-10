@@ -53,11 +53,11 @@ impl LogFormatter for MyLogFormatter {
                 let sp2 = Span::styled("======", st);
                 lines.push(Line::from(vec![sp, mayday, sp2]).alignment(Alignment::Center));
                 lines.push(
-                    Line::from(format!("{}: {}", evt.level, evt.msg)).alignment(Alignment::Center),
+                    Line::from(format!("{}: {}", evt.level, evt.msg())).alignment(Alignment::Center),
                 );
             }
             _ => {
-                lines.push(Line::from(format!("{}: {}", evt.level, evt.msg)));
+                lines.push(Line::from(format!("{}: {}", evt.level, evt.msg())));
             }
         };
 

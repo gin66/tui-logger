@@ -244,7 +244,7 @@ impl<'b> TuiLoggerWidget<'b> {
             let mut skip = false;
             if let Some(level) = state
                 .config
-                .get(&evt.target)
+                .get(&evt.target())
                 .or(state.config.get_default_display_level())
             {
                 if level < evt.level {
@@ -253,7 +253,7 @@ impl<'b> TuiLoggerWidget<'b> {
             }
             if !skip && state.focus_selected {
                 if let Some(target) = state.opt_selected_target.as_ref() {
-                    if target != &evt.target {
+                    if target != &evt.target() {
                         skip = true;
                     }
                 }

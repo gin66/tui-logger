@@ -23,13 +23,28 @@ pub struct HotLog {
     pub events: CircularBuffer<ExtLogRecord>,
     pub mover_thread: Option<thread::JoinHandle<()>>,
 }
+
 pub struct ExtLogRecord {
     pub timestamp: DateTime<Local>,
     pub level: Level,
-    pub target: String,
-    pub file: String,
+    target: String,
+    file: String,
     pub line: u32,
-    pub msg: String,
+    msg: String,
+}
+impl ExtLogRecord {
+    #[inline]
+    pub fn target(&self) -> &str {
+       &self.target
+    } 
+    #[inline]
+    pub fn file(&self) -> &str {
+       &self.file
+    } 
+    #[inline]
+    pub fn msg(&self) -> &str {
+       &self.msg
+    } 
 }
 pub struct TuiLoggerInner {
     pub hot_depth: usize,

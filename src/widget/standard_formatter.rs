@@ -97,12 +97,12 @@ impl LogFormatter for LogStandardFormatter {
             }
         }
         if self.format_output_target {
-            output.push_str(&evt.target);
+            output.push_str(&evt.target());
             output.push(self.format_separator);
         }
         if with_loc {
             if self.format_output_file {
-                output.push_str(&evt.file);
+                output.push_str(&evt.file());
                 output.push(self.format_separator);
             }
             if self.format_output_line {
@@ -110,7 +110,7 @@ impl LogFormatter for LogStandardFormatter {
                 output.push(self.format_separator);
             }
         }
-        let mut sublines: Vec<&str> = evt.msg.lines().rev().collect();
+        let mut sublines: Vec<&str> = evt.msg().lines().rev().collect();
 
         output.push_str(sublines.pop().unwrap());
         self.append_wrapped_line(col_style, 9, &mut lines, &output, width, false);
