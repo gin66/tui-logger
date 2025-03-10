@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0](https://github.com/gin66/tui-logger/compare/v0.15.0...v0.16.0) - 2025-03-10
+
+### Other
+
+- ExtLogRecord stores for file and module_path their static strings, if available. In addition provides module_path getter
+- provide accessors for the strings
+- update DEV_NOTES
+
 ## [0.15.0](https://github.com/gin66/tui-logger/compare/v0.14.5...v0.15.0) - 2025-03-08
 
 ### Fixed
