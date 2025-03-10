@@ -20,7 +20,7 @@ impl LogFormatter for TestFormatter {
     fn format(&self, _width: usize, evt: &ExtLogRecord) -> Vec<Line> {
         let mut lines = Vec::new();
         let style = Style::new().reversed();
-        let msg = evt.msg.lines().rev().collect::<Vec<&str>>().join(" ");
+        let msg = evt.msg().lines().rev().collect::<Vec<&str>>().join(" ");
         let mut spans: Vec<Span> = Vec::new();
         spans.push(Span {
             style,

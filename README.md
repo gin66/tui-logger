@@ -41,7 +41,7 @@ Starting with v0.10 `tui-logger` is `ratatui` only.
 - [X] `tracing` support
 - [X] Support to use custom formatter for log events
 - [ ] Allow configuration of target dependent loglevel specifically for file logging
-- [X] Avoid duplicating of module and filename in every log record
+- [X] Avoid duplicating of module_path and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
 
 ### Smart Widget

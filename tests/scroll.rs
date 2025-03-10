@@ -21,7 +21,7 @@ impl LogFormatter for TestFormatter {
         let mut lines = Vec::new();
         let mut spans: Vec<Span> = Vec::new();
         let style = Style::new().reversed();
-        let msg = evt.msg.lines().rev().collect::<Vec<&str>>().join(" ");
+        let msg = evt.msg().lines().rev().collect::<Vec<&str>>().join(" ");
         spans.push(Span {
             style,
             content: Cow::Owned(format!("Hello {}", msg)),
