@@ -27,14 +27,12 @@ pub struct HotLog {
 enum StringOrStatic {
     StaticString(&'static str),
     IsString(String),
-    Empty,
 }
 impl StringOrStatic {
     fn as_str(&self) -> &str {
         match self {
             Self::StaticString(s) => s,
             Self::IsString(s) => &s,
-            Self::Empty => "?",
         }
     }
 }
@@ -43,9 +41,9 @@ pub struct ExtLogRecord {
     pub timestamp: DateTime<Local>,
     pub level: Level,
     target: String,
-    file: StringOrStatic,
-    module_path: StringOrStatic,
-    pub line: u32,
+    file: Option<StringOrStatic>,
+    module_path: Option<StringOrStatic>,
+    pub line: Option<u32>,
     msg: String,
 }
 impl ExtLogRecord {
@@ -54,43 +52,41 @@ impl ExtLogRecord {
         &self.target
     }
     #[inline]
-    pub fn file(&self) -> &str {
-        self.file.as_str()
+    pub fn file(&self) -> Option<&str> {
+        self.file.as_ref().map(|f| f.as_str())
     }
     #[inline]
-    pub fn module_path(&self) -> &str {
-        self.module_path.as_str()
+    pub fn module_path(&self) -> Option<&str> {
+        self.module_path.as_ref().map(|mp| mp.as_str())
     }
     #[inline]
     pub fn msg(&self) -> &str {
         &self.msg
     }
     fn from(record: &Record) -> Self {
-        let file: StringOrStatic = record
+        let file: Option<StringOrStatic> = record
             .file_static()
             .map(|s| StringOrStatic::StaticString(s))
             .or_else(|| {
                 record
                     .file()
                     .map(|s| StringOrStatic::IsString(s.to_string()))
-            })
-            .unwrap_or_else(|| StringOrStatic::Empty);
-        let module_path: StringOrStatic = record
+            });
+        let module_path: Option<StringOrStatic> = record
             .module_path_static()
             .map(|s| StringOrStatic::StaticString(s))
             .or_else(|| {
                 record
                     .module_path()
                     .map(|s| StringOrStatic::IsString(s.to_string()))
-            })
-            .unwrap_or_else(|| StringOrStatic::Empty);
+            });
         ExtLogRecord {
             timestamp: chrono::Local::now(),
             level: record.level(),
             target: record.target().to_string(),
             file,
             module_path,
-            line: record.line().unwrap_or(0),
+            line: record.line(),
             msg: format!("{}", record.args()),
         }
     }
@@ -99,9 +95,9 @@ impl ExtLogRecord {
             timestamp,
             level: Level::Warn,
             target: "TuiLogger".to_string(),
-            file: StringOrStatic::Empty,
-            module_path: StringOrStatic::Empty,
-            line: 0,
+            file: None,
+            module_path: None,
+            line: None,
             msg: format!(
                 "There have been {} events lost, {} recorded out of {}",
                 total - elements,
@@ -187,12 +183,16 @@ impl TuiLogger {
                 }
                 if with_loc {
                     if file_options.format_output_file {
-                        output.push_str(log_entry.file.as_str());
-                        output.push(file_options.format_separator);
+                        if let Some(file) = log_entry.file() {
+                            output.push_str(file);
+                            output.push(file_options.format_separator);
+                        }
                     }
                     if file_options.format_output_line {
-                        output.push_str(&format!("{}", log_entry.line));
-                        output.push(file_options.format_separator);
+                        if let Some(line) = log_entry.line.as_ref() {
+                            output.push_str(&format!("{}", line));
+                            output.push(file_options.format_separator);
+                        }
                     }
                 }
                 output.push_str(&log_entry.msg);

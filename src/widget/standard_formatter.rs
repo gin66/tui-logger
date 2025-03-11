@@ -102,12 +102,16 @@ impl LogFormatter for LogStandardFormatter {
         }
         if with_loc {
             if self.format_output_file {
-                output.push_str(&evt.file());
-                output.push(self.format_separator);
+                if let Some(file) = evt.file() {
+                    output.push_str(file);
+                    output.push(self.format_separator);
+                }
             }
             if self.format_output_line {
-                output.push_str(&format!("{}", evt.line));
-                output.push(self.format_separator);
+                if let Some(line) = evt.line {
+                    output.push_str(&format!("{}", line));
+                    output.push(self.format_separator);
+                }
             }
         }
         let mut sublines: Vec<&str> = evt.msg().lines().rev().collect();
