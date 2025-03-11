@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0](https://github.com/gin66/tui-logger/compare/v0.16.0...v0.17.0) - 2025-03-11
+
+### Other
+
+- file/module_path/line are now Option, because log::Record defines them as such, too
+
 ## [0.16.0](https://github.com/gin66/tui-logger/compare/v0.15.0...v0.16.0) - 2025-03-10
 
 ### Other
