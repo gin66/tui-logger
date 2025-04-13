@@ -1,12 +1,12 @@
 use crate::{CircularBuffer, LevelConfig, TuiLoggerFile};
 use chrono::{DateTime, Local};
+use env_filter::Filter;
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::io::Write;
 use std::mem;
 use std::thread;
-use env_filter::Filter;
 
 /// The TuiLoggerWidget shows the logging messages in an endless scrolling view.
 /// It is controlled by a TuiWidgetState for selected events.
@@ -241,8 +241,7 @@ impl Log for TuiLogger {
             metadata.level() <= levelfilter
         } else if let Some(envfilter) = hs.filter.as_ref() {
             envfilter.enabled(metadata)
-        }
-        else {
+        } else {
             metadata.level() <= hs.default
         }
     }

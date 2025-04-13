@@ -1,7 +1,7 @@
+use env_filter::Builder;
 use log::*;
 use ratatui::{backend::TestBackend, buffer::Buffer, layout::Rect, Terminal};
 use tui_logger::*;
-use env_filter::Builder;
 
 #[cfg(test)]
 mod tests {
