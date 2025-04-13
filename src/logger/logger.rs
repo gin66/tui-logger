@@ -109,13 +109,14 @@ impl ExtLogRecord {
         }
     }
 }
-pub struct TuiLoggerInner {
+pub(crate) struct TuiLoggerInner {
     pub hot_depth: usize,
     pub events: CircularBuffer<ExtLogRecord>,
     pub dump: Option<TuiLoggerFile>,
     pub total_events: usize,
     pub default: LevelFilter,
     pub targets: LevelConfig,
+    pub filter: Option<Filter>,
 }
 pub struct TuiLogger {
     pub hot_select: Mutex<HotSelect>,
@@ -150,9 +151,40 @@ impl TuiLogger {
                 ExtLogRecord::overrun(reversed[reversed.len() - 1].timestamp, total, elements);
             reversed.push(new_log_entry);
         }
-        let default_level = tli.default;
         while let Some(log_entry) = reversed.pop() {
             if tli.targets.get(&log_entry.target).is_none() {
+                let mut default_level = tli.default;
+                if let Some(filter) = tli.filter.as_ref() {
+                    // Let's check, what the environment filter says about this target.
+                    let metadata = log::MetadataBuilder::new()
+                        .level(log_entry.level)
+                        .target(&log_entry.target)
+                        .build();
+                    if filter.enabled(&metadata) {
+                        // There is no direct access to the levelFilter, so we have to iterate over all possible level filters.
+                        for lf in [
+                            LevelFilter::Trace,
+                            LevelFilter::Debug,
+                            LevelFilter::Info,
+                            LevelFilter::Warn,
+                            LevelFilter::Error,
+                        ] {
+                            let metadata = log::MetadataBuilder::new()
+                                .level(lf.to_level().unwrap())
+                                .target(&log_entry.target)
+                                .build();
+                            if filter.enabled(&metadata) {
+                                // Found the related level filter
+                                default_level = lf;
+                                // In order to avoid checking the directives again,
+                                // we store the level filter in the hashtable for the hot path
+                                let h = fxhash::hash64(&log_entry.target);
+                                self.hot_select.lock().hashtable.insert(h, lf);
+                                break;
+                            }
+                        }
+                    }
+                }
                 tli.targets.set(&log_entry.target, default_level);
             }
             if let Some(ref mut file_options) = tli.dump {
@@ -224,6 +256,7 @@ lazy_static! {
             dump: None,
             default: LevelFilter::Info,
             targets: LevelConfig::new(),
+            filter: None,
         };
         TuiLogger {
             hot_select: Mutex::new(hs),

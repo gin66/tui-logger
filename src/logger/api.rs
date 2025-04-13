@@ -5,7 +5,6 @@ use crate::TuiLoggerFile;
 use log::LevelFilter;
 use log::Record;
 use log::SetLoggerError;
-use std::ffi::OsStr;
 
 use crate::TUI_LOGGER;
 
@@ -83,27 +82,42 @@ pub fn set_default_level(levelfilter: LevelFilter) {
     TUI_LOGGER.inner.lock().default = levelfilter;
 }
 
-/// Set env_filter for the logger
-pub fn set_env_filter(filter: env_filter::Filter) {
-    TUI_LOGGER.hot_select.lock().filter = Some(filter);
+/// Remove env filter - for debugging purposes
+pub fn remove_env_filter() {
+    TUI_LOGGER.hot_select.lock().filter = None;
+    TUI_LOGGER.inner.lock().filter = None;
+}
+
+fn set_env_filter(filter1: env_filter::Filter, filter2: env_filter::Filter) {
+    // Filter does not support Copy. In order to unnecessary lock hot_select,
+    // we use a manual copy of the env filter.
+    TUI_LOGGER.hot_select.lock().filter = Some(filter1);
+    TUI_LOGGER.inner.lock().filter = Some(filter2);
 }
 
 /// Parse environment variable for env_filter
 pub fn set_env_filter_from_string(filterstring: &str) {
-    let mut builder = env_filter::Builder::new();
-    // Parse a directives string from an environment variable
-    builder.parse(filterstring);
-    set_env_filter(builder.build());
+    let mut builder1 = env_filter::Builder::new();
+    let mut builder2 = env_filter::Builder::new();
+
+    builder1.parse(filterstring);
+    builder2.parse(filterstring);
+
+    set_env_filter(builder1.build(), builder2.build());
 }
 
 /// Parse environment variable for env_filter
 pub fn set_env_filter_from_env(env_name: Option<&str>) {
-    let mut builder = env_filter::Builder::new();
+    let mut builder1 = env_filter::Builder::new();
+    let mut builder2 = env_filter::Builder::new();
+
     // Parse a directives string from an environment variable
     if let Ok(ref filter) = std::env::var(env_name.unwrap_or("RUST_LOG")) {
-        builder.parse(filter);
+        builder1.parse(filter);
+        builder2.parse(filter);
+
+        set_env_filter(builder1.build(), builder2.build());
     }
-    set_env_filter(builder.build());
 }
 
 /// Set levelfilter for a specific target in the logger
