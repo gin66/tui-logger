@@ -1,4 +1,3 @@
-// src/lib.rs
 use log::*;
 use ratatui::text::{Line, Span};
 use ratatui::{

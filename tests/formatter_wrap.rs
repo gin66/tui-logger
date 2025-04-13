@@ -1,4 +1,3 @@
-// src/lib.rs
 use log::*;
 use ratatui::{backend::TestBackend, buffer::Buffer, layout::Rect, Terminal};
 use tui_logger::*;
@@ -33,7 +32,7 @@ mod tests {
             .unwrap();
         let expected = Buffer::with_lines([
             "INFO :formatter_wrap::tests:tests/format",
-            "         ter_wrap.rs:15:Message         ",
+            "         ter_wrap.rs:14:Message         ",
             "                                        ",
         ]);
         //expected.set_style(Rect::new(0, 0, 40, 2), Style::new().reversed());
