@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.1](https://github.com/gin66/tui-logger/compare/v0.17.0...v0.17.1) - 2025-04-13
+
+### Other
+
+- run cargo fmt
+- use env_filter for configuration by environment variable as proposed by [#86](https://github.com/gin66/tui-logger/pull/86)
+- remove stray comment line in tests
+
 ## [0.17.0](https://github.com/gin66/tui-logger/compare/v0.16.0...v0.17.0) - 2025-03-11
 
 ### Other
