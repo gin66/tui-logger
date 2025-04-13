@@ -187,6 +187,8 @@
 #[macro_use]
 extern crate lazy_static;
 
+pub use env_filter;
+
 mod circular;
 pub use crate::circular::CircularBuffer;
 

@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::mem;
 use std::thread;
+use env_filter::Filter;
 
 /// The TuiLoggerWidget shows the logging messages in an endless scrolling view.
 /// It is controlled by a TuiWidgetState for selected events.
@@ -15,11 +16,12 @@ pub enum TuiLoggerLevelOutput {
     Long,
 }
 /// These are the sub-structs for the static TUI_LOGGER struct.
-pub struct HotSelect {
+pub(crate) struct HotSelect {
+    pub filter: Option<Filter>,
     pub hashtable: HashMap<u64, LevelFilter>,
     pub default: LevelFilter,
 }
-pub struct HotLog {
+pub(crate) struct HotLog {
     pub events: CircularBuffer<ExtLogRecord>,
     pub mover_thread: Option<thread::JoinHandle<()>>,
 }
@@ -207,6 +209,7 @@ impl TuiLogger {
 lazy_static! {
     pub static ref TUI_LOGGER: TuiLogger = {
         let hs = HotSelect {
+            filter: None,
             hashtable: HashMap::with_capacity(1000),
             default: LevelFilter::Info,
         };
@@ -236,7 +239,10 @@ impl Log for TuiLogger {
         let hs = self.hot_select.lock();
         if let Some(&levelfilter) = hs.hashtable.get(&h) {
             metadata.level() <= levelfilter
-        } else {
+        } else if let Some(envfilter) = hs.filter.as_ref() {
+            envfilter.enabled(metadata)
+        }
+        else {
             metadata.level() <= hs.default
         }
     }

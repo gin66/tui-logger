@@ -5,6 +5,7 @@ use crate::TuiLoggerFile;
 use log::LevelFilter;
 use log::Record;
 use log::SetLoggerError;
+use std::ffi::OsStr;
 
 use crate::TUI_LOGGER;
 
@@ -80,6 +81,29 @@ pub fn set_log_file(file_options: TuiLoggerFile) {
 pub fn set_default_level(levelfilter: LevelFilter) {
     TUI_LOGGER.hot_select.lock().default = levelfilter;
     TUI_LOGGER.inner.lock().default = levelfilter;
+}
+
+/// Set env_filter for the logger
+pub fn set_env_filter(filter: env_filter::Filter) {
+    TUI_LOGGER.hot_select.lock().filter = Some(filter);
+}
+
+/// Parse environment variable for env_filter
+pub fn set_env_filter_from_string(filterstring: &str) {
+    let mut builder = env_filter::Builder::new();
+    // Parse a directives string from an environment variable
+    builder.parse(filterstring);
+    set_env_filter(builder.build());
+}
+
+/// Parse environment variable for env_filter
+pub fn set_env_filter_from_env(env_name: Option<&str>) {
+    let mut builder = env_filter::Builder::new();
+    // Parse a directives string from an environment variable
+    if let Ok(ref filter) = std::env::var(env_name.unwrap_or("RUST_LOG")) {
+        builder.parse(filter);
+    }
+    set_env_filter(builder.build());
 }
 
 /// Set levelfilter for a specific target in the logger
