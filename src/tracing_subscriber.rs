@@ -6,11 +6,6 @@ use std::collections::BTreeMap;
 use std::fmt;
 use tracing_subscriber::Layer;
 
-#[cfg_attr(docsrs, doc(cfg(feature = "tracing-support")))]
-pub fn tracing_subscriber_layer() -> TuiTracingSubscriberLayer {
-    TuiTracingSubscriberLayer
-}
-
 #[derive(Default)]
 struct ToStringVisitor<'a>(BTreeMap<&'a str, String>);
 
@@ -84,7 +79,7 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
 ///
 ///  fn main() {
 ///     tracing_subscriber::registry()
-///          .with(tui_logger::tracing_subscriber_layer())
+///          .with(tui_logger::TuiTracingSubscriberLayer)
 ///          .init();
 ///     tui_logger::init_logger(tui_logger::LevelFilter::Trace).unwrap();
 ///     tracing::info!("Logging via tracing works!");
