@@ -16,4 +16,6 @@ jobs:
       - name: Check rust version
         run: rustup show
       - name: Run tests
-        run: cargo test
+        run: |
+          cargo test
+          cargo test -F tracing-support --doc
