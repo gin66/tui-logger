@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.2](https://github.com/gin66/tui-logger/compare/v0.17.1...v0.17.2) - 2025-04-23
+
+### Other
+
+- update README
+- Fix invalid docs for TuiTracingSubscriverLayer (#87)
+
 ## [0.17.1](https://github.com/gin66/tui-logger/compare/v0.17.0...v0.17.1) - 2025-04-13
 
 ### Other
