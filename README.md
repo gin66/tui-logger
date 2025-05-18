@@ -40,6 +40,7 @@ Starting with v0.10 `tui-logger` is `ratatui` only.
 - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 - [X] `tracing` support
 - [X] Support to use custom formatter for log events
+- [X] Configurable by environment variables
 - [ ] Allow configuration of target dependent loglevel specifically for file logging
 - [X] Avoid duplicating of module_path and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
@@ -135,6 +136,16 @@ Run demo using termion and simple custom formatter in bottom right log widget:
 cargo run --example demo --features termion,formatter
 ```
 
+### Configuration by environment variables
+
+`tui.logger` uses `env-filter` crate to support configuration by a string or an environment variable.
+This is an opt-in by call to one of these two functions.
+```rust
+pub fn set_env_filter_from_string(filterstring: &str)
+pub fn set_env_filter_from_env(env_name: Option<&str>)
+```
+Default environment variable name is `RUST_LOG`.
+
 ### `slog` support
 
 `tui-logger` provides a [`TuiSlogDrain`] which implements `slog::Drain` and will route all records
@@ -144,9 +155,7 @@ Enabled by feature "slog-support"
 
 ### `tracing-subscriber` support
 
-`tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements
-`tracing_subscriber::Layer` and will collect all events
-it receives to the `tui-logger` widget
+`tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements `tracing_subscriber::Layer` and will collect all events it receives to the `tui-logger` widget
 
 Enabled by feature "tracing-support"
 

@@ -89,7 +89,7 @@ pub fn remove_env_filter() {
 }
 
 fn set_env_filter(filter1: env_filter::Filter, filter2: env_filter::Filter) {
-    // Filter does not support Copy. In order to unnecessary lock hot_select,
+    // Filter does not support Copy. In order to not unnecessary lock hot_select,
     // we use a manual copy of the env filter.
     TUI_LOGGER.hot_select.lock().filter = Some(filter1);
     TUI_LOGGER.inner.lock().filter = Some(filter2);
