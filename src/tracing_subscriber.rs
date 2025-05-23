@@ -4,6 +4,7 @@ use super::TUI_LOGGER;
 use log::{self, Log, Record};
 use std::collections::BTreeMap;
 use std::fmt;
+use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::Layer;
 
 #[derive(Default)]
@@ -85,19 +86,45 @@ impl<'a> tracing::field::Visit for ToStringVisitor<'a> {
 ///     tracing::info!("Logging via tracing works!");
 ///  }
 ///  ```
+
+struct SpanAttributes {
+    attributes: String,
+}
+
 pub struct TuiTracingSubscriberLayer;
 
 impl<S> Layer<S> for TuiTracingSubscriberLayer
 where
-    S: tracing::Subscriber,
+    S: tracing::Subscriber + for<'a> LookupSpan<'a>,
 {
-    fn on_event(
+    fn on_new_span(
         &self,
-        event: &tracing::Event<'_>,
-        _ctx: tracing_subscriber::layer::Context<'_, S>,
+        attrs: &tracing::span::Attributes<'_>,
+        id: &tracing::span::Id,
+        ctx: tracing_subscriber::layer::Context<'_, S>,
     ) {
         let mut visitor = ToStringVisitor::default();
+        attrs.record(&mut visitor);
+        ctx.span(id)
+            .unwrap()
+            .extensions_mut()
+            .insert(SpanAttributes {
+                attributes: format!("{}", visitor),
+            });
+    }
+
+    fn on_event(&self, event: &tracing::Event<'_>, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        let mut visitor = ToStringVisitor::default();
         event.record(&mut visitor);
+
+        let span_attributes = ctx
+            .event_span(event)
+            .and_then(|s| {
+                s.extensions()
+                    .get::<SpanAttributes>()
+                    .map(|a| a.attributes.to_owned())
+            })
+            .unwrap_or_else(String::new);
 
         let level = match *event.metadata().level() {
             tracing::Level::ERROR => log::Level::Error,
@@ -109,7 +136,7 @@ where
 
         TUI_LOGGER.log(
             &Record::builder()
-                .args(format_args!("{}", visitor))
+                .args(format_args!("{}{}", span_attributes, visitor))
                 .level(level)
                 .target(event.metadata().target())
                 .file(event.metadata().file())
