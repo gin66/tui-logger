@@ -16,6 +16,10 @@
 
 [Documentation](https://docs.rs/tui-logger/latest/tui_logger/)
 
+I have stumbled over an excellent AI-generated description of `tui-logger`, which provides surprisingly deep and (mostly) correct implementation details.
+It would have costed me many days to write an equally good description with so many details and diagrams.
+This docu can be found [here](https://deepwiki.com/gin66/tui-logger).
+
 ### Important note for `tui`
 
 The `tui` crate has been archived and `ratatui` has taken over.
@@ -44,12 +48,6 @@ Starting with v0.10 `tui-logger` is `ratatui` only.
 - [ ] Allow configuration of target dependent loglevel specifically for file logging
 - [X] Avoid duplicating of module_path and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
-
-## AI generated documentation
-
-I have stumbled over an excellent AI-generated description of `tui-logger`, which provides surprisingly deep and (mostly) correct implementation details.
-It would have costed me many days to write an equally good description with so many details and diagrams.
-This docu can be found [here](https://deepwiki.com/gin66/tui-logger).
 
 ### Smart Widget
 
@@ -161,7 +159,9 @@ Enabled by feature "slog-support"
 
 ### `tracing-subscriber` support
 
-`tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements `tracing_subscriber::Layer` and will collect all events it receives to the `tui-logger` widget
+`tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements
+`tracing_subscriber::Layer` and will collect all events
+it receives to the `tui-logger` widget
 
 Enabled by feature "tracing-support"
 
