@@ -45,6 +45,12 @@ Starting with v0.10 `tui-logger` is `ratatui` only.
 - [X] Avoid duplicating of module_path and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
 
+## AI generated documentation
+
+I have stumbled over an excellent AI-generated description of `tui-logger`, which provides surprisingly deep and (mostly) correct implementation details.
+It would have costed me many days to write an equally good description with so many details and diagrams.
+This docu can be found [here](https://deepwiki.com/gin66/tui-logger).
+
 ### Smart Widget
 
 Smart widget consists of two widgets. Left is the target selector widget and
