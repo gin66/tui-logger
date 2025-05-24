@@ -260,6 +260,7 @@ TuiLoggerWidget
 * [Kevin](https://github.com/doesnotcompete) for providing patch in [#71](https://github.com/issues/71)
 * [urizennnn](https://github.com/urizennnn) for providing patch in [#72](https://github.com/issues/72)
 * [Earthgames](https://github.com/Earthgames) for providing patch in [#84](https://github.com/issues/84) to fix panic for unicode characters
+* [Reinier Balt](https://github.com/Irbalt) for providing patch in [#90](https://github.com/issues/90) to add attributes of the current span for tracing subscriber
 
 ### Star History
 

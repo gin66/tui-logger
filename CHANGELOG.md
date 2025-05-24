@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.3](https://github.com/gin66/tui-logger/compare/v0.17.2...v0.17.3) - 2025-05-24
+
+### Other
+
+- update Readme
+- add ai generated documentation reference
+- add attributes of the current span for tracing subscriber (#90)
+- work on Readme
+
 ## [0.17.2](https://github.com/gin66/tui-logger/compare/v0.17.1...v0.17.2) - 2025-04-23
 
 ### Other
