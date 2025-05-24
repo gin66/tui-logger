@@ -40,9 +40,16 @@ Starting with v0.10 `tui-logger` is `ratatui` only.
 - [X] `slog` support, providing a Drain to integrate into your `slog` infrastructure
 - [X] `tracing` support
 - [X] Support to use custom formatter for log events
+- [X] Configurable by environment variables
 - [ ] Allow configuration of target dependent loglevel specifically for file logging
 - [X] Avoid duplicating of module_path and filename in every log record
 - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
+
+## AI generated documentation
+
+I have stumbled over an excellent AI-generated description of `tui-logger`, which provides surprisingly deep and (mostly) correct implementation details.
+It would have costed me many days to write an equally good description with so many details and diagrams.
+This docu can be found [here](https://deepwiki.com/gin66/tui-logger).
 
 ### Smart Widget
 
@@ -135,6 +142,16 @@ Run demo using termion and simple custom formatter in bottom right log widget:
 cargo run --example demo --features termion,formatter
 ```
 
+### Configuration by environment variables
+
+`tui.logger` uses `env-filter` crate to support configuration by a string or an environment variable.
+This is an opt-in by call to one of these two functions.
+```rust
+pub fn set_env_filter_from_string(filterstring: &str)
+pub fn set_env_filter_from_env(env_name: Option<&str>)
+```
+Default environment variable name is `RUST_LOG`.
+
 ### `slog` support
 
 `tui-logger` provides a [`TuiSlogDrain`] which implements `slog::Drain` and will route all records
@@ -144,9 +161,7 @@ Enabled by feature "slog-support"
 
 ### `tracing-subscriber` support
 
-`tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements
-`tracing_subscriber::Layer` and will collect all events
-it receives to the `tui-logger` widget
+`tui-logger` provides a [`TuiTracingSubscriberLayer`] which implements `tracing_subscriber::Layer` and will collect all events it receives to the `tui-logger` widget
 
 Enabled by feature "tracing-support"
 
@@ -260,7 +275,6 @@ TuiLoggerWidget
 * [Kevin](https://github.com/doesnotcompete) for providing patch in [#71](https://github.com/issues/71)
 * [urizennnn](https://github.com/urizennnn) for providing patch in [#72](https://github.com/issues/72)
 * [Earthgames](https://github.com/Earthgames) for providing patch in [#84](https://github.com/issues/84) to fix panic for unicode characters
-* [Reinier Balt](https://github.com/Irbalt) for providing patch in [#90](https://github.com/issues/90) to add attributes of the current span for tracing subscriber
 
 ### Star History
 
