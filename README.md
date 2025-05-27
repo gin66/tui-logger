@@ -145,8 +145,8 @@ cargo run --example demo --features termion,formatter
 `tui.logger` uses `env-filter` crate to support configuration by a string or an environment variable.
 This is an opt-in by call to one of these two functions.
 ```rust
-pub fn set_env_filter_from_string(filterstring: &str)
-pub fn set_env_filter_from_env(env_name: Option<&str>)
+pub fn set_env_filter_from_string(filterstring: &str) {}
+pub fn set_env_filter_from_env(env_name: Option<&str>) {}
 ```
 Default environment variable name is `RUST_LOG`.
 
