@@ -43,7 +43,7 @@ impl LogFormatter for MyLogFormatter {
     fn min_width(&self) -> u16 {
         4
     }
-    fn format(&self, _width: usize, evt: &ExtLogRecord) -> Vec<Line> {
+    fn format(&self, _width: usize, evt: &ExtLogRecord) -> Vec<Line<'_>> {
         let mut lines = vec![];
         match evt.level {
             log::Level::Error => {
