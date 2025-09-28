@@ -1,5 +1,5 @@
-use crate::{CircularBuffer, LevelConfig, TuiLoggerFile};
 use crate::logger::fast_hash::fast_str_hash;
+use crate::{CircularBuffer, LevelConfig, TuiLoggerFile};
 use chrono::{DateTime, Local};
 use env_filter::Filter;
 use log::{Level, LevelFilter, Log, Metadata, Record};

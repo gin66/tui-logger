@@ -137,7 +137,7 @@
 //! ```
 //!
 //! ## Configuration by environment variables
-//! 
+//!
 //! `tui.logger` uses `env-filter` crate to support configuration by a string or an environment variable.
 //! This is an opt-in by call to one of these two functions.
 //! ```rust
@@ -145,7 +145,7 @@
 //! pub fn set_env_filter_from_env(env_name: Option<&str>) {}
 //! ```
 //! Default environment variable name is `RUST_LOG`.
-//! 
+//!
 //! ## `slog` support
 //!
 //! `tui-logger` provides a [`TuiSlogDrain`] which implements `slog::Drain` and will route all records

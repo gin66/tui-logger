@@ -1,8 +1,8 @@
 use std::thread;
 
+use crate::logger::fast_hash::fast_str_hash;
 use crate::CircularBuffer;
 use crate::TuiLoggerFile;
-use crate::logger::fast_hash::fast_str_hash;
 use log::LevelFilter;
 use log::Record;
 use log::SetLoggerError;
