@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.4](https://github.com/gin66/tui-logger/compare/v0.17.3...v0.17.4) - 2025-09-28
+
+### Fixed
+
+- fix lifetime warning in demo.rs
+- fix cargo clippy warnings by opencode+grok
+- fix documentation
+- fix README, which is controlled by lib.rs
+
+### Other
+
+- run cargo fmt
+- resolve lifetime warnings as proposed by compiler
+- resolve security warning for fxhash by eliminating it ([#91](https://github.com/gin66/tui-logger/pull/91))
+- Create FUNDING.yml
+
 ## [0.17.3](https://github.com/gin66/tui-logger/compare/v0.17.2...v0.17.3) - 2025-05-24
 
 ### Other
