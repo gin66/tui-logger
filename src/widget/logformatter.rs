@@ -7,5 +7,5 @@ pub trait LogFormatter: Send + Sync {
     /// This must format any event in one or more lines.
     /// Correct wrapping in next line with/without indenting must be performed here.
     /// The parameter width is the available line width
-    fn format(&self, width: usize, evt: &ExtLogRecord) -> Vec<Line>;
+    fn format(&self, width: usize, evt: &ExtLogRecord) -> Vec<Line<'_>>;
 }

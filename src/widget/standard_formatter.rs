@@ -70,7 +70,7 @@ impl LogFormatter for LogStandardFormatter {
     fn min_width(&self) -> u16 {
         9 + 4
     }
-    fn format(&self, width: usize, evt: &ExtLogRecord) -> Vec<Line> {
+    fn format(&self, width: usize, evt: &ExtLogRecord) -> Vec<Line<'_>> {
         let mut lines = Vec::new();
         let mut output = String::new();
         let (col_style, lev_long, lev_abbr, with_loc) = match evt.level {

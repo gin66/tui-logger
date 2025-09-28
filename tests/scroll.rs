@@ -16,7 +16,7 @@ impl LogFormatter for TestFormatter {
     fn min_width(&self) -> u16 {
         1
     }
-    fn format(&self, _width: usize, evt: &ExtLogRecord) -> Vec<Line> {
+    fn format(&self, _width: usize, evt: &ExtLogRecord) -> Vec<Line<'_>> {
         let mut lines = Vec::new();
         let mut spans: Vec<Span> = Vec::new();
         let style = Style::new().reversed();

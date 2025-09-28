@@ -48,7 +48,7 @@ impl LevelConfig {
         self.default_display_level
     }
     /// Retrieve an iter for all the targets stored in the hash table.
-    pub fn keys(&self) -> Keys<String, LevelFilter> {
+    pub fn keys(&self) -> Keys<'_, String, LevelFilter> {
         self.config.keys()
     }
     /// Get the levelfilter for a given target.
@@ -56,7 +56,7 @@ impl LevelConfig {
         self.config.get(target).cloned()
     }
     /// Retrieve an iterator through all entries of the table.
-    pub fn iter(&self) -> Iter<String, LevelFilter> {
+    pub fn iter(&self) -> Iter<'_, String, LevelFilter> {
         self.config.iter()
     }
     /// Merge an origin LevelConfig into this one.
