@@ -49,14 +49,14 @@ pub fn init_logger(max_level: LevelFilter) -> Result<(), TuiLoggerError> {
                 TUI_LOGGER.move_events();
             }
         })
-        .map_err(|err| TuiLoggerError::ThreadError(err))?;
+        .map_err(TuiLoggerError::ThreadError)?;
     TUI_LOGGER.hot_log.lock().mover_thread = Some(join_handle);
     if cfg!(feature = "tracing-support") {
         set_default_level(max_level);
         Ok(())
     } else {
         log::set_max_level(max_level);
-        log::set_logger(&*TUI_LOGGER).map_err(|err| TuiLoggerError::SetLoggerError(err))
+        log::set_logger(&*TUI_LOGGER).map_err(TuiLoggerError::SetLoggerError)
     }
 }
 
@@ -123,7 +123,7 @@ pub fn set_env_filter_from_env(env_name: Option<&str>) {
 
 /// Set levelfilter for a specific target in the logger
 pub fn set_level_for_target(target: &str, levelfilter: LevelFilter) {
-    let h = fast_str_hash(&target);
+    let h = fast_str_hash(target);
     TUI_LOGGER.inner.lock().targets.set(target, levelfilter);
     let mut hs = TUI_LOGGER.hot_select.lock();
     hs.hashtable.insert(h, levelfilter);

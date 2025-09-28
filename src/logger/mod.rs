@@ -1,5 +1,5 @@
 pub mod api;
 mod fast_hash;
-mod logger;
+mod inner;
 
-pub use logger::*;
+pub use inner::*;

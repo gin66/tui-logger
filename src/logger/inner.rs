@@ -35,7 +35,7 @@ impl StringOrStatic {
     fn as_str(&self) -> &str {
         match self {
             Self::StaticString(s) => s,
-            Self::IsString(s) => &s,
+            Self::IsString(s) => s,
         }
     }
 }
@@ -69,7 +69,7 @@ impl ExtLogRecord {
     fn from(record: &Record) -> Self {
         let file: Option<StringOrStatic> = record
             .file_static()
-            .map(|s| StringOrStatic::StaticString(s))
+            .map(StringOrStatic::StaticString)
             .or_else(|| {
                 record
                     .file()
@@ -77,7 +77,7 @@ impl ExtLogRecord {
             });
         let module_path: Option<StringOrStatic> = record
             .module_path_static()
-            .map(|s| StringOrStatic::StaticString(s))
+            .map(StringOrStatic::StaticString)
             .or_else(|| {
                 record
                     .module_path()
@@ -295,12 +295,11 @@ impl TuiLogger {
         let mut events_lock = self.hot_log.lock();
         events_lock.events.push(log_entry);
         let need_signal =
-            (events_lock.events.total_elements() % (events_lock.events.capacity() / 2)) == 0;
+            events_lock.events.total_elements().is_multiple_of(events_lock.events.capacity() / 2);
         if need_signal {
-            events_lock
-                .mover_thread
-                .as_ref()
-                .map(|jh| thread::Thread::unpark(jh.thread()));
+            if let Some(jh) = events_lock.mover_thread.as_ref() {
+                thread::Thread::unpark(jh.thread());
+            }
         }
     }
 }

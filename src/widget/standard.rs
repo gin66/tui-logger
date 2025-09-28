@@ -244,7 +244,7 @@ impl<'b> TuiLoggerWidget<'b> {
             let mut skip = false;
             if let Some(level) = state
                 .config
-                .get(&evt.target())
+                .get(evt.target())
                 .or(state.config.get_default_display_level())
             {
                 if level < evt.level {
@@ -253,7 +253,7 @@ impl<'b> TuiLoggerWidget<'b> {
             }
             if !skip && state.focus_selected {
                 if let Some(target) = state.opt_selected_target.as_ref() {
-                    if target != &evt.target() {
+                    if target != evt.target() {
                         skip = true;
                     }
                 }
@@ -267,15 +267,13 @@ impl<'b> TuiLoggerWidget<'b> {
                     }
                     index - 1
                 };
+            } else if increment {
+                return Some((Some(index + 1), index, evt));
             } else {
-                if increment {
-                    return Some((Some(index + 1), index, evt));
-                } else {
-                    if index == 0 {
-                        return Some((None, index, evt));
-                    }
-                    return Some((Some(index - 1), index, evt));
-                };
+                if index == 0 {
+                    return Some((None, index, evt));
+                }
+                return Some((Some(index - 1), index, evt));
             }
         }
         None
@@ -437,7 +435,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                 if render_debug {
                                     println!("no more events adjust start");
                                 }
-                                to_line = to_line - from_line as usize;
+                                to_line -= from_line as usize;
                                 from_line = 0;
                                 if render_debug {
                                     println!("=> from_line {}, to_line {}", from_line, to_line);
@@ -470,7 +468,7 @@ impl<'b> Widget for TuiLoggerWidget<'b> {
                                     break;
                                 }
                                 // no more events, so adjust end
-                                from_line = from_line + (la_height - 1 - to_line) as isize;
+                                from_line += (la_height - 1 - to_line) as isize;
                                 to_line = la_height - 1;
                                 if render_debug {
                                     println!("=> from_line {}, to_line {}", from_line, to_line);
