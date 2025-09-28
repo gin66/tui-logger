@@ -2,6 +2,7 @@ use std::thread;
 
 use crate::CircularBuffer;
 use crate::TuiLoggerFile;
+use crate::logger::fast_hash::fast_str_hash;
 use log::LevelFilter;
 use log::Record;
 use log::SetLoggerError;
@@ -122,7 +123,7 @@ pub fn set_env_filter_from_env(env_name: Option<&str>) {
 
 /// Set levelfilter for a specific target in the logger
 pub fn set_level_for_target(target: &str, levelfilter: LevelFilter) {
-    let h = fxhash::hash64(&target);
+    let h = fast_str_hash(&target);
     TUI_LOGGER.inner.lock().targets.set(target, levelfilter);
     let mut hs = TUI_LOGGER.hot_select.lock();
     hs.hashtable.insert(h, levelfilter);

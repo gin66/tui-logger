@@ -1,4 +1,5 @@
 use crate::{CircularBuffer, LevelConfig, TuiLoggerFile};
+use crate::logger::fast_hash::fast_str_hash;
 use chrono::{DateTime, Local};
 use env_filter::Filter;
 use log::{Level, LevelFilter, Log, Metadata, Record};
@@ -178,7 +179,7 @@ impl TuiLogger {
                                 default_level = lf;
                                 // In order to avoid checking the directives again,
                                 // we store the level filter in the hashtable for the hot path
-                                let h = fxhash::hash64(&log_entry.target);
+                                let h = fast_str_hash(&log_entry.target);
                                 self.hot_select.lock().hashtable.insert(h, lf);
                                 break;
                             }
@@ -268,7 +269,7 @@ lazy_static! {
 
 impl Log for TuiLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        let h = fxhash::hash64(metadata.target());
+        let h = fast_str_hash(metadata.target());
         let hs = self.hot_select.lock();
         if let Some(&levelfilter) = hs.hashtable.get(&h) {
             metadata.level() <= levelfilter
