@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0](https://github.com/gin66/tui-logger/compare/v0.17.4...v0.18.0) - 2025-12-28
+
+### Other
+
+- update to ratatui v0.30 as proposed by [#93](https://github.com/gin66/tui-logger/pull/93)
+
 ## [0.17.4](https://github.com/gin66/tui-logger/compare/v0.17.3...v0.17.4) - 2025-09-28
 
 ### Fixed
