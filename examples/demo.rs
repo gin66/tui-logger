@@ -76,8 +76,8 @@ impl LogFormatter for MyLogFormatter {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    init_logger(LevelFilter::Trace)?;
+fn main() {
+    init_logger(LevelFilter::Trace).unwrap();
     set_default_level(LevelFilter::Trace);
 
     let mut dir = env::temp_dir();
@@ -90,16 +90,14 @@ fn main() -> anyhow::Result<()> {
     debug!(target:"App", "Logging to {}", dir.to_str().unwrap());
     debug!(target:"App", "Logging initialized");
 
-    let mut terminal = init_terminal()?;
-    terminal.clear()?;
-    terminal.hide_cursor()?;
+    let mut terminal = init_terminal().unwrap();
+    terminal.clear().unwrap();
+    terminal.hide_cursor().unwrap();
 
-    App::new().start(&mut terminal)?;
+    App::new().start(&mut terminal).unwrap();
 
-    restore_terminal()?;
-    terminal.clear()?;
-
-    Ok(())
+    restore_terminal().unwrap();
+    terminal.clear().unwrap();
 }
 
 impl App {
@@ -123,13 +121,13 @@ impl App {
         }
     }
 
-    pub fn start(mut self, terminal: &mut Terminal<impl Backend>) -> anyhow::Result<()> {
+    pub fn start<B: Backend>(mut self, terminal: &mut Terminal<B>) -> Result<(), B::Error> {
         // Use an mpsc::channel to combine stdin events with app events
         let (tx, rx) = mpsc::channel();
         let event_tx = tx.clone();
         let progress_tx = tx.clone();
 
-        thread::spawn(move || input_thread(event_tx));
+        thread::spawn(move || input_thread(event_tx).unwrap());
         thread::spawn(move || progress_task(progress_tx).unwrap());
         thread::spawn(move || background_task());
         thread::spawn(move || background_task2());
@@ -139,11 +137,11 @@ impl App {
     }
 
     /// Main application loop
-    fn run(
+    fn run<B: Backend>(
         &mut self,
-        terminal: &mut Terminal<impl Backend>,
+        terminal: &mut Terminal<B>,
         rx: mpsc::Receiver<AppEvent>,
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), B::Error> {
         for event in rx {
             match event {
                 AppEvent::UiEvent(event) => self.handle_ui_event(event),
@@ -206,7 +204,7 @@ impl App {
         self.selected_tab = (self.selected_tab + 1) % self.tab_names.len();
     }
 
-    fn draw(&mut self, terminal: &mut Terminal<impl Backend>) -> anyhow::Result<()> {
+    fn draw<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> Result<(), B::Error> {
         terminal.draw(|frame| {
             frame.render_widget(self, frame.area());
         })?;
