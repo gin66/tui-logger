@@ -116,7 +116,7 @@ impl LogFormatter for LogStandardFormatter {
         }
         let mut sublines: Vec<&str> = evt.msg().lines().rev().collect();
 
-        output.push_str(sublines.pop().unwrap());
+        output.push_str(sublines.pop().unwrap_or(""));
         self.append_wrapped_line(col_style, 9, &mut lines, &output, width, false);
 
         for subline in sublines.iter().rev() {
