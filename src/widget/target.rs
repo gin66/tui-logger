@@ -16,7 +16,8 @@ use log::LevelFilter;
 
 fn advance_levelfilter(levelfilter: LevelFilter) -> (Option<LevelFilter>, Option<LevelFilter>) {
     match levelfilter {
-        LevelFilter::Trace => (None, Some(LevelFilter::Debug)),
+        LevelFilter::Verbose => (None, Some(LevelFilter::Trace)),
+        LevelFilter::Trace => (Some(LevelFilter::Verbose), Some(LevelFilter::Debug)),
         LevelFilter::Debug => (Some(LevelFilter::Trace), Some(LevelFilter::Info)),
         LevelFilter::Info => (Some(LevelFilter::Debug), Some(LevelFilter::Warn)),
         LevelFilter::Warn => (Some(LevelFilter::Info), Some(LevelFilter::Error)),
