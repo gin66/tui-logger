@@ -148,7 +148,7 @@ impl<'b> TuiLoggerWidget<'b> {
         self
     }
     /// The format string can be defined as described in
-    /// <https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html>
+    /// <https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html>
     ///
     /// If called with None, timestamp is not included in output.
     ///

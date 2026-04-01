@@ -130,7 +130,7 @@ impl<'a> TuiLoggerSmartWidget<'a> {
         self
     }
     /// The format string can be defined as described in
-    /// <https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html>
+    /// <https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html>
     ///
     /// If called with None, timestamp is not included in output.
     ///
@@ -199,12 +199,12 @@ impl<'a> Widget for TuiLoggerSmartWidget<'a> {
                 .events
                 .iter()
                 .next()
-                .map(|entry| entry.timestamp.timestamp_millis());
+                .map(|entry| entry.timestamp.timestamp().as_millisecond());
             let last_timestamp = tui_lock
                 .events
                 .rev_iter()
                 .next()
-                .map(|entry| entry.timestamp.timestamp_millis());
+                .map(|entry| entry.timestamp.timestamp().as_millisecond());
             if let Some(first) = first_timestamp {
                 if let Some(last) = last_timestamp {
                     let dt = last - first;

@@ -1,7 +1,7 @@
 use crate::logger::fast_hash::fast_str_hash;
 use crate::{CircularBuffer, LevelConfig, TuiLoggerFile};
-use chrono::{DateTime, Local};
 use env_filter::Filter;
+use jiff::Zoned;
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use parking_lot::Mutex;
 use std::collections::HashMap;
@@ -41,7 +41,7 @@ impl StringOrStatic {
 }
 
 pub struct ExtLogRecord {
-    pub timestamp: DateTime<Local>,
+    pub timestamp: Zoned,
     pub level: Level,
     target: String,
     file: Option<StringOrStatic>,
@@ -84,7 +84,7 @@ impl ExtLogRecord {
                     .map(|s| StringOrStatic::IsString(s.to_string()))
             });
         ExtLogRecord {
-            timestamp: chrono::Local::now(),
+            timestamp: Zoned::now(),
             level: record.level(),
             target: record.target().to_string(),
             file,
@@ -93,7 +93,7 @@ impl ExtLogRecord {
             msg: format!("{}", record.args()),
         }
     }
-    fn overrun(timestamp: DateTime<Local>, total: usize, elements: usize) -> Self {
+    fn overrun(timestamp: Zoned, total: usize, elements: usize) -> Self {
         ExtLogRecord {
             timestamp,
             level: Level::Warn,
@@ -148,8 +148,11 @@ impl TuiLogger {
         }
         if total > elements {
             // Too many events received, so some have been lost
-            let new_log_entry =
-                ExtLogRecord::overrun(reversed[reversed.len() - 1].timestamp, total, elements);
+            let new_log_entry = ExtLogRecord::overrun(
+                reversed[reversed.len() - 1].timestamp.clone(),
+                total,
+                elements,
+            );
             reversed.push(new_log_entry);
         }
         while let Some(log_entry) = reversed.pop() {
@@ -198,7 +201,7 @@ impl TuiLogger {
                     log::Level::Trace => ("TRACE", "T", true),
                 };
                 if let Some(fmt) = file_options.timestamp_fmt.as_ref() {
-                    output.push_str(&format!("{}", log_entry.timestamp.format(fmt)));
+                    output.push_str(&log_entry.timestamp.strftime(fmt).to_string());
                     output.push(file_options.format_separator);
                 }
                 match file_options.format_output_level {
@@ -294,8 +297,10 @@ impl TuiLogger {
         let log_entry = ExtLogRecord::from(record);
         let mut events_lock = self.hot_log.lock();
         events_lock.events.push(log_entry);
-        let need_signal =
-            events_lock.events.total_elements().is_multiple_of(events_lock.events.capacity() / 2);
+        let need_signal = events_lock
+            .events
+            .total_elements()
+            .is_multiple_of(events_lock.events.capacity() / 2);
         if need_signal {
             if let Some(jh) = events_lock.mover_thread.as_ref() {
                 thread::Thread::unpark(jh.thread());

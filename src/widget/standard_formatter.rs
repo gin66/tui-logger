@@ -82,7 +82,7 @@ impl LogFormatter for LogStandardFormatter {
         };
         let col_style = col_style.unwrap_or(self.style);
         if let Some(fmt) = self.format_timestamp.as_ref() {
-            output.push_str(&format!("{}", evt.timestamp.format(fmt)));
+            output.push_str(&evt.timestamp.strftime(fmt).to_string());
             output.push(self.format_separator);
         }
         match &self.format_output_level {
