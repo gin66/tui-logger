@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.3](https://github.com/gin66/tui-logger/compare/v0.18.2...v0.18.3) - 2026-07-04
+
+### Added
+
+- *(waiter)* Add wait()/wait_timeout() for new-log signaling
+
 ## [0.18.2](https://github.com/gin66/tui-logger/compare/v0.18.1...v0.18.2) - 2026-04-01
 
 ### Other
