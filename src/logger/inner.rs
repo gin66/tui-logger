@@ -8,6 +8,8 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::mem;
 use std::thread;
+#[cfg(feature = "waiter")]
+use crate::logger::waiter::Waiter;
 
 /// The TuiLoggerWidget shows the logging messages in an endless scrolling view.
 /// It is controlled by a TuiWidgetState for selected events.
@@ -123,6 +125,8 @@ pub struct TuiLogger {
     pub hot_select: Mutex<HotSelect>,
     pub hot_log: Mutex<HotLog>,
     pub inner: Mutex<TuiLoggerInner>,
+    #[cfg(feature = "waiter")]
+    pub waiter: Waiter,
 }
 impl TuiLogger {
     pub fn move_events(&self) {
@@ -240,6 +244,9 @@ impl TuiLogger {
             }
             tli.events.push(log_entry);
         }
+        drop(tli);
+        #[cfg(feature = "waiter")]
+        self.waiter.notify_new_events();
     }
 }
 lazy_static! {
@@ -266,6 +273,8 @@ lazy_static! {
             hot_select: Mutex::new(hs),
             hot_log: Mutex::new(hl),
             inner: Mutex::new(tli),
+            #[cfg(feature = "waiter")]
+            waiter: Waiter::default(),
         }
     };
 }

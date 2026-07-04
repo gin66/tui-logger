@@ -33,6 +33,11 @@ crossterm = {version = "0.29"}
 [features]
 slog-support = ["slog"]
 tracing-support = ["tracing", "tracing-subscriber"]
+# Enables the `wait()` / `wait_timeout()` APIs that allow applications
+# to be notified via Condvar when new log messages have been moved
+# into the widget's main buffer. Off by default to avoid paying for
+# the extra Mutex/Condvar in users that don't need it.
+waiter = []
 
 # only necessary for the demo, the crate does has no dependencies on these
 # 

@@ -41,6 +41,7 @@
 //! - [X] `tracing` support
 //! - [X] Support to use custom formatter for log events
 //! - [X] Configurable by environment variables
+//! - [X] `wait()` / `wait_timeout()` signaling support via Condvar
 //! - [ ] Allow configuration of target dependent loglevel specifically for file logging
 //! - [X] Avoid duplicating of module_path and filename in every log record
 //! - [ ] Simultaneous modification of all targets' display/hot logging loglevel by key command
@@ -160,6 +161,25 @@
 //! it receives to the `tui-logger` widget
 //!
 //! Enabled by feature "tracing-support"
+//!
+//! ## `wait()` / `wait_timeout()` signaling support
+//!
+//! For applications that drive rendering from their own event loop and need
+//! to know when to redraw the widget without polling, `tui-logger` exposes
+//! [`wait`] and [`wait_timeout`]. The waiter is keyed on a monotonic index
+//! that is bumped every time [`move_events`] successfully transfers one or
+//! more events. A call to `wait` captures the current index and blocks
+//! until it advances, then returns the new index. `wait_timeout` does the
+//! same with a deadline, returning `None` if the timeout expired.
+//!
+//! ```ignore
+//! loop {
+//!     tui_logger::wait_timeout(Duration::from_millis(100));
+//!     terminal.draw(|f| f.render_widget(&mut app, f.area()))?;
+//! }
+//! ```
+//!
+//! Enabled by feature "waiter"
 //!
 //! ## Custom filtering
 //! ```rust

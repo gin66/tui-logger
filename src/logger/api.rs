@@ -1,4 +1,6 @@
 use std::thread;
+#[cfg(feature = "waiter")]
+use std::time::Duration;
 
 use crate::logger::fast_hash::fast_str_hash;
 use crate::CircularBuffer;
@@ -132,6 +134,28 @@ pub fn set_level_for_target(target: &str, levelfilter: LevelFilter) {
 // Move events from the hot log to the main log
 pub fn move_events() {
     TUI_LOGGER.move_events();
+}
+
+/// Block the calling thread until new log messages have been moved into
+/// the widget's main buffer, then return the new moved-index.
+///
+/// Available only when the `waiter` feature is enabled.
+#[cfg(feature = "waiter")]
+#[cfg_attr(docsrs, doc(cfg(feature = "waiter")))]
+pub fn wait() -> u64 {
+    TUI_LOGGER.waiter.wait()
+}
+
+/// Like [`wait`], but blocks for at most `timeout`.
+///
+/// Returns `Some(new_index)` if the moved-index advances within the
+/// timeout, or `None` if the timeout expired.
+///
+/// Available only when the `waiter` feature is enabled.
+#[cfg(feature = "waiter")]
+#[cfg_attr(docsrs, doc(cfg(feature = "waiter")))]
+pub fn wait_timeout(timeout: Duration) -> Option<u64> {
+    TUI_LOGGER.waiter.wait_timeout(timeout)
 }
 
 /// A simple `Drain` to log any event directly.
