@@ -146,7 +146,7 @@ pub fn wait() -> u64 {
     TUI_LOGGER.waiter.wait()
 }
 
-/// Like [`wait`], but blocks for at most `timeout`.
+/// Like `wait`, but blocks for at most `timeout`.
 ///
 /// Returns `Some(new_index)` if the moved-index advances within the
 /// timeout, or `None` if the timeout expired.

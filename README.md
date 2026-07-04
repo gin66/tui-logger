@@ -170,10 +170,10 @@ Enabled by feature "tracing-support"
 
 For applications that drive rendering from their own event loop and need
 to know when to redraw the widget without polling, `tui-logger` exposes
-[`wait`] and [`wait_timeout`]. The waiter is keyed on a monotonic index
-that is bumped every time [`move_events`] successfully transfers one or
-more events. A call to `wait` captures the current index and blocks
-until it advances, then returns the new index. `wait_timeout` does the
+`wait()` and `wait_timeout()`. The waiter is keyed on a monotonic index
+that is bumped every time `move_events()` successfully transfers one or
+more events. A call to `wait()` captures the current index and blocks
+until it advances, then returns the new index. `wait_timeout()` does the
 same with a deadline, returning `None` if the timeout expired.
 
 ```rust
