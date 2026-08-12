@@ -298,6 +298,6 @@ TuiLoggerWidget
 
 ### Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=gin66/tui-logger&type=Date)](https://star-history.com/#gin66/tui-logger&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=gin66/tui-logger&type=Date)](https://star-history.dera.page/#gin66/tui-logger&Date)
 
 License: MIT
